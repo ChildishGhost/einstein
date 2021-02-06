@@ -7,8 +7,8 @@
 
 <script lang="ts">
 import { defineComponent, inject, nextTick, onMounted, ref, useCssModule, watch } from 'vue'
-import useWindowSize from '@/renderer/composables/useWindowSize'
-import ResultList from '@/renderer/components/ResultList.vue'
+import useWindowSize from '@/omniSearch/composables/useWindowSize'
+import ResultList from '@/omniSearch/components/ResultList.vue'
 
 export default defineComponent({
 	components: {

@@ -1,12 +1,11 @@
 {
 	"name": "hans",
 	"version": "0.0.1",
-	"main": "./dist/main.js",
+	"main": "./dist/main/main.js",
 	"scripts": {
-		"build:main:webpack": "webpack -c webpack/webpack.main.js",
-		"build:renderer:webpack": "webpack -c webpack/webpack.renderer.js",
-		"build": "npm run build:main:webpack && npm run build:renderer:webpack",
-		"run:without-build": "npm run build && electron .",
+		"build": "webpack",
+		"watch": "webpack --watch",
+		"run:without-build": "electron .",
 		"run": "npm run build && electron ."
 	},
 	"devDependencies": {
@@ -15,6 +14,7 @@
 		"@vue/compiler-sfc": "^3.0.5",
 		"babel-loader": "^8.2.2",
 		"babel-plugin-module-resolver": "^4.1.0",
+		"clean-webpack-plugin": "^3.0.0",
 		"css-loader": "^5.0.1",
 		"electron": "^11.2.3",
 		"electron-debug": "^3.2.0",

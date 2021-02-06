@@ -1,7 +1,8 @@
 'use strict';
 
 const path = require('path');
-const webpack = require('webpack');
+const { DefinePlugin, ProgressPlugin } = require('webpack');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const { VueLoaderPlugin } = require('vue-loader');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
@@ -23,11 +24,18 @@ const babelOptions = {
 	],
 };
 
+const backendOnlyPath = [
+	rel('src/main'),
+	rel('src/sharedProcess'),
+];
+
 module.exports = {
+	name: 'renderer',
 	cache: true,
 	mode: 'production',
 	entry: {
-		renderer: rel('src/renderer/index.ts'),
+		omniSearch: rel('src/omniSearch/index.ts'),
+		sharedProcess: rel('src/sharedProcess/index.ts'),
 	},
 	resolve: {
 		alias: {
@@ -36,17 +44,31 @@ module.exports = {
 	},
 	devtool: 'source-map',
 	output: {
-		path: rel('dist'),
-		filename: '[name].js',
-		chunkFilename: '[chunkhash].js'
+		path: rel('dist/renderer'),
+		filename: '[name].[contenthash].js',
+		chunkFilename: '[name].[chunkhash].js'
+	},
+	optimization: {
+		moduleIds: 'deterministic',
+		runtimeChunk: 'single',
+		splitChunks: {
+			cacheGroups: {
+				vendor: {
+					test: /[\\/]node_modules[\\/]/,
+					name: 'vendors',
+					chunks: 'all',
+				},
+			},
+		},
 	},
 	module: {
 		rules: [ {
 				test: /\.vue$/,
 				use: 'vue-loader',
+				exclude: backendOnlyPath,
 			}, {
 				test: /\.ts$/,
-				exclude: /node_modules/,
+				exclude: /node_modules|src\/main/,
 				use: [{
 					loader: 'babel-loader',
 					options: babelOptions,
@@ -58,13 +80,14 @@ module.exports = {
 				}],
 			}, {
 				test: /\.js$/,
-				exclude: /(node_modules)/,
+				exclude: /node_modules|src\/main/,
 				use: {
 					loader: 'babel-loader',
 					options: babelOptions,
 				},
 			}, {
 				test: /\.css$/,
+				exclude: backendOnlyPath,
 				oneOf: [{
 					resourceQuery: /module/,
 					use: [{
@@ -84,6 +107,7 @@ module.exports = {
 				}],
 			}, {
 				test: /\.s[ac]ss$/,
+				exclude: backendOnlyPath,
 				oneOf: [{
 					resourceQuery: /module/,
 					use: [{
@@ -112,18 +136,20 @@ module.exports = {
 		],
 	},
 	plugins: [
+		new ProgressPlugin(),
+		new CleanWebpackPlugin(),
 		new VueLoaderPlugin(),
 		new MiniCssExtractPlugin({
 			filename: '[name].css'
 		}),
-		new webpack.DefinePlugin({
+		new DefinePlugin({
 			__VUE_OPTIONS_API__: 'true',
 			__VUE_PROD_DEVTOOLS__: 'false'
 		}),
 		new HtmlWebpackPlugin({
-			filename: 'renderer.html',
-			chunks: ['renderer'],
-			template: 'src/renderer/index.html',
+			filename: '[name].html',
+			chunks: ['omniSearch'],
+			template: 'src/omniSearch/index.html',
 		}),
 	],
 	resolve: {

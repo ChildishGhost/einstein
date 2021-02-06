@@ -1,5 +1,5 @@
 import { app, BrowserWindow, globalShortcut, ipcMain } from 'electron'
-const ENTRY_URL = `file://${__dirname}/renderer.html`
+const ENTRY_URL = `file://${__dirname}/../renderer/omniSearch.html`
 
 const createWindow = () => {
 	const mainWindow = new BrowserWindow({

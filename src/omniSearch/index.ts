@@ -1,6 +1,6 @@
 import { createApp } from 'vue'
-import '@/renderer/index.scss'
-import App from '@/renderer/App.vue'
+import '@/omniSearch/index.scss'
+import App from '@/omniSearch/App.vue'
 
 const $app = document.getElementById('app')
 
