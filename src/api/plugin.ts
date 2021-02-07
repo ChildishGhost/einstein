@@ -1,25 +1,23 @@
-type SearchResult = {
-	title: string,
-	description?: string,
-	icon?: string,
-}
+import { ISearchEngine } from "./searchEngine"
+
+type UID = string
 
 interface IPlugin {
-	setup(): void
+	readonly uid: UID
+	setup(): Promise<void>
 
-	searchHint(): Promise<SearchResult | void>
-	searchTerm(): Promise<SearchResult[]>
+	readonly searchEngines: ISearchEngine[]
 }
 
 abstract class BasePlugin implements IPlugin {
-	setup() {}
-	async searchHint() {}
+	abstract get uid(): string
+	async setup() {}
 
-	abstract searchTerm() : Promise<SearchResult[]>
+	abstract get searchEngines(): ISearchEngine[]
 }
 
 export {
+	UID,
 	IPlugin,
 	BasePlugin,
-	SearchResult,
 }
