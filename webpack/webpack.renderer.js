@@ -6,6 +6,7 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const { VueLoaderPlugin } = require('vue-loader');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const ESLintPlugin = require('eslint-webpack-plugin');
 
 const rel = path.resolve.bind(null, __dirname, '..');
 
@@ -138,6 +139,9 @@ module.exports = {
 	},
 	plugins: [
 		new ProgressPlugin(),
+		new ESLintPlugin({
+			extensions: ['.js', '.ts', '.vue'],
+		}),
 		new CleanWebpackPlugin(),
 		new VueLoaderPlugin(),
 		new MiniCssExtractPlugin({

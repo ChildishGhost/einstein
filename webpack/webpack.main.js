@@ -3,6 +3,7 @@
 const path = require('path');
 const { ProgressPlugin } = require('webpack');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const ESLintPlugin = require('eslint-webpack-plugin');
 
 const rel = path.resolve.bind(null, __dirname, '..');
 
@@ -69,6 +70,9 @@ module.exports = {
 	},
 	plugins: [
 		new ProgressPlugin(),
+		new ESLintPlugin({
+			extensions: ['.js', '.ts'],
+		}),
 		new CleanWebpackPlugin(),
 	],
 	target: 'electron-main',
