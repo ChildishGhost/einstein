@@ -5,7 +5,7 @@ const ENTRY_URL = `file://${__dirname}/../renderer/omniSearch.html`
 const { platform } = process
 
 const prepareMessageProtocol = () => new Promise<MessagePortMainProtocol>((resolve) => {
-	ipcMain.on('omniSearch:registerMessageChannel', ({ sender }, { nonce }) => {
+	ipcMain.once('omniSearch:registerMessageChannel', ({ sender }, { nonce }) => {
 		const { port1: mainPort, port2: spPort } = new ElectionMessageChannel()
 
 		sender.postMessage('omniSearch:regieterMessageChannel:response', { nonce }, [ spPort ])
@@ -33,6 +33,7 @@ const createWindow = () => {
 		window.webContents.openDevTools()
 	})
 
+	ipcMain.removeHandler('resizeWindow')
 	ipcMain.handle('resizeWindow', (_, { width, height }) => {
 		window.setSize(width, height, true)
 	})

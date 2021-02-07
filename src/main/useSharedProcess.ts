@@ -4,7 +4,7 @@ import { MessagePortMainProtocol, MessageChannel } from '@/common/MessageChannel
 const ENTRY_URL = `file://${__dirname}/../renderer/sharedProcess.html`
 
 const prepareMessageProtocol = () => new Promise<MessagePortMainProtocol>((resolve) => {
-	ipcMain.on('sharedProcess:registerMessageChannel', ({ sender }, { nonce }) => {
+	ipcMain.once('sharedProcess:registerMessageChannel', ({ sender }, { nonce }) => {
 		const { port1: mainPort, port2: spPort } = new ElectionMessageChannel()
 
 		sender.postMessage('sharedProcess:regieterMessageChannel:response', { nonce }, [ spPort ])

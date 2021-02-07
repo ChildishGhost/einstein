@@ -1,5 +1,5 @@
 import {
-	app, BrowserWindow, globalShortcut,
+	app, BrowserWindow, globalShortcut, Menu, MenuItemConstructorOptions,
 } from 'electron'
 import useSharedProcess from '@/main/useSharedProcess'
 import useOmniSearch from '@/main/useOmniSearch'
@@ -21,9 +21,11 @@ const registerShortcut = (win : BrowserWindow) => {
 	})
 }
 
-;(async () => {
-	await app.whenReady()
-	const { messageChannel: sharedProcessChannel } = await useSharedProcess()
+const createApp = async () => {
+	const {
+		window: sharedProcessWindow,
+		messageChannel: sharedProcessChannel,
+	} = await useSharedProcess()
 
 	const pluginIsReady = new Promise<void>((resolve) => {
 		sharedProcessChannel.register('plugin:initialized', () => {
@@ -32,7 +34,10 @@ const registerShortcut = (win : BrowserWindow) => {
 	})
 	await pluginIsReady
 
-	const { window: omniSearchWindow, messageChannel: omniSearchChannel } = await useOmniSearch()
+	const {
+		window: omniSearchWindow,
+		messageChannel: omniSearchChannel,
+	} = await useOmniSearch()
 	registerShortcut(omniSearchWindow)
 
 	omniSearchChannel.register('search', ({ term }) => {
@@ -43,8 +48,43 @@ const registerShortcut = (win : BrowserWindow) => {
 		console.log(`search reply: [${data.term}] ${JSON.stringify(data.result)}`)
 		omniSearchChannel.sendMessage('searchResult', data)
 	})
-})()
+
+	return () => {
+		globalShortcut.unregisterAll()
+		omniSearchWindow.destroy()
+		sharedProcessWindow.destroy()
+	}
+}
+
+const registerMenu = (restartCallback: MenuItemConstructorOptions['click']) => {
+	const template: MenuItemConstructorOptions[] = [
+		{
+			label: platform === 'darwin' ? app.name : 'App',
+			submenu: [
+				{ role: 'about' },
+				{ type: 'separator' },
+				{ label: 'Restart', accelerator: 'CommandOrControl+R', click: restartCallback },
+				{ type: 'separator' },
+				{ role: 'quit' },
+			],
+		},
+	]
+
+	const menu = Menu.buildFromTemplate(template)
+	Menu.setApplicationMenu(menu)
+}
+
+app.on('ready', async () => {
+	let destroyApp = await createApp()
+
+	registerMenu(async () => {
+		destroyApp()
+		destroyApp = await createApp()
+	})
+})
 
 app.on('will-quit', () => {
 	globalShortcut.unregisterAll()
 })
+
+app.on('window-all-closed', () => {})
