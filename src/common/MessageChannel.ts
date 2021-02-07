@@ -8,7 +8,7 @@ export type Message = {
 	data?: any
 }
 
-export type ChannelHandler = (data?: any) => Promise<void>
+export type ChannelHandler = (data?: any) => Promise<void> | void
 
 export interface IMessageChannel {
 	register(channel: string, handler: ChannelHandler): void
@@ -19,13 +19,14 @@ export interface IMessageChannel {
 export class MessageChannel implements IMessageChannel {
 	private protocol: Protocol<Message>
 
-	private handlers: Record<string, ChannelHandler[]>
+	private handlers: Record<string, ChannelHandler[]> = {}
+
+	private initialBuffers: Record<string, any[]> = {}
 
 	constructor(protocol: Protocol<Message>) {
 		this.protocol = protocol
-		this.handlers = {}
 
-		this.protocol.addEventListener('message', this.onMessage)
+		this.protocol.addEventListener('message', this.onMessage.bind(this))
 	}
 
 	register(channel: string, handler: ChannelHandler) {
@@ -34,6 +35,11 @@ export class MessageChannel implements IMessageChannel {
 		}
 
 		this.handlers[channel].push(handler)
+
+		if (this.initialBuffers[channel]) {
+			this.initialBuffers[channel].forEach(handler)
+			delete this.initialBuffers[channel]
+		}
 	}
 
 	unregister(channel: string, handler: ChannelHandler): void {
@@ -54,7 +60,15 @@ export class MessageChannel implements IMessageChannel {
 	async onMessage(message?: Message) {
 		const { channel, data } = message!
 
-		if (!this.handlers[channel]) { return }
+		if (!this.handlers[channel]) {
+			// We are going to place messages into buffer,
+			// so that first listener can receive all messages before registration
+			if (!this.initialBuffers[channel]) {
+				this.initialBuffers[channel] = []
+			}
+
+			this.initialBuffers[channel].push(data)
+		}
 
 		await Promise.all(this.handlers[channel].map((handler) => handler(data)))
 	}

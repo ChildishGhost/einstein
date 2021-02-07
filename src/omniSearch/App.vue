@@ -2,7 +2,7 @@
 	<div>
 		<input v-model="searchTerm" :class="style.searchBox" ref="searchBoxRef" />
 	</div>
-	<ResultList v-if="searchTerm !== ''" />
+	<ResultList v-if="searchTerm !== ''" :results="searchResult" />
 </template>
 
 <script lang="ts">
@@ -11,6 +11,7 @@ import {
 } from 'vue'
 import useWindowSize from '@/omniSearch/composables/useWindowSize'
 import ResultList from '@/omniSearch/components/ResultList.vue'
+import useSearch from '@/omniSearch/composables/useSearch'
 
 export default defineComponent({
 	components: {
@@ -18,13 +19,20 @@ export default defineComponent({
 	},
 	setup() {
 		const { calculateDesiredSize } = useWindowSize(inject('$app'))
+		const { isReady, term, result } = useSearch()
 		const searchTerm = ref('')
 		const searchBoxRef = ref()
 
-		watch(() => searchTerm.value, (val, oldVal) => {
-			console.log(val)
+		watch(searchTerm, (val, oldVal) => {
 			if (val === oldVal) { return }
-
+			if (!isReady.value) { return }
+			term.value = val
+		})
+		watch(isReady, () => {
+			term.value = searchTerm.value
+		})
+		watch(result, () => {
+			console.log(result)
 			nextTick(calculateDesiredSize)
 		})
 
@@ -35,6 +43,7 @@ export default defineComponent({
 		return {
 			style: useCssModule(),
 			searchTerm,
+			searchResult: result,
 			searchBoxRef,
 		}
 	},

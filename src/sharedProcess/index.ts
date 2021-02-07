@@ -2,13 +2,24 @@ import PluginManager from '@/sharedProcess/PluginManager'
 import ExamplePlugin from '@/sharedProcess/plugins/example'
 import useMessageChannel from '@/sharedProcess/useMessageChannel'
 
+const pluginManager = new PluginManager()
+
 ;(async () => {
-	const pluginManager = new PluginManager()
-	pluginManager
+	const messageChannel = await useMessageChannel()
+
+	await pluginManager
 		.register(new ExamplePlugin())
 		.setup()
 
-	const messageChannel = await useMessageChannel()
+	messageChannel.register('plugin:performSearch', async ({ term }) => {
+		const results = await pluginManager.search(term)
 
-	messageChannel.sendMessage('test')
+		// TODO: aggregate results
+		messageChannel.sendMessage('plugin:performSearch:reply', {
+			term,
+			result: results[0] || {},
+		})
+	})
+
+	messageChannel.sendMessage('plugin:initialized')
 })()

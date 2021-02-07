@@ -1,36 +1,10 @@
 import {
-	app, BrowserWindow, globalShortcut, ipcMain,
+	app, BrowserWindow, globalShortcut,
 } from 'electron'
 import useSharedProcess from '@/main/useSharedProcess'
+import useOmniSearch from '@/main/useOmniSearch'
 
-const ENTRY_URL = `file://${__dirname}/../renderer/omniSearch.html`
 const { platform } = process
-
-const createWindow = () => {
-	const mainWindow = new BrowserWindow({
-		backgroundColor: '#333333',
-		width: 300,
-		height: 300,
-		useContentSize: true,
-		frame: false,
-		type: platform === 'linux' ? 'toolbar' : null,
-		show: false,
-		webPreferences: {
-			nodeIntegration: true,
-		},
-	})
-	mainWindow.hide()
-
-	mainWindow.loadURL(ENTRY_URL)
-
-	ipcMain.handle('resizeWindow', (_, { width, height }) => {
-		mainWindow.setSize(width, height, true)
-	})
-
-	mainWindow.webContents.openDevTools()
-
-	return mainWindow
-}
 
 const registerShortcut = (win : BrowserWindow) => {
 	const keystroke = platform === 'linux' ? 'Alt+Space' : 'Ctrl+Space'
@@ -46,11 +20,29 @@ const registerShortcut = (win : BrowserWindow) => {
 		win.focus()
 	})
 }
+
 ;(async () => {
 	await app.whenReady()
-	const { messageChannel: sharedProcessChannel, window: sharedProcess } = await useSharedProcess()
-	const rendererWindow = createWindow()
-	registerShortcut(rendererWindow)
+	const { messageChannel: sharedProcessChannel } = await useSharedProcess()
+
+	const pluginIsReady = new Promise<void>((resolve) => {
+		sharedProcessChannel.register('plugin:initialized', () => {
+			resolve()
+		})
+	})
+	await pluginIsReady
+
+	const { window: omniSearchWindow, messageChannel: omniSearchChannel } = await useOmniSearch()
+	registerShortcut(omniSearchWindow)
+
+	omniSearchChannel.register('search', ({ term }) => {
+		console.log(`search term: ${term}`)
+		sharedProcessChannel.sendMessage('plugin:performSearch', { term })
+	})
+	sharedProcessChannel.register('plugin:performSearch:reply', (data) => {
+		console.log(`search reply: [${data.term}] ${JSON.stringify(data.result)}`)
+		omniSearchChannel.sendMessage('searchResult', data)
+	})
 })()
 
 app.on('will-quit', () => {

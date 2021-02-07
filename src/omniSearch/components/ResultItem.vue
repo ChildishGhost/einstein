@@ -5,10 +5,10 @@
 	</aside>
 	<main :class="style.main">
 		<h1 :class="style.title">
-			123
+			{{ result.title }}
 		</h1>
 		<div :class="style.description">
-			234
+			{{ result.description }}
 		</div>
 	</main>
 </div>
@@ -18,6 +18,11 @@
 import { defineComponent, useCssModule } from 'vue'
 
 export default defineComponent({
+	props: {
+		result: {
+			type: Object,
+		},
+	},
 	setup: () => ({
 		style: useCssModule(),
 	}),
