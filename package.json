@@ -4,7 +4,7 @@
 	"main": "./dist/main/main.js",
 	"scripts": {
 		"build": "webpack",
-		"lint": "eslint . --ext .ts,.tsx,.vue",
+		"lint": "eslint src/ --ext .ts,.js,.vue",
 		"lint:fix": "npm run lint -- --fix",
 		"run": "npm run build && electron .",
 		"run:without-build": "electron .",

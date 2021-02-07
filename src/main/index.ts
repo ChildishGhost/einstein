@@ -45,8 +45,8 @@ const registerShortcut = (win : BrowserWindow) => {
 		win.show()
 		win.focus()
 	})
-};
-(async () => {
+}
+;(async () => {
 	await app.whenReady()
 	const { messageChannel: sharedProcessChannel, window: sharedProcess } = await useSharedProcess()
 	const rendererWindow = createWindow()

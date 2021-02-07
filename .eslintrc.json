@@ -30,8 +30,10 @@
 		}],
 		"indent": [1, "tab"],
 		"no-tabs": 0,
-		"semi": ["error", "never", { "beforeStatementContinuationChars": "always" }],
 		"class-methods-use-this": 0,
+		"import/newline-after-import": 0, // prevent collision with semi-style: first
+		"semi": ["error", "never", { "beforeStatementContinuationChars": "always" }],
+		"semi-style": ["error", "first"],
 		"no-unused-vars": 0, // use typescript rule
 		"@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }]
 	},
