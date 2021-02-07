@@ -42,8 +42,8 @@ module.exports = {
 	module: {
 		rules: [ {
 				test: /\.ts$/,
-				exclude: /node_modules/,
-				include: /src\/main/,
+				exclude: /node_modules|\.renderer\.ts$/,
+				include: /src\/(main|common)/,
 				use: [{
 					loader: 'babel-loader',
 					options: babelOptions,
@@ -55,8 +55,8 @@ module.exports = {
 				}],
 			}, {
 				test: /\.js$/,
-				exclude: /(node_modules)/,
-				include: /src\/main/,
+				exclude: /node_modules|\.renderer\.js$/,
+				include: /src\/(main|common)/,
 				use: {
 					loader: 'babel-loader',
 					options: babelOptions,

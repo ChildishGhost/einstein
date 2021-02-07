@@ -1,7 +1,6 @@
 import PluginManager from '@/sharedProcess/PluginManager'
 import ExamplePlugin from '@/sharedProcess/plugins/example'
-import { ipcRenderer } from 'electron'
-import MessageChannel from '@/sharedProcess/MessageChannel'
+import { createChannel } from '@/sharedProcess/MessageChannel'
 
 ;(async () => {
 	const pluginManager = new PluginManager()
@@ -9,8 +8,7 @@ import MessageChannel from '@/sharedProcess/MessageChannel'
 		.register(new ExamplePlugin())
 		.setup()
 
-	const messagePort = await MessageChannel()
-	messagePort.onmessage = ({ data }) => {
+	const messageChannel = await createChannel()
 
-	}
+	messageChannel.sendMessage('test')
 })()

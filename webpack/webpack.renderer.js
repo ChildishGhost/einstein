@@ -27,6 +27,7 @@ const babelOptions = {
 const backendOnlyPath = [
 	rel('src/main'),
 	rel('src/sharedProcess'),
+	/\.main\.ts$/,
 ];
 
 module.exports = {

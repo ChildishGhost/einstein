@@ -1,18 +1,22 @@
 import { ipcRenderer } from "electron"
+import { MessagePortProtocol, MessageChannel } from '@/common/MessageChannel.renderer'
 
-export default () : Promise<MessagePort> => {
+const createProtocol = () : Promise<MessagePortProtocol> => {
 	const nonce = new Date().getUTCMilliseconds().toString()
 
-	const promise = new Promise<MessagePort>((resolve) => {
+	const promise = new Promise<MessagePortProtocol>((resolve) => {
 		ipcRenderer.on('sharedProcess:regieterMessageChannel:response', ({ ports: [ port ]}, { nonce: n }) => {
 			if (nonce !== n) { return }
 
-			port.start()
-			resolve(port)
+			resolve(new MessagePortProtocol(port))
 		})
 	})
 
 	ipcRenderer.send('sharedProcess:registerMessageChannel', { nonce })
 
 	return promise
+}
+
+export const createChannel = async () => {
+	return new MessageChannel(await createProtocol())
 }
