@@ -7,7 +7,7 @@ const prepareMessageProtocol = () => new Promise<MessagePortMainProtocol>((resol
 	ipcMain.once('sharedProcess:registerMessageChannel', ({ sender }, { nonce }) => {
 		const { port1: mainPort, port2: spPort } = new ElectionMessageChannel()
 
-		sender.postMessage('sharedProcess:regieterMessageChannel:response', { nonce }, [ spPort ])
+		sender.postMessage('sharedProcess:registerMessageChannel:response', { nonce }, [ spPort ])
 		resolve(new MessagePortMainProtocol(mainPort))
 	})
 })

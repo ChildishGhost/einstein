@@ -5,7 +5,7 @@ const createProtocol = () : Promise<MessagePortProtocol> => {
 	const nonce = new Date().getUTCMilliseconds().toString()
 
 	const promise = new Promise<MessagePortProtocol>((resolve) => {
-		ipcRenderer.on('sharedProcess:regieterMessageChannel:response', ({ ports: [ port ] }, { nonce: n }) => {
+		ipcRenderer.on('sharedProcess:registerMessageChannel:response', ({ ports: [ port ] }, { nonce: n }) => {
 			if (nonce !== n) { return }
 
 			resolve(new MessagePortProtocol(port))
