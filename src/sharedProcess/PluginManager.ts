@@ -1,4 +1,5 @@
 import { IPlugin, UID } from '@/api/plugin'
+import { SearchResult } from '@/api/searchEngine'
 
 class PluginManager {
 	private plugins: IPlugin[]
@@ -10,9 +11,9 @@ class PluginManager {
 		this.searchTriggers = {}
 	}
 
-	register(plugin: IPlugin) {
+	register(plugin: IPlugin): this {
 		if (this.plugins.find((({ uid }) => uid === plugin.uid))) {
-			return // duplicated
+			return this // duplicated
 		}
 		this.plugins.push(plugin)
 
@@ -43,20 +44,24 @@ class PluginManager {
 		// Option 1: trigger' 'terms...
 		const engines = this.searchTriggers[trigger]
 		if (engines) {
-			const results = await Promise.all(engines.map(({ pluginId, engineName }) => {
+			const results = await Promise.all(engines.reduce((acc, { pluginId, engineName }) => {
 				const plugin = this.getPlugin(pluginId)
-				if (!plugin) { return }
+				if (!plugin) { return acc }
 
 				const engine = plugin.searchEngines.find(({ name }) => name === engineName)
-				if (!engine) { return }
+				if (!engine) { return acc }
 
-				return engine.search(terms.join(' '), trigger)
-			}))
+				acc.push(engine.search(terms.join(' '), trigger))
+
+				return acc
+			}, [] as Promise<SearchResult>[]))
 
 			return results
 		}
 
 		// Option 2: terms...
+
+		return []
 	}
 
 	getPlugin(uid: UID): IPlugin | undefined {

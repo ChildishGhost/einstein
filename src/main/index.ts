@@ -1,5 +1,8 @@
-import { app, BrowserWindow, globalShortcut, ipcMain } from 'electron'
+import {
+	app, BrowserWindow, globalShortcut, ipcMain,
+} from 'electron'
 import useSharedProcess from '@/main/useSharedProcess'
+
 const ENTRY_URL = `file://${__dirname}/../renderer/omniSearch.html`
 const { platform } = process
 
@@ -42,9 +45,8 @@ const registerShortcut = (win : BrowserWindow) => {
 		win.show()
 		win.focus()
 	})
-}
-
-;(async () => {
+};
+(async () => {
 	await app.whenReady()
 	const { messageChannel: sharedProcessChannel, window: sharedProcess } = await useSharedProcess()
 	const rendererWindow = createWindow()
@@ -52,5 +54,5 @@ const registerShortcut = (win : BrowserWindow) => {
 })()
 
 app.on('will-quit', () => {
-  globalShortcut.unregisterAll()
+	globalShortcut.unregisterAll()
 })

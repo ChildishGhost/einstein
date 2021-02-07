@@ -1,14 +1,14 @@
 import PluginManager from '@/sharedProcess/PluginManager'
 import ExamplePlugin from '@/sharedProcess/plugins/example'
-import { createChannel } from '@/sharedProcess/MessageChannel'
+import useMessageChannel from '@/sharedProcess/useMessageChannel';
 
-;(async () => {
+(async () => {
 	const pluginManager = new PluginManager()
 	pluginManager
 		.register(new ExamplePlugin())
 		.setup()
 
-	const messageChannel = await createChannel()
+	const messageChannel = await useMessageChannel()
 
 	messageChannel.sendMessage('test')
 })()

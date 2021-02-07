@@ -4,8 +4,9 @@
 		"es2021": true
 	},
 	"extends": [
-		"plugin:vue/essential",
-		"airbnb-base"
+		"plugin:vue/vue3-essential",
+		"airbnb-base",
+		"plugin:@typescript-eslint/eslint-recommended"
 	],
 	"parserOptions": {
 		"ecmaVersion": 12,
@@ -21,12 +22,23 @@
 	],
 	"rules": {
 		"array-bracket-spacing": ["error", "always"],
-		"import/extensions": ["error", "never"],
+		"import/extensions": ["error", "never", {
+			"ignorePackages": true,
+			"pattern": {
+				"vue": "always"
+			}
+		}],
 		"indent": [1, "tab"],
 		"no-tabs": 0,
-		"semi": ["error", "never", { "beforeStatementContinuationChars": "always" }]
+		"semi": ["error", "never", { "beforeStatementContinuationChars": "always" }],
+		"class-methods-use-this": 0,
+		"no-unused-vars": 0, // use typescript rule
+		"@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }]
 	},
 	"settings": {
+		"import/core-modules": [
+			"electron"
+		],
 		"import/resolver": {
 			"node": {
 				"extensions": [".js", ".ts", ".vue"],

@@ -13,11 +13,12 @@ export type ChannelHandler = (data?: any) => Promise<void>
 export interface IMessageChannel {
 	register(channel: string, handler: ChannelHandler): void
 	unregister(channel: string, handler: ChannelHandler): void
-	sendMessage(channel: string, data?: any, hasReply?: boolean): void
+	sendMessage(channel: string, data?: any): void
 }
 
 export class MessageChannel implements IMessageChannel {
 	private protocol: Protocol<Message>
+
 	private handlers: Record<string, ChannelHandler[]>
 
 	constructor(protocol: Protocol<Message>) {
@@ -43,7 +44,7 @@ export class MessageChannel implements IMessageChannel {
 		this.handlers[channel].splice(index, 1)
 	}
 
-	sendMessage(channel: string, data: any = {}, hasReply = false) {
+	sendMessage(channel: string, data: any = {}) {
 		return this.protocol.send({
 			channel,
 			data,

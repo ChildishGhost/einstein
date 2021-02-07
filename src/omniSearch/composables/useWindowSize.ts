@@ -1,6 +1,6 @@
 import { ipcRenderer } from 'electron'
 import {
-	AppContext, onMounted, onUpdated, reactive, toRaw, watch,
+	onMounted, reactive, toRaw, watch,
 } from 'vue'
 
 const desiredSize = reactive({})

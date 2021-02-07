@@ -12,6 +12,7 @@ interface IPlugin {
 abstract class BasePlugin implements IPlugin {
 	abstract get uid(): string
 
+	// eslint-disable-next-line no-empty-function
 	async setup() {}
 
 	abstract get searchEngines(): ISearchEngine[]

@@ -3,7 +3,7 @@ import { BasePlugin } from '@/api/plugin'
 const searchEngine = {
 	get name() { return 'fooEngine' },
 	get triggers() { return [ 'foo' ] },
-	async search(term: string, trigger?: string) {
+	async search(_term: string, _trigger?: string) {
 		return {
 			suggestions: [
 				{

@@ -1,8 +1,10 @@
 import { Protocol } from '@/common/MessageChannel'
+
 export * from '@/common/MessageChannel'
 
 export class MessagePortProtocol implements Protocol<any> {
 	private port: MessagePort
+
 	private listeners: ((data: any) => Promise<void>)[] = []
 
 	constructor(port: MessagePort) {
