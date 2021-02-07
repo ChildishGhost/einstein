@@ -2,6 +2,7 @@ import { IPlugin, UID } from '@/api/plugin'
 
 class PluginManager {
 	private plugins: IPlugin[]
+
 	private searchTriggers: Record<string, { pluginId: UID, engineName: string }[]>
 
 	constructor() {

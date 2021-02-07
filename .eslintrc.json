@@ -1,0 +1,42 @@
+{
+	"env": {
+		"browser": true,
+		"es2021": true
+	},
+	"extends": [
+		"plugin:vue/essential",
+		"airbnb-base"
+	],
+	"parserOptions": {
+		"ecmaVersion": 12,
+		"parser": "@typescript-eslint/parser",
+		"sourceType": "module",
+		"parserOptions": {
+			"project": "./tsconfig.json"
+		}
+	},
+	"plugins": [
+		"vue",
+		"@typescript-eslint"
+		],
+		"rules": {
+			"array-bracket-spacing": ["error", "always"],
+			"import/extensions": ["error", "never"],
+			"indent": [1, "tab"],
+			"no-tabs": 0,
+			"semi": ["error", "never", { "beforeStatementContinuationChars": "always" }]
+		},
+		"settings": {
+			"import/resolver": {
+				"node": {
+					"extensions": [".js", ".jsx", ".ts", ".tsx"],
+					"moduleDirectory": ["node_modules", "src/"]
+				},
+				"alias": {
+					"map": [
+						["@", "./src"]
+					]
+				}
+			}
+		}
+}

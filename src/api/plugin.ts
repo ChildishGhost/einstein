@@ -1,4 +1,4 @@
-import { ISearchEngine } from "./searchEngine"
+import { ISearchEngine } from './searchEngine'
 
 type UID = string
 
@@ -11,6 +11,7 @@ interface IPlugin {
 
 abstract class BasePlugin implements IPlugin {
 	abstract get uid(): string
+
 	async setup() {}
 
 	abstract get searchEngines(): ISearchEngine[]
