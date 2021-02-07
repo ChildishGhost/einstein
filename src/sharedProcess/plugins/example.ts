@@ -9,6 +9,15 @@ const searchEngine = {
 			suggestions: [
 				{
 					title: 'bar',
+					description: 'aaa',
+				},
+				{
+					title: 'buz',
+					description: 'aab',
+				},
+				{
+					title: 'yolo',
+					description: 'abc',
 				},
 			],
 		}
