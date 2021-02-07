@@ -13,11 +13,17 @@ const pluginManager = new PluginManager()
 
 	messageChannel.register('plugin:performSearch', async ({ term }) => {
 		const results = await pluginManager.search(term)
+		const mergedResult = {
+			suggestions: results.reduce((acc, { suggestions }) => {
+				acc.push(...suggestions)
+				return acc
+			}, []),
+		}
 
 		// TODO: aggregate results
 		messageChannel.sendMessage('plugin:performSearch:reply', {
 			term,
-			result: results[0] || {},
+			result: mergedResult,
 		})
 	})
 
