@@ -4,6 +4,7 @@
 	"main": "./dist/main/main.js",
 	"scripts": {
 		"build": "webpack",
+		"clean": "rm -rf node_modules && rm -rf dist/{main,renderer}",
 		"lint": "eslint src/ --ext .ts,.js,.vue",
 		"lint:fix": "npm run lint -- --fix",
 		"run": "npm run build && electron .",
