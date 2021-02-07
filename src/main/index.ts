@@ -1,5 +1,6 @@
 import { app, BrowserWindow, globalShortcut, ipcMain } from 'electron'
 const ENTRY_URL = `file://${__dirname}/../renderer/omniSearch.html`
+const { platform } = process
 
 const createWindow = () => {
 	const mainWindow = new BrowserWindow({
@@ -8,7 +9,7 @@ const createWindow = () => {
 		height: 300,
 		useContentSize: true,
 		frame: false,
-		type: 'toolbar',
+		type: platform === 'linux' ? 'toolbar' : null,
 		show: false,
 		webPreferences: {
 			nodeIntegration: true,
@@ -28,7 +29,9 @@ const createWindow = () => {
 }
 
 const registerShortcut = (win : BrowserWindow) => {
-	globalShortcut.register('Ctrl+Space', () => {
+	const keystroke = platform === 'linux' ? 'Alt+Space' : 'Ctrl+Space'
+
+	globalShortcut.register(keystroke, () => {
 		if (win.isVisible()) {
 			win.hide()
 			return
@@ -40,7 +43,7 @@ const registerShortcut = (win : BrowserWindow) => {
 	})
 }
 
-(async () => {
+;(async () => {
 	await app.whenReady()
 	const rendererWindow = createWindow()
 	registerShortcut(rendererWindow)
