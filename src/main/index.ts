@@ -3,12 +3,13 @@ const ENTRY_URL = `file://${__dirname}/../renderer/omniSearch.html`
 
 const createWindow = () => {
 	const mainWindow = new BrowserWindow({
+		backgroundColor: '#333333',
 		width: 300,
 		height: 300,
 		useContentSize: true,
 		frame: false,
+		type: 'toolbar',
 		show: false,
-		backgroundColor: '#333333',
 		webPreferences: {
 			nodeIntegration: true,
 		},
