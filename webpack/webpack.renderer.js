@@ -147,9 +147,13 @@ module.exports = {
 			__VUE_PROD_DEVTOOLS__: 'false'
 		}),
 		new HtmlWebpackPlugin({
-			filename: '[name].html',
+			filename: 'omniSearch.html',
 			chunks: ['omniSearch'],
 			template: 'src/omniSearch/index.html',
+		}),
+		new HtmlWebpackPlugin({
+			filename: 'sharedProcess.html',
+			chunks: ['sharedProcess'],
 		}),
 	],
 	resolve: {
