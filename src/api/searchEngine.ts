@@ -29,7 +29,7 @@ abstract class BaseSearchEngine implements ISearchEngine {
 
 	abstract get triggers (): string[]
 
-	async search(term: string, trigger?: string): Promise<SearchResult> {
+	async search(_term: string, _trigger?: string): Promise<SearchResult> {
 		return { suggestions: [] }
 	}
 }

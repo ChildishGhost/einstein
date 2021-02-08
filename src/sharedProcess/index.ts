@@ -2,6 +2,7 @@ import Fuse from 'fuse.js'
 
 import PluginManager from '@/sharedProcess/PluginManager'
 import ExamplePlugin from '@/sharedProcess/plugins/example'
+import DesktopApplicationsPlugin from '@/sharedProcess/plugins/desktop'
 import useMessageChannel from '@/sharedProcess/useMessageChannel'
 
 const pluginManager = new PluginManager()
@@ -11,6 +12,7 @@ const pluginManager = new PluginManager()
 
 	await pluginManager
 		.register(new ExamplePlugin())
+		.register(new DesktopApplicationsPlugin())
 		.setup()
 
 	messageChannel.register('plugin:performSearch', async ({ term }) => {
