@@ -68,6 +68,7 @@ export class MessageChannel implements IMessageChannel {
 			}
 
 			this.initialBuffers[channel].push(data)
+			return
 		}
 
 		await Promise.all(this.handlers[channel].map((handler) => handler(data)))

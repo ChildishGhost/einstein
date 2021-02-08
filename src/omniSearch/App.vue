@@ -1,6 +1,13 @@
 <template>
 	<div>
-		<input v-model="searchTerm" :class="style.searchBox" ref="searchBoxRef" />
+		<input ref="searchBoxRef"
+			v-model="searchTerm"
+			:class="style.searchBox"
+			@keydown.esc.prevent="cancelSearch"
+			@keydown.tab.exact.prevent="completeInput"
+			@keydown.up.exact.prevent="moveCursor(-1)"
+			@keydown.down.exact.prevent="moveCursor(1)"
+			/>
 	</div>
 	<ResultList v-if="searchTerm !== ''" :results="searchResult" />
 </template>
@@ -9,7 +16,7 @@
 import {
 	defineComponent, inject, nextTick, onMounted, ref, useCssModule, watch,
 } from 'vue'
-import useWindowSize from '@/omniSearch/composables/useWindowSize'
+import useWindowControl from '@/omniSearch/composables/useWindowControl'
 import ResultList from '@/omniSearch/components/ResultList.vue'
 import useSearch from '@/omniSearch/composables/useSearch'
 
@@ -18,7 +25,7 @@ export default defineComponent({
 		ResultList,
 	},
 	setup() {
-		const { calculateDesiredSize } = useWindowSize(inject('$app'))
+		const { calculateDesiredSize, closeWindow } = useWindowControl(inject('$app'))
 		const { isReady, term, result } = useSearch()
 		const searchTerm = ref('')
 		const searchBoxRef = ref()
@@ -32,7 +39,6 @@ export default defineComponent({
 			term.value = searchTerm.value
 		})
 		watch(result, () => {
-			console.log(result)
 			nextTick(calculateDesiredSize)
 		})
 
@@ -40,11 +46,20 @@ export default defineComponent({
 			searchBoxRef.value.focus()
 		})
 
+		const moveCursor = (_offset: number) => {
+
+		}
+
+		const completeInput = () => {}
+
 		return {
 			style: useCssModule(),
 			searchTerm,
 			searchResult: result,
 			searchBoxRef,
+			cancelSearch: closeWindow,
+			moveCursor,
+			completeInput,
 		}
 	},
 })

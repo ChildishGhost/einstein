@@ -33,12 +33,6 @@ const createWindow = () => {
 		window.webContents.openDevTools()
 	})
 
-	ipcMain.removeHandler('resizeWindow')
-	ipcMain.handle('resizeWindow', (_, { height }) => {
-		const [ width ] = window.getSize()
-		window.setSize(width, height, true)
-	})
-
 	return window
 }
 
@@ -46,6 +40,13 @@ export default async () => {
 	const protocol = prepareMessageProtocol()
 	const window = createWindow()
 	const messageChannel = new MessageChannel(await protocol)
+
+	messageChannel.register('resizeWindow', ({ height }: any) => {
+		const [ width ] = window.getSize()
+		window.setSize(width, height, true)
+	})
+
+	messageChannel.register('closeWindow', () => window.hide())
 
 	return {
 		messageChannel,
