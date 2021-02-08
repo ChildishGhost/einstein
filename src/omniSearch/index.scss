@@ -1,6 +1,8 @@
 body {
 	background-color: #333333;
 	margin: 0;
+	user-select: none;
+  -webkit-app-region: no-drag;
 }
 
 #app {

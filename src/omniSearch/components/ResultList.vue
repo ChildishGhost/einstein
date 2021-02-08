@@ -3,8 +3,9 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, toRefs, watch } from 'vue'
+import { defineComponent, PropType } from 'vue'
 import ResultItem from '@/omniSearch/components/ResultItem.vue'
+import { Suggestion } from '@/api/searchEngine'
 
 export default defineComponent({
 	components: {
@@ -13,13 +14,8 @@ export default defineComponent({
 	props: {
 		results: {
 			type: Array,
-			default: () => [] as any[],
+			default: () => [] as PropType<Suggestion[]>,
 		},
-	},
-	setup(props) {
-		const { results } = toRefs(props)
-
-		watch(results, (v) => console.log(v))
 	},
 })
 </script>

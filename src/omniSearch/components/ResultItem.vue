@@ -15,12 +15,13 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, useCssModule } from 'vue'
+import { Suggestion } from '@/api/searchEngine'
+import { defineComponent, PropType, useCssModule } from 'vue'
 
 export default defineComponent({
 	props: {
 		result: {
-			type: Object,
+			type: Object as PropType<Suggestion>,
 		},
 	},
 	setup: () => ({
@@ -35,6 +36,7 @@ export default defineComponent({
 	flex-direction: row;
 	align-items: center;
 	padding: 4px 8px;
+	cursor: pointer;
 
 	&.hover, &:hover {
 		background-color: rgba(255, 255, 255, 0.3);
@@ -43,21 +45,24 @@ export default defineComponent({
 
 .icon {
 	display: flex;
-	width: 48px;
-	height: 48px;
+	width: 32pt;
+	height: 32pt;
 	align-items: center;
 	justify-content: center;
 	margin-inline-end: 8px;
+	margin-block: 3pt;
 }
 
 .title {
 	margin: 0;
 	font-size: 20pt;
 	color: #eee;
+	line-height: 1;
 }
 
 .description {
 	font-size: 16pt;
 	color: #999;
+	line-height: 1;
 }
 </style>
