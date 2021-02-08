@@ -52,12 +52,11 @@ export default defineComponent({
 
 .icon {
 	display: flex;
-	flex: 0 0 32pt;
-	width: 32pt;
-	height: 32pt;
+	width: 36px;
+	height: 36px;
 	align-items: center;
 	justify-content: center;
-	margin-block: 3pt;
+	margin-block: 4px;
 }
 
 .main {
@@ -66,18 +65,18 @@ export default defineComponent({
 
 .title {
 	margin: 0;
-	font-size: 20pt;
+	font-size: 20px;
 	color: #eee;
-	line-height: 1;
+	line-height: 24px;
 	white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .description {
-	font-size: 16pt;
+	font-size: 14px;
 	color: #999;
-	line-height: 1;
+	line-height: 16px;
 	white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

@@ -16,7 +16,7 @@ const prepareMessageProtocol = () => new Promise<MessagePortMainProtocol>((resol
 const createWindow = () => {
 	const window = new BrowserWindow({
 		backgroundColor: '#333333',
-		width: 300,
+		width: 600,
 		height: 300,
 		useContentSize: true,
 		frame: false,
@@ -34,7 +34,8 @@ const createWindow = () => {
 	})
 
 	ipcMain.removeHandler('resizeWindow')
-	ipcMain.handle('resizeWindow', (_, { width, height }) => {
+	ipcMain.handle('resizeWindow', (_, { height }) => {
+		const [ width ] = window.getSize()
 		window.setSize(width, height, true)
 	})
 
