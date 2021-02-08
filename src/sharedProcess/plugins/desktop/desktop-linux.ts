@@ -1,14 +1,14 @@
-import { BasePlugin } from '@/api/plugin'
+import Fuse from 'fuse.js'
+
 import {
-	SearchResult,
 	BaseSearchEngine,
+	SearchResult,
+	Suggestion,
 	VOID_TRIGGER,
-	ISearchEngine,
 } from '@/api/searchEngine'
+
 import * as fs from 'fs'
 import * as os from 'os'
-const { platform } = process
-
 /*
 file = {
 	content: "<file content>"      // string -> string
@@ -20,14 +20,21 @@ file = {
 	}
 }
 */
-type DesktopFile = {
+type LinuxDesktopFile = {
 	[K in string]: Record<string, string>
 } & {
 	content?: string
 }
 
-class LinuxDesktopApplicationSearchEngine extends BaseSearchEngine {
-	private desktopFiles: Record<string, DesktopFile> = {}
+type LinuxDesktopApplicationPreSearch = {
+	file: string
+	name: string
+	exec: string
+	icon?: string
+}
+
+export default class LinuxDesktopApplicationSearchEngine extends BaseSearchEngine {
+	private desktopFiles: Record<string, LinuxDesktopFile> = {}
 
 	name = 'tw.childish.einstein.plugin.desktop.linux'
 
@@ -39,10 +46,38 @@ class LinuxDesktopApplicationSearchEngine extends BaseSearchEngine {
 		this.parseExecCommand()
 	}
 
-	async search(_term: string, _trigger?: string): Promise<SearchResult> {
-		// not implemented
+	async search(term: string, _trigger?: string): Promise<SearchResult> {
+		// flatten this.desktopFiles
+		const preSearch: LinuxDesktopApplicationPreSearch[] = Object.entries(
+			this.desktopFiles,
+		).reduce((acc, [ filename, file ]) => {
+			acc.push({
+				file: filename,
+				name: file['[Desktop Entry]'].Name,
+				exec: file['[Desktop Entry]'].Exec,
+				icon: file['[Desktop Entry]'].Icon,
+			})
+			return acc
+		}, [])
+
+		const fuse = new Fuse(preSearch, {
+			keys: [ 'file', 'name', 'exec' ],
+			includeScore: true,
+			findAllMatches: true,
+			threshold: 0.4,
+		})
+
+		// transform search results into Suggestion
+		const result = fuse.search(term as string).map(
+			({ item }) => ({
+				title: item.name,
+				description: item.exec,
+				id: item.file,
+			} as Suggestion),
+		)
+
 		return {
-			suggestions: [],
+			suggestions: result,
 		}
 	}
 
@@ -111,32 +146,20 @@ class LinuxDesktopApplicationSearchEngine extends BaseSearchEngine {
 				>
 				entries[k] = v
 			})
+
+			// drop ill-formed desktop files
+			if (!('[Desktop Entry]' in this.desktopFiles[file])) {
+				delete this.desktopFiles[file]
+			}
 		})
 		console.log(this.desktopFiles)
 	}
 
 	private parseExecCommand = () => {
 		// not implemented
-
 		// Recognized desktop entry keys
 		// The Exec key
 		// https://specifications.freedesktop.org/desktop-entry-spec/latest/ar01s06.html
 		// https://specifications.freedesktop.org/desktop-entry-spec/latest/ar01s07.html
-	}
-}
-
-export default class DesktopApplicationsPlugin extends BasePlugin {
-	uid = 'tw.childish.einstein.plugin.desktop'
-
-	private mySearchEngines: ISearchEngine[] = []
-
-	async setup() {
-		if (platform === 'linux') {
-			this.mySearchEngines.push(new LinuxDesktopApplicationSearchEngine())
-		}
-	}
-
-	get searchEngines() {
-		return this.mySearchEngines
 	}
 }
