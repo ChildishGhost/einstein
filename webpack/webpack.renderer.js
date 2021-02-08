@@ -7,6 +7,7 @@ const { VueLoaderPlugin } = require('vue-loader');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ESLintPlugin = require('eslint-webpack-plugin');
+const CopyPlugin = require("copy-webpack-plugin");
 
 const rel = path.resolve.bind(null, __dirname, '..');
 
@@ -159,6 +160,11 @@ module.exports = {
 		new HtmlWebpackPlugin({
 			filename: 'sharedProcess.html',
 			chunks: ['sharedProcess'],
+		}),
+		new CopyPlugin({
+			patterns: [
+				rel('node_modules/file-icon/file-icon'), // file-icon native executable
+			],
 		}),
 	],
 	resolve: {
