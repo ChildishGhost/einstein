@@ -38,7 +38,7 @@ const pluginManager = new PluginManager()
 			? term.split(' ').slice(1).join(' ') : term
 
 		const rankedResult = {
-			suggestions: fuse.search(fuzzTerm).map(({ item }) => item),
+			suggestions: fuse.search(fuzzTerm).map(({ item }) => item).splice(0, 10),
 		}
 
 		console.log(`Fuzzing on: ${fuzzTerm}`)
