@@ -1,6 +1,8 @@
+/* eslint-disable */
 'use strict';
 
 const path = require('path');
+const fs = require('fs');
 const { DefinePlugin, ProgressPlugin } = require('webpack');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const { VueLoaderPlugin } = require('vue-loader');
@@ -166,6 +168,15 @@ module.exports = {
 				rel('node_modules/file-icon/file-icon'), // file-icon native executable
 			],
 		}),
+		{
+			apply(compiler) {
+				compiler.hooks.done.tap('fix permission', (
+					_stats, //* stats is passed as an argument when done hook is tapped.
+				) => {
+					fs.chmodSync(rel('dist/renderer/file-icon'), 0o755)
+				});
+			},
+		},
 	],
 	resolve: {
 		extensions: ['.js', '.ts', '.vue'],
