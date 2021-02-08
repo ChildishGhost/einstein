@@ -10,14 +10,17 @@ const searchEngine = {
 				{
 					title: 'bar',
 					description: 'aaa',
+					id: '1',
 				},
 				{
 					title: 'buz',
 					description: 'aab',
+					id: '2',
 				},
 				{
 					title: 'yolo',
 					description: 'abc',
+					id: '3',
 				},
 			],
 		}
@@ -33,6 +36,7 @@ const searchEngine2 = {
 				{
 					title: 'foobar',
 					description: 'type foo to use foo engine',
+					id: '1',
 				},
 			],
 		}

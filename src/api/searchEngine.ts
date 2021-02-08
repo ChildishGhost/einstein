@@ -4,6 +4,7 @@ type Suggestion = {
 	title: string
 	description?: string
 	icon?: string
+	id: string
 }
 
 type Hint = {
