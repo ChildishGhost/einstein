@@ -57,6 +57,11 @@ export default defineComponent({
 	align-items: center;
 	justify-content: center;
 	margin-block: 4px;
+
+	& > img {
+		max-width: 100%;
+		max-height: 100%;
+	}
 }
 
 .main {
