@@ -64,7 +64,7 @@ export default class LinuxDesktopApplicationSearchEngine extends BaseSearchEngin
 				description: item.exec,
 				completion: item.name,
 				event: {
-					name: item.exec,
+					type: item.exec,
 					data: item.action,
 				},
 			}),

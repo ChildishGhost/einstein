@@ -46,7 +46,7 @@ export default class DarwinApplicationSearchEngine extends BaseSearchEngine {
 			description: path,
 			icon,
 			event: {
-				name: 'executeApplication',
+				type: 'executeApplication',
 				data: path,
 			},
 		}))

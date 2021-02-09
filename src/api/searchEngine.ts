@@ -7,7 +7,7 @@ type SearchResult = {
 	icon?: string
 	completion?: string
 	event?: {
-		name?: string
+		type: string
 		data?: any
 	}
 }
