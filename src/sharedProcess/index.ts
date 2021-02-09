@@ -3,6 +3,7 @@ import Fuse from 'fuse.js'
 import PluginManager from '@/sharedProcess/PluginManager'
 import DesktopApplicationsPlugin from '@/sharedProcess/plugins/desktop'
 import useMessageChannel from '@/sharedProcess/useMessageChannel'
+import PerformSearchReply from '@/common/types/PerformSearchReply'
 
 const pluginManager = new PluginManager()
 
@@ -39,7 +40,7 @@ const pluginManager = new PluginManager()
 		console.log(mergedResult)
 		console.log(rankedResult)
 
-		messageChannel.sendMessage('plugin:performSearch:reply', {
+		messageChannel.sendMessage<PerformSearchReply>('plugin:performSearch:reply', {
 			term,
 			result: rankedResult,
 		})

@@ -8,7 +8,7 @@ export type Message = {
 	data?: any
 }
 
-export type ChannelHandler = (data?: any) => Promise<void> | void
+export type ChannelHandler<T = any> = (data?: T) => Promise<void> | void
 
 export interface IMessageChannel {
 	register(channel: string, handler: ChannelHandler): void
@@ -29,7 +29,7 @@ export class MessageChannel implements IMessageChannel {
 		this.protocol.addEventListener('message', this.onMessage.bind(this))
 	}
 
-	register(channel: string, handler: ChannelHandler) {
+	register<T>(channel: string, handler: ChannelHandler<T>) {
 		if (!this.handlers[channel]) {
 			this.handlers[channel] = []
 		}
@@ -42,7 +42,7 @@ export class MessageChannel implements IMessageChannel {
 		}
 	}
 
-	unregister(channel: string, handler: ChannelHandler): void {
+	unregister<T>(channel: string, handler: ChannelHandler<T>): void {
 		if (!this.handlers[channel]) { return }
 		const index = this.handlers[channel].indexOf(handler)
 		if (index === -1) { return }
@@ -50,14 +50,14 @@ export class MessageChannel implements IMessageChannel {
 		this.handlers[channel].splice(index, 1)
 	}
 
-	sendMessage(channel: string, data: any = {}) {
+	sendMessage<T = any>(channel: string, data?: T) {
 		return this.protocol.send({
 			channel,
 			data,
 		})
 	}
 
-	async onMessage(message?: Message) {
+	private async onMessage(message?: Message) {
 		const { channel, data } = message!
 
 		if (!this.handlers[channel]) {

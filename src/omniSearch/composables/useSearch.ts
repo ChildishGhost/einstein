@@ -1,4 +1,6 @@
+import { SearchResult } from '@/api/searchEngine'
 import { MessageChannel } from '@/common/MessageChannel'
+import PerformSearchReply from '@/common/types/PerformSearchReply'
 import {
 	inject,
 	onUnmounted,
@@ -9,11 +11,11 @@ import {
 export default () => {
 	const isReady = ref(false)
 	const term = ref('')
-	const result = ref([])
-	const resultHandler = (data: any) => {
+	const result = ref([] as SearchResult)
+	const resultHandler = (data: PerformSearchReply) => {
 		if (data.term === term.value) {
 			if (data.result) {
-				result.value = data.result.suggestions
+				result.value = data.result
 			} else {
 				result.value = []
 			}
