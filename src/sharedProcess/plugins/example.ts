@@ -1,7 +1,7 @@
 import { BasePlugin } from '@/api/plugin'
-import { VOID_TRIGGER } from '@/api/searchEngine'
+import { ISearchEngine, VOID_TRIGGER } from '@/api/searchEngine'
 
-const searchEngine = {
+const searchEngine: ISearchEngine = {
 	name: 'fooEngine',
 	triggers: [ VOID_TRIGGER, 'foo' ],
 	async search(_term: string, _trigger?: string) {
@@ -25,7 +25,7 @@ const searchEngine = {
 	},
 }
 
-const searchEngine2 = {
+const searchEngine2: ISearchEngine = {
 	name: 'voidEngine',
 	triggers: [ VOID_TRIGGER ],
 	async search(_term: string, _trigger?: string) {
@@ -40,11 +40,7 @@ const searchEngine2 = {
 }
 
 export default class ExamplePlugin extends BasePlugin {
-	get uid() {
-		return 'example'
-	}
+	readonly uid = 'example'
 
-	get searchEngines() {
-		return [ searchEngine, searchEngine2 ]
-	}
+	readonly searchEngines = [ searchEngine, searchEngine2 ]
 }
