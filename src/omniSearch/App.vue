@@ -19,7 +19,7 @@
 
 <script lang="ts">
 import {
-	defineComponent, inject, nextTick, onMounted, ref, watch,
+	defineComponent, inject, nextTick, onMounted, ref, toRaw, watch,
 } from 'vue'
 import { SearchResult } from '@/api/searchEngine'
 import { MessageChannel } from '@/common/MessageChannel'
@@ -80,7 +80,7 @@ export default defineComponent({
 
 			withMessageChannel.then((msg) => {
 				msg.sendMessage<PluginEvent>('plugin:event', {
-					...suggestion.event,
+					...toRaw(suggestion.event),
 					pluginUid: suggestion.pluginUid,
 				})
 			})
