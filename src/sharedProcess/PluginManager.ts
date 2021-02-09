@@ -1,7 +1,7 @@
 import { IPlugin, UID } from '@/api/plugin'
 import { SearchResult, VOID_TRIGGER } from '@/api/searchEngine'
 
-type TriggerPointer = { pluginId: UID, engineName: string }
+type TriggerPointer = { pluginUid: UID, engineName: string }
 
 class PluginManager {
 	private plugins: IPlugin[]
@@ -32,7 +32,7 @@ class PluginManager {
 						this.searchTriggers[trigger] = []
 					}
 					this.searchTriggers[trigger].push({
-						pluginId: uid,
+						pluginUid: uid,
 						engineName: name,
 					})
 				})
@@ -59,8 +59,8 @@ class PluginManager {
 	}
 
 	private performSearch(engines: TriggerPointer[], term: string, trigger: string = VOID_TRIGGER) {
-		return Promise.all(engines.reduce((acc, { pluginId, engineName }) => {
-			const plugin = this.getPlugin(pluginId)
+		return Promise.all(engines.reduce((acc, { pluginUid, engineName }) => {
+			const plugin = this.getPlugin(pluginUid)
 			if (!plugin) { return acc }
 
 			const engine = plugin.searchEngines.find(({ name }) => name === engineName)
