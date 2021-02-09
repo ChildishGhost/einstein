@@ -1,23 +1,18 @@
 const VOID_TRIGGER = ''
 
 type Suggestion = {
-	title: string
-	description?: string
-	icon?: string
 	id: string
-}
-
-type Hint = {
 	title: string
 	description?: string
 	icon?: string
+	completion?: string
+	event?: {
+		name?: string
+		data?: any
+	}
 }
 
-type SearchResult = {
-	suggestions: Suggestion[]
-	hint?: Hint
-	completion?: string
-}
+type SearchResult = Suggestion[]
 
 interface ISearchEngine {
 	readonly name: string
@@ -28,17 +23,16 @@ interface ISearchEngine {
 abstract class BaseSearchEngine implements ISearchEngine {
 	abstract get name(): string
 
-	abstract get triggers (): string[]
+	abstract get triggers(): string[]
 
 	async search(_term: string, _trigger?: string): Promise<SearchResult> {
-		return { suggestions: [] }
+		return []
 	}
 }
 
 export {
 	VOID_TRIGGER,
 	Suggestion,
-	Hint,
 	SearchResult,
 	ISearchEngine,
 	BaseSearchEngine,

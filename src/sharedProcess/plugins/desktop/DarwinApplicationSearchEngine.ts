@@ -40,14 +40,12 @@ export default class DarwinApplicationSearchEngine extends BaseSearchEngine {
 			.search(term, { limit: 10 })
 			.map(({ item }) => (item))
 
-		return {
-			suggestions: result.map(({ name, path, icon }) => ({
-				id: path,
-				title: name,
-				description: path,
-				icon,
-			} as Suggestion)),
-		}
+		return result.map(({ name, path, icon }) => ({
+			id: path,
+			title: name,
+			description: path,
+			icon,
+		} as Suggestion))
 	}
 
 	private async loadApplications() {

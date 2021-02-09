@@ -36,6 +36,8 @@ type LinuxDesktopApplicationPreSearch = {
 export default class LinuxDesktopApplicationSearchEngine extends BaseSearchEngine {
 	private desktopFiles: Record<string, LinuxDesktopFile> = {}
 
+	private fuse: Fuse<LinuxDesktopApplicationPreSearch> = null
+
 	name = 'tw.childish.einstein.plugin.desktop.linux'
 
 	triggers = [ VOID_TRIGGER ]
@@ -43,32 +45,13 @@ export default class LinuxDesktopApplicationSearchEngine extends BaseSearchEngin
 	constructor() {
 		super()
 		this.loadDesktopFiles()
+		this.initFuse()
 		this.parseExecCommand()
 	}
 
 	async search(term: string, _trigger?: string): Promise<SearchResult> {
-		// flatten this.desktopFiles
-		const preSearch: LinuxDesktopApplicationPreSearch[] = Object.entries(
-			this.desktopFiles,
-		).reduce((acc, [ filename, file ]) => {
-			acc.push({
-				file: filename,
-				name: file['[Desktop Entry]'].Name,
-				exec: file['[Desktop Entry]'].Exec,
-				icon: file['[Desktop Entry]'].Icon,
-			})
-			return acc
-		}, [])
-
-		const fuse = new Fuse(preSearch, {
-			keys: [ 'file', 'name', 'exec' ],
-			includeScore: true,
-			findAllMatches: true,
-			threshold: 0.4,
-		})
-
 		// transform search results into Suggestion
-		const result = fuse.search(term as string).map(
+		const result = this.fuse.search(term as string).map(
 			({ item }) => ({
 				title: item.name,
 				description: item.exec,
@@ -76,9 +59,7 @@ export default class LinuxDesktopApplicationSearchEngine extends BaseSearchEngin
 			} as Suggestion),
 		)
 
-		return {
-			suggestions: result,
-		}
+		return result
 	}
 
 	private loadDesktopFiles = () => {
@@ -153,6 +134,28 @@ export default class LinuxDesktopApplicationSearchEngine extends BaseSearchEngin
 			}
 		})
 		console.log(this.desktopFiles)
+	}
+
+	private initFuse() {
+		// flatten this.desktopFiles
+		const preSearch: LinuxDesktopApplicationPreSearch[] = Object.entries(
+			this.desktopFiles,
+		).reduce((acc, [ filename, file ]) => {
+			acc.push({
+				file: filename,
+				name: file['[Desktop Entry]'].Name,
+				exec: file['[Desktop Entry]'].Exec,
+				icon: file['[Desktop Entry]'].Icon,
+			})
+			return acc
+		}, [])
+
+		this.fuse = new Fuse(preSearch, {
+			keys: [ 'file', 'name', 'exec' ],
+			includeScore: true,
+			findAllMatches: true,
+			threshold: 0.4,
+		})
 	}
 
 	private parseExecCommand = () => {
