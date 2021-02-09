@@ -1,24 +1,24 @@
 import { BasePlugin } from '@/api/plugin'
-import { ISearchEngine } from '@/api/searchEngine'
-import LinuxDesktopApplicationSearchEngine from '@/sharedProcess/plugins/desktop/desktop-linux'
+import LinuxDesktopApplicationSearchEngine from '@/sharedProcess/plugins/desktop/LinuxDesktopApplicationSearchEngine'
 import DarwinApplicationSearchEngine from '@/sharedProcess/plugins/desktop/DarwinApplicationSearchEngine'
+import IApplicationSearchEngine from '@/sharedProcess/plugins/desktop/IApplicationSearchEngine'
 
 const { platform } = process
 
 export default class DesktopApplicationsPlugin extends BasePlugin {
 	uid = 'tw.childish.einstein.plugin.desktop'
 
-	private mySearchEngines: ISearchEngine[] = []
+	private applicationSearchEngine: IApplicationSearchEngine = null
 
 	async setup() {
 		switch (platform) {
 		case 'linux':
-			this.mySearchEngines.push(new LinuxDesktopApplicationSearchEngine())
+			this.applicationSearchEngine = new LinuxDesktopApplicationSearchEngine()
 			break
 		case 'darwin': {
-			const darwinApp = new DarwinApplicationSearchEngine()
-			await darwinApp.setup()
-			this.mySearchEngines.push(darwinApp)
+			const darwinEngine = new DarwinApplicationSearchEngine()
+			await darwinEngine.setup()
+			this.applicationSearchEngine = darwinEngine
 			break
 		}
 		default:
@@ -26,6 +26,6 @@ export default class DesktopApplicationsPlugin extends BasePlugin {
 	}
 
 	get searchEngines() {
-		return this.mySearchEngines
+		return [ this.applicationSearchEngine ]
 	}
 }

@@ -62,6 +62,10 @@ export default class LinuxDesktopApplicationSearchEngine extends BaseSearchEngin
 		return result
 	}
 
+	async launchApp(_path: string) {
+		// TODO
+	}
+
 	private loadDesktopFiles = () => {
 		// ref: https://wiki.archlinux.org/index.php/Desktop_entries
 		const lookupDirs = [
