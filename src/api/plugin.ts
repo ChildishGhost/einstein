@@ -18,8 +18,13 @@ abstract class BasePlugin implements IPlugin {
 	abstract get searchEngines(): ISearchEngine[]
 }
 
+type WithPluginTagged<T> = T & {
+	pluginUid: UID,
+}
+
 export {
 	UID,
 	IPlugin,
 	BasePlugin,
+	WithPluginTagged,
 }

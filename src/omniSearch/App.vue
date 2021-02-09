@@ -24,6 +24,7 @@ import { SearchResult } from '@/api/searchEngine'
 import useWindowControl from '@/omniSearch/composables/useWindowControl'
 import ResultList from '@/omniSearch/components/ResultList.vue'
 import SearchBox from '@/omniSearch/components/SearchBox.vue'
+import { WithPluginTagged } from '@/api/plugin'
 
 export default defineComponent({
 	components: {
@@ -33,7 +34,7 @@ export default defineComponent({
 	setup() {
 		const { calculateDesiredSize, closeWindow } = useWindowControl(inject('$app'))
 		const searchTerm = ref('')
-		const searchResult = ref<SearchResult[]>([])
+		const searchResult = ref<WithPluginTagged<SearchResult>[]>([])
 		const searchBoxRef = ref()
 		const selectedItemIndex = ref(0)
 

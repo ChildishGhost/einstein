@@ -1,4 +1,4 @@
-import { IPlugin, UID } from '@/api/plugin'
+import { IPlugin, UID, WithPluginTagged } from '@/api/plugin'
 import { SearchResult, VOID_TRIGGER } from '@/api/searchEngine'
 
 type TriggerPointer = { pluginUid: UID, engineName: string }
@@ -82,7 +82,12 @@ class PluginManager {
 		const engine = plugin.searchEngines.find(({ name }) => name === engineName)
 		if (!engine) { return [] }
 
-		return await engine.search(term, trigger)
+		const result = await engine.search(term, trigger)
+
+		return result.map<WithPluginTagged<SearchResult>>((orig) => ({
+			...orig,
+			pluginUid,
+		}))
 	}
 }
 
