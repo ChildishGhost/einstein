@@ -3,8 +3,6 @@ import {
 } from 'electron'
 import useSharedProcess from '@/main/useSharedProcess'
 import useOmniSearch from '@/main/useOmniSearch'
-import PerformSearchReply from '@/common/types/PerformSearchReply'
-import PerformSearch from '@/common/types/PerformSearch'
 
 const { platform } = process
 
@@ -20,6 +18,17 @@ const registerShortcut = (win : BrowserWindow) => {
 		win.center()
 		win.show()
 		win.focus()
+	})
+}
+
+const registerMessageChannelPair = <T = any>(
+	listen: MessageChannel,
+	to: MessageChannel,
+	channelName: string,
+	toChannel: string = channelName,
+) => {
+	listen.register<T>(channelName, (data: T) => {
+		to.sendMessage(toChannel, data)
 	})
 }
 
@@ -42,14 +51,8 @@ const createApp = async () => {
 	} = await useOmniSearch()
 	registerShortcut(omniSearchWindow)
 
-	omniSearchChannel.register<PerformSearch>('search', ({ term }) => {
-		console.log(`search term: ${term}`)
-		sharedProcessChannel.sendMessage('plugin:performSearch', { term })
-	})
-	sharedProcessChannel.register<PerformSearchReply>('plugin:performSearch:reply', (data) => {
-		console.log(`search reply: [${data.term}] ${JSON.stringify(data.result)}`)
-		omniSearchChannel.sendMessage('searchResult', data)
-	})
+	registerMessageChannelPair(omniSearchChannel, sharedProcessChannel, 'search', 'plugin:performSearch')
+	registerMessageChannelPair(sharedProcessChannel, omniSearchChannel, 'plugin:performSearch:reply', 'searchResult')
 
 	return () => {
 		globalShortcut.unregisterAll()
