@@ -1,5 +1,5 @@
 <template>
-<div @mouseenter="$emit('hover')" :class="[ style.wrapper, { [style.hover]: hovered } ]">
+<div @mousemove="$emit('hover')" :class="[ style.wrapper, { [style.hover]: hovered } ]">
 	<div :class="style.container">
 		<aside :class="style.icon">
 			<img v-if="result.icon" :src="result.icon" />
