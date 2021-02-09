@@ -3,7 +3,6 @@ import Fuse from 'fuse.js'
 import {
 	BaseSearchEngine,
 	SearchResult,
-	Suggestion,
 	VOID_TRIGGER,
 } from '@/api/searchEngine'
 
@@ -56,9 +55,9 @@ export default class LinuxDesktopApplicationSearchEngine extends BaseSearchEngin
 		this.initFuse()
 	}
 
-	async search(term: string, _trigger?: string): Promise<SearchResult> {
-		// transform search results into Suggestion
-		const result = this.fuse.search(term as string).map(
+	async search(term: string, _trigger?: string): Promise<SearchResult[]> {
+		// transform search results into SearchResult
+		const result = this.fuse.search(term as string).map<SearchResult>(
 			({ item }) => ({
 				id: item.file,
 				title: item.name,
@@ -68,7 +67,7 @@ export default class LinuxDesktopApplicationSearchEngine extends BaseSearchEngin
 					name: item.exec,
 					data: item.action,
 				},
-			} as Suggestion),
+			}),
 		)
 
 		return result

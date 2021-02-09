@@ -2,7 +2,7 @@ import { SearchResult } from '@/api/searchEngine'
 
 type PerformSearchReply = {
 	term: string
-	result: SearchResult
+	result: SearchResult[]
 }
 
 export default PerformSearchReply

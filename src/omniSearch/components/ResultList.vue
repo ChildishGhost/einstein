@@ -16,7 +16,7 @@ import {
 	watch,
 } from 'vue'
 import ResultItem from '@/omniSearch/components/ResultItem.vue'
-import { Suggestion } from '@/api/searchEngine'
+import { SearchResult } from '@/api/searchEngine'
 
 export default defineComponent({
 	components: {
@@ -25,7 +25,7 @@ export default defineComponent({
 	props: {
 		results: {
 			type: Array,
-			default: () => [] as PropType<Suggestion[]>,
+			default: () => [] as PropType<SearchResult[]>,
 		},
 		modelValue: {
 			type: Number,

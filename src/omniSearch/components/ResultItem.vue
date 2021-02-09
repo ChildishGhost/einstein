@@ -17,13 +17,13 @@
 </template>
 
 <script lang="ts">
-import { Suggestion } from '@/api/searchEngine'
+import { SearchResult } from '@/api/searchEngine'
 import { defineComponent, PropType, useCssModule } from 'vue'
 
 export default defineComponent({
 	props: {
 		result: {
-			type: Object as PropType<Suggestion>,
+			type: Object as PropType<SearchResult>,
 		},
 		hovered: {
 			type: Boolean,

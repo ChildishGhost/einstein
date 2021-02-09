@@ -9,7 +9,7 @@ import {
 } from 'path'
 import Fuse from 'fuse.js'
 import { buffer as appIconAsBuffer } from 'file-icon'
-import { BaseSearchEngine, Suggestion, VOID_TRIGGER } from '@/api/searchEngine'
+import { BaseSearchEngine, SearchResult, VOID_TRIGGER } from '@/api/searchEngine'
 
 type Application = {
 	name: string
@@ -40,7 +40,7 @@ export default class DarwinApplicationSearchEngine extends BaseSearchEngine {
 			.search(term, { limit: 10 })
 			.map(({ item }) => (item))
 
-		return result.map<Suggestion>(({ name, path, icon }) => ({
+		return result.map<SearchResult>(({ name, path, icon }) => ({
 			id: path,
 			title: name,
 			description: path,

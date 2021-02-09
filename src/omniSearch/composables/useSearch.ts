@@ -12,7 +12,7 @@ import {
 export default () => {
 	const isReady = ref(false)
 	const term = ref('')
-	const result = ref([] as SearchResult)
+	const result = ref<SearchResult[]>([])
 	const resultHandler = (data: PerformSearchReply) => {
 		if (data.term === term.value) {
 			if (data.result) {
