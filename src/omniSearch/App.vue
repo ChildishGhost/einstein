@@ -9,7 +9,11 @@
 			@keydown.down.exact.prevent="moveCursor(1)"
 			/>
 	</div>
-	<ResultList v-if="searchTerm !== ''" :results="searchResult" />
+	<ResultList
+		v-if="searchTerm !== ''"
+		v-model="selectedItemIndex"
+		:results="searchResult"
+		/>
 </template>
 
 <script lang="ts">
@@ -29,6 +33,7 @@ export default defineComponent({
 		const { isReady, term, result } = useSearch()
 		const searchTerm = ref('')
 		const searchBoxRef = ref()
+		const selectedItemIndex = ref(0)
 
 		watch(searchTerm, (val, oldVal) => {
 			if (val === oldVal) { return }
@@ -50,7 +55,18 @@ export default defineComponent({
 
 		}
 
-		const completeInput = () => {}
+		const completeInput = () => {
+			if (selectedItemIndex.value >= result.value.length) { return }
+
+			const suggestion = result.value[selectedItemIndex.value]
+
+			if (suggestion.completion) {
+				searchTerm.value = suggestion.completion
+				return
+			}
+
+			searchTerm.value = suggestion.title
+		}
 
 		return {
 			style: useCssModule(),
@@ -60,6 +76,7 @@ export default defineComponent({
 			cancelSearch: closeWindow,
 			moveCursor,
 			completeInput,
+			selectedItemIndex,
 		}
 	},
 })

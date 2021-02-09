@@ -1,5 +1,5 @@
 <template>
-<div :class="style.wrapper">
+<div @mouseenter="$emit('hover')" :class="[ style.wrapper, { [style.hover]: hovered } ]">
 	<div :class="style.container">
 		<aside :class="style.icon">
 			<img v-if="result.icon" :src="result.icon" />
@@ -25,7 +25,12 @@ export default defineComponent({
 		result: {
 			type: Object as PropType<Suggestion>,
 		},
+		hovered: {
+			type: Boolean,
+			default: false,
+		},
 	},
+	emits: [ 'hover' ],
 	setup: () => ({
 		style: useCssModule(),
 	}),
@@ -36,7 +41,7 @@ export default defineComponent({
 .wrapper {
 	width: 100vw;
 
-	&.hover, &:hover {
+	&.hover {
 		background-color: rgba(255, 255, 255, 0.3);
 	}
 }
