@@ -1,26 +1,11 @@
 import {
-	app, BrowserWindow, globalShortcut, Menu, MenuItemConstructorOptions,
+	app, globalShortcut, Menu, MenuItemConstructorOptions,
 } from 'electron'
 import useSharedProcess from '@/main/useSharedProcess'
 import useOmniSearch from '@/main/useOmniSearch'
 import { MessageChannel } from '@/common/MessageChannel'
 
 const { platform } = process
-
-const registerShortcut = (win : BrowserWindow) => {
-	const keystroke = platform === 'linux' ? 'Alt+Space' : 'Ctrl+Space'
-
-	globalShortcut.register(keystroke, () => {
-		if (win.isVisible()) {
-			win.hide()
-			return
-		}
-
-		win.center()
-		win.show()
-		win.focus()
-	})
-}
 
 const registerMessageChannelPair = <T = any>(
 	listen: MessageChannel,
@@ -50,7 +35,6 @@ const createApp = async () => {
 		window: omniSearchWindow,
 		messageChannel: omniSearchChannel,
 	} = await useOmniSearch()
-	registerShortcut(omniSearchWindow)
 
 	registerMessageChannelPair(omniSearchChannel, sharedProcessChannel, 'search', 'plugin:performSearch')
 	registerMessageChannelPair(sharedProcessChannel, omniSearchChannel, 'plugin:performSearch:reply', 'searchResult')

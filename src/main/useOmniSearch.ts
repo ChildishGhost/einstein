@@ -1,4 +1,9 @@
-import { BrowserWindow, ipcMain, MessageChannelMain as ElectionMessageChannel } from 'electron'
+import {
+	BrowserWindow,
+	globalShortcut,
+	ipcMain,
+	MessageChannelMain as ElectionMessageChannel,
+} from 'electron'
 import { MessagePortMainProtocol, MessageChannel } from '@/common/MessageChannel.main'
 
 const ENTRY_URL = `file://${__dirname}/../renderer/omniSearch.html`
@@ -47,6 +52,19 @@ export default async () => {
 	})
 
 	messageChannel.register('closeWindow', () => window.hide())
+
+	const keystroke = platform === 'linux' ? 'Alt+Space' : 'Ctrl+Space'
+
+	globalShortcut.register(keystroke, () => {
+		if (window.isVisible() && window.isFocused()) {
+			window.hide()
+			return
+		}
+
+		window.center()
+		window.show()
+		window.focus()
+	})
 
 	return {
 		messageChannel,
