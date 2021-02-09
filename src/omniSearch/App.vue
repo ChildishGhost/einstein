@@ -46,8 +46,9 @@ export default defineComponent({
 			searchBoxRef.value.focus()
 		})
 
-		const moveCursor = (_offset: number) => {
-
+		const moveCursor = (offset: number) => {
+			const count = searchResult.value.length
+			selectedItemIndex.value = (selectedItemIndex.value + offset + count) % count
 		}
 
 		const completeInput = () => {
