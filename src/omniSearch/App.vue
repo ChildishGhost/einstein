@@ -7,6 +7,7 @@
 			@search:completion="completeInput"
 			@search:next="moveCursor(1)"
 			@search:previous="moveCursor(-1)"
+			@search:go="execute"
 			/>
 	</div>
 	<ResultList
@@ -21,6 +22,8 @@ import {
 	defineComponent, inject, nextTick, onMounted, ref, watch,
 } from 'vue'
 import { SearchResult } from '@/api/searchEngine'
+import { MessageChannel } from '@/common/MessageChannel'
+import PluginEvent from '@/common/types/PluginEvent'
 import useWindowControl from '@/omniSearch/composables/useWindowControl'
 import ResultList from '@/omniSearch/components/ResultList.vue'
 import SearchBox from '@/omniSearch/components/SearchBox.vue'
@@ -33,6 +36,7 @@ export default defineComponent({
 	},
 	setup() {
 		const { calculateDesiredSize, closeWindow: realCloseWindow } = useWindowControl(inject('$app'))
+		const withMessageChannel = inject<Promise<MessageChannel>>('$msg')
 		const searchTerm = ref('')
 		const searchResult = ref<WithPluginTagged<SearchResult>[]>([])
 		const searchBoxRef = ref()
@@ -68,6 +72,22 @@ export default defineComponent({
 			searchTerm.value = suggestion.title
 		}
 
+		const execute = () => {
+			if (selectedItemIndex.value >= searchResult.value.length) { return }
+
+			const suggestion = searchResult.value[selectedItemIndex.value]
+			if (!suggestion.event) { return }
+
+			withMessageChannel.then((msg) => {
+				msg.sendMessage<PluginEvent>('plugin:event', {
+					...suggestion.event,
+					pluginUid: suggestion.pluginUid,
+				})
+			})
+
+			closeWindow()
+		}
+
 		return {
 			closeWindow,
 			searchTerm,
@@ -76,6 +96,7 @@ export default defineComponent({
 			moveCursor,
 			completeInput,
 			selectedItemIndex,
+			execute,
 		}
 	},
 })

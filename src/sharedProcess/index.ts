@@ -1,9 +1,9 @@
 import Fuse from 'fuse.js'
-
 import PluginManager from '@/sharedProcess/PluginManager'
 import DesktopApplicationsPlugin from '@/sharedProcess/plugins/desktop'
 import useMessageChannel from '@/sharedProcess/useMessageChannel'
 import PerformSearchReply from '@/common/types/PerformSearchReply'
+import PluginEvent from '@/common/types/PluginEvent'
 
 const pluginManager = new PluginManager()
 
@@ -38,6 +38,13 @@ const pluginManager = new PluginManager()
 			term,
 			result: rankedResult,
 		})
+	})
+
+	messageChannel.register<PluginEvent>('plugin:event', async ({ pluginUid, type, data }) => {
+		const plugin = pluginManager.getPlugin(pluginUid)
+		if (!plugin) { return }
+
+		await plugin.onEvent(type, data)
 	})
 
 	messageChannel.sendMessage('plugin:initialized')

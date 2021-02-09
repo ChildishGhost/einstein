@@ -3,6 +3,7 @@ import {
 } from 'electron'
 import useSharedProcess from '@/main/useSharedProcess'
 import useOmniSearch from '@/main/useOmniSearch'
+import { MessageChannel } from '@/common/MessageChannel'
 
 const { platform } = process
 
@@ -53,6 +54,7 @@ const createApp = async () => {
 
 	registerMessageChannelPair(omniSearchChannel, sharedProcessChannel, 'search', 'plugin:performSearch')
 	registerMessageChannelPair(sharedProcessChannel, omniSearchChannel, 'plugin:performSearch:reply', 'searchResult')
+	registerMessageChannelPair(omniSearchChannel, sharedProcessChannel, 'plugin:event')
 
 	return () => {
 		globalShortcut.unregisterAll()

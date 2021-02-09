@@ -5,6 +5,7 @@ type UID = string
 interface IPlugin {
 	readonly uid: UID
 	setup(): Promise<void>
+	onEvent(type: string, data?: any): Promise<void>
 
 	readonly searchEngines: ISearchEngine[]
 }
@@ -14,6 +15,9 @@ abstract class BasePlugin implements IPlugin {
 
 	// eslint-disable-next-line no-empty-function
 	async setup() {}
+
+	// eslint-disable-next-line no-empty-function
+	async onEvent(_type: string, _data?: any) {}
 
 	abstract get searchEngines(): ISearchEngine[]
 }
