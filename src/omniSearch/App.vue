@@ -2,8 +2,8 @@
 	<div>
 		<SearchBox ref="searchBoxRef"
 			v-model="searchTerm"
-			@search:cancel="closeSearch"
 			@update:result="searchResult = $event"
+			@search:cancel="closeWindow"
 			@search:completion="completeInput"
 			@search:next="moveCursor(1)"
 			@search:previous="moveCursor(-1)"
@@ -32,11 +32,15 @@ export default defineComponent({
 		SearchBox,
 	},
 	setup() {
-		const { calculateDesiredSize, closeWindow } = useWindowControl(inject('$app'))
+		const { calculateDesiredSize, closeWindow: realCloseWindow } = useWindowControl(inject('$app'))
 		const searchTerm = ref('')
 		const searchResult = ref<WithPluginTagged<SearchResult>[]>([])
 		const searchBoxRef = ref()
 		const selectedItemIndex = ref(0)
+		const closeWindow = () => {
+			searchTerm.value = ''
+			realCloseWindow()
+		}
 
 		watch(searchResult, () => {
 			nextTick(calculateDesiredSize)
@@ -65,10 +69,10 @@ export default defineComponent({
 		}
 
 		return {
+			closeWindow,
 			searchTerm,
 			searchResult,
 			searchBoxRef,
-			cancelSearch: closeWindow,
 			moveCursor,
 			completeInput,
 			selectedItemIndex,
