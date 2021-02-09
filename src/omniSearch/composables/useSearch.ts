@@ -4,13 +4,14 @@ import PerformSearch from '@/common/types/PerformSearch'
 import PerformSearchReply from '@/common/types/PerformSearchReply'
 import {
 	inject,
+	onMounted,
 	onUnmounted,
 	ref,
 	watch,
 } from 'vue'
 
 export default () => {
-	const isReady = ref(false)
+	const withMessageChannel = inject<Promise<MessageChannel>>('$msg')
 	const term = ref('')
 	const result = ref<SearchResult[]>([])
 	const resultHandler = (data: PerformSearchReply) => {
@@ -22,28 +23,20 @@ export default () => {
 			}
 		}
 	}
-	let msg: MessageChannel = null
 
-	inject<Promise<MessageChannel>>('$msg').then((m) => {
-		msg = m
+	watch(term, (value) => withMessageChannel.then((msg) => {
+		msg.sendMessage<PerformSearch>('search', { term: value })
+	}))
+
+	onMounted(() => withMessageChannel.then((msg) => {
 		msg.register('searchResult', resultHandler)
-		isReady.value = true
-	})
+	}))
 
-	watch(term, (t) => {
-		if (isReady.value) {
-			msg.sendMessage<PerformSearch>('search', { term: t })
-		}
-	})
-
-	onUnmounted(() => {
-		if (msg) {
-			msg.unregister('searchResult', resultHandler)
-		}
-	})
+	onUnmounted(() => withMessageChannel.then((msg) => {
+		msg.unregister('searchResult', resultHandler)
+	}))
 
 	return {
-		isReady,
 		term,
 		result,
 	}
