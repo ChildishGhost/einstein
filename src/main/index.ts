@@ -3,6 +3,8 @@ import {
 } from 'electron'
 import useSharedProcess from '@/main/useSharedProcess'
 import useOmniSearch from '@/main/useOmniSearch'
+import PerformSearchReply from '@/common/types/PerformSearchReply'
+import PerformSearch from '@/common/types/PerformSearch'
 
 const { platform } = process
 
@@ -40,11 +42,11 @@ const createApp = async () => {
 	} = await useOmniSearch()
 	registerShortcut(omniSearchWindow)
 
-	omniSearchChannel.register('search', ({ term }) => {
+	omniSearchChannel.register<PerformSearch>('search', ({ term }) => {
 		console.log(`search term: ${term}`)
 		sharedProcessChannel.sendMessage('plugin:performSearch', { term })
 	})
-	sharedProcessChannel.register('plugin:performSearch:reply', (data) => {
+	sharedProcessChannel.register<PerformSearchReply>('plugin:performSearch:reply', (data) => {
 		console.log(`search reply: [${data.term}] ${JSON.stringify(data.result)}`)
 		omniSearchChannel.sendMessage('searchResult', data)
 	})

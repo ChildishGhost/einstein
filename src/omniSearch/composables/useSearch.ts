@@ -1,5 +1,6 @@
 import { SearchResult } from '@/api/searchEngine'
 import { MessageChannel } from '@/common/MessageChannel'
+import PerformSearch from '@/common/types/PerformSearch'
 import PerformSearchReply from '@/common/types/PerformSearchReply'
 import {
 	inject,
@@ -31,7 +32,7 @@ export default () => {
 
 	watch(term, (t) => {
 		if (isReady.value) {
-			msg.sendMessage('search', { term: t })
+			msg.sendMessage<PerformSearch>('search', { term: t })
 		}
 	})
 
