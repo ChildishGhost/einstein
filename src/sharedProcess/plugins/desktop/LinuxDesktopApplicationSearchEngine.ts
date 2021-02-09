@@ -31,7 +31,14 @@ type LinuxDesktopApplicationPreSearch = {
 	name: string
 	exec: string
 	icon?: string
+	action: boolean
 }
+
+const DESKTOP_ENTRY = '[Desktop Entry]'
+const DESKTOP_ACTION = '[Desktop Action'
+
+// eslint-disable-next-line max-len
+const isLaunchable = (groupName: string) => groupName === DESKTOP_ENTRY || groupName.startsWith(DESKTOP_ACTION)
 
 export default class LinuxDesktopApplicationSearchEngine extends BaseSearchEngine {
 	private desktopFiles: Record<string, LinuxDesktopFile> = {}
@@ -45,17 +52,22 @@ export default class LinuxDesktopApplicationSearchEngine extends BaseSearchEngin
 	constructor() {
 		super()
 		this.loadDesktopFiles()
+		this.sanitizeExecCommand()
 		this.initFuse()
-		this.parseExecCommand()
 	}
 
 	async search(term: string, _trigger?: string): Promise<SearchResult> {
 		// transform search results into Suggestion
 		const result = this.fuse.search(term as string).map(
 			({ item }) => ({
+				id: item.file,
 				title: item.name,
 				description: item.exec,
-				id: item.file,
+				completion: item.name,
+				event: {
+					name: item.exec,
+					data: item.action,
+				},
 			} as Suggestion),
 		)
 
@@ -86,8 +98,6 @@ export default class LinuxDesktopApplicationSearchEngine extends BaseSearchEngin
 				}
 			}
 		})
-		console.log(`collected ${desktopFiles.length} files`)
-		console.log(desktopFiles)
 
 		// read and parse .desktop file
 		// ref: https://specifications.freedesktop.org/desktop-entry-spec/latest/ar01s03.html
@@ -133,10 +143,16 @@ export default class LinuxDesktopApplicationSearchEngine extends BaseSearchEngin
 			})
 
 			// drop ill-formed desktop files
-			if (!('[Desktop Entry]' in this.desktopFiles[file])) {
+			// [Desktop Entry] and Exec must be present
+			if (
+				!(DESKTOP_ENTRY in this.desktopFiles[file])
+				|| !('Exec' in this.desktopFiles[file][DESKTOP_ENTRY])
+			) {
+				console.log(`ill-formed .desktop file found: ${file}, dropping`)
 				delete this.desktopFiles[file]
 			}
 		})
+		console.log(`collected ${Object.keys(this.desktopFiles).length} files`)
 		console.log(this.desktopFiles)
 	}
 
@@ -145,14 +161,25 @@ export default class LinuxDesktopApplicationSearchEngine extends BaseSearchEngin
 		const preSearch: LinuxDesktopApplicationPreSearch[] = Object.entries(
 			this.desktopFiles,
 		).reduce((acc, [ filename, file ]) => {
-			acc.push({
-				file: filename,
-				name: file['[Desktop Entry]'].Name,
-				exec: file['[Desktop Entry]'].Exec,
-				icon: file['[Desktop Entry]'].Icon,
+			Object.entries(file).forEach(([ group, _ ]) => {
+				if (isLaunchable(group)) {
+					const isAction = group.startsWith(DESKTOP_ACTION)
+					acc.push({
+						file: filename,
+						name: isAction
+							? `${file[DESKTOP_ENTRY].Name}: ${file[group].Name}`
+							: file[DESKTOP_ENTRY].Name,
+						exec: file[DESKTOP_ENTRY].Exec,
+						icon: file[DESKTOP_ENTRY].Icon,
+						action: isAction,
+					})
+				}
 			})
 			return acc
 		}, [])
+
+		console.log('presearch:')
+		console.log(preSearch)
 
 		this.fuse = new Fuse(preSearch, {
 			keys: [ 'file', 'name', 'exec' ],
@@ -162,11 +189,28 @@ export default class LinuxDesktopApplicationSearchEngine extends BaseSearchEngin
 		})
 	}
 
-	private parseExecCommand = () => {
-		// not implemented
+	private sanitizeExecCommand = () => {
 		// Recognized desktop entry keys
 		// The Exec key
+		//
 		// https://specifications.freedesktop.org/desktop-entry-spec/latest/ar01s06.html
 		// https://specifications.freedesktop.org/desktop-entry-spec/latest/ar01s07.html
+
+		// Additional applications actions
+		//
+		// The action group is a group named Desktop Action %s, where %s is the action identifier.
+		// https://specifications.freedesktop.org/desktop-entry-spec/latest/ar01s11.html
+		const sanitize = (exec: string) => exec.replace(/%[FfUuDdNnickvm]/gm, '')
+
+		Object.entries(this.desktopFiles).forEach(([ filename, file ]) => {
+			Object.entries(file).forEach(([ group, section ]) => {
+				if (isLaunchable(group)) {
+					if (section.Exec.includes('%')) {
+						// we don't pass parameters into the Exec command from the frontend, remove them all
+						this.desktopFiles[filename][group].Exec = sanitize(section.Exec)
+					}
+				}
+			})
+		})
 	}
 }
