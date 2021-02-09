@@ -8,6 +8,7 @@ import {
 
 import * as fs from 'fs'
 import * as os from 'os'
+import EventType from '@/sharedProcess/plugins/desktop/EventType'
 /*
 file = {
 	content: "<file content>"      // string -> string
@@ -64,8 +65,11 @@ export default class LinuxDesktopApplicationSearchEngine extends BaseSearchEngin
 				description: item.exec,
 				completion: item.name,
 				event: {
-					type: item.exec,
-					data: item.action,
+					type: EventType.EXECUTE_APPLICATION,
+					data: {
+						exec: item.exec,
+						action: item.action,
+					},
 				},
 			}),
 		)

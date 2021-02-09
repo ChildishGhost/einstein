@@ -10,6 +10,7 @@ import {
 import Fuse from 'fuse.js'
 import { buffer as appIconAsBuffer } from 'file-icon'
 import { BaseSearchEngine, SearchResult, VOID_TRIGGER } from '@/api/searchEngine'
+import EventType from '@/sharedProcess/plugins/desktop/EventType'
 
 type Application = {
 	name: string
@@ -46,7 +47,7 @@ export default class DarwinApplicationSearchEngine extends BaseSearchEngine {
 			description: path,
 			icon,
 			event: {
-				type: 'executeApplication',
+				type: EventType.EXECUTE_APPLICATION,
 				data: path,
 			},
 		}))
