@@ -17,13 +17,7 @@ const pluginManager = new PluginManager()
 	messageChannel.register('plugin:performSearch', async ({ term }) => {
 		const results = await pluginManager.search(term)
 
-		// TODO: aggregate hint and completions?
-		const mergedResult = results.reduce((acc, suggestions) => {
-			acc.push(...suggestions)
-			return acc
-		}, [])
-
-		const fuse = new Fuse(mergedResult, {
+		const fuse = new Fuse(results, {
 			keys: [ 'title', 'description' ],
 			includeScore: true,
 			findAllMatches: true,
@@ -37,7 +31,7 @@ const pluginManager = new PluginManager()
 		const rankedResult = fuse.search(fuzzTerm, { limit: 10 }).map(({ item }) => item)
 
 		console.log(`Fuzzing on: ${fuzzTerm}`)
-		console.log(mergedResult)
+		console.log(results)
 		console.log(rankedResult)
 
 		messageChannel.sendMessage<PerformSearchReply>('plugin:performSearch:reply', {

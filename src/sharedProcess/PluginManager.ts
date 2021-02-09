@@ -69,7 +69,7 @@ class PluginManager {
 			acc.push(engine.search(term, trigger))
 
 			return acc
-		}, [] as Promise<SearchResult>[]))
+		}, [] as Promise<SearchResult>[])).then((acc) => acc.flat())
 	}
 }
 
