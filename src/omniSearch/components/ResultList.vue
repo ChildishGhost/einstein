@@ -39,6 +39,7 @@ export default defineComponent({
 		const hoveredIndex = ref(props.modelValue)
 
 		const hoverItem = (idx: number) => {
+			if (idx === hoveredIndex.value) { return }
 			hoveredIndex.value = idx
 			emit('update:modelValue', idx)
 		}
