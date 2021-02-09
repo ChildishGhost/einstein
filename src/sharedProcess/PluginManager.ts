@@ -58,18 +58,31 @@ class PluginManager {
 		return this.plugins.find(({ uid: id }) => id === uid)
 	}
 
-	private performSearch(engines: TriggerPointer[], term: string, trigger: string = VOID_TRIGGER) {
-		return Promise.all(engines.reduce((acc, { pluginUid, engineName }) => {
-			const plugin = this.getPlugin(pluginUid)
-			if (!plugin) { return acc }
+	private async performSearch(
+		engines: TriggerPointer[],
+		term: string,
+		trigger: string = VOID_TRIGGER,
+	) {
+		const results = await Promise.all(engines.map(({ pluginUid, engineName }) => (
+			this.performSearchOnPlugin(pluginUid, engineName, term, trigger)
+		)))
 
-			const engine = plugin.searchEngines.find(({ name }) => name === engineName)
-			if (!engine) { return acc }
+		return results.flat()
+	}
 
-			acc.push(engine.search(term, trigger))
+	private async performSearchOnPlugin(
+		pluginUid: UID,
+		engineName: string,
+		term: string,
+		trigger: string,
+	) {
+		const plugin = this.getPlugin(pluginUid)
+		if (!plugin) { return [] }
 
-			return acc
-		}, [] as Promise<SearchResult>[])).then((acc) => acc.flat())
+		const engine = plugin.searchEngines.find(({ name }) => name === engineName)
+		if (!engine) { return [] }
+
+		return await engine.search(term, trigger)
 	}
 }
 
