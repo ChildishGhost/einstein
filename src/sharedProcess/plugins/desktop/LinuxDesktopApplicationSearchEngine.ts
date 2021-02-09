@@ -77,7 +77,7 @@ export default class LinuxDesktopApplicationSearchEngine extends BaseSearchEngin
 		return result
 	}
 
-	async launchApp(_path: string) {
+	async launchApp(_identifier: { exec: string, action: boolean }) {
 		// TODO
 	}
 

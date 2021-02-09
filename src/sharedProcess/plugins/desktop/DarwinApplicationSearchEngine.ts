@@ -1,3 +1,4 @@
+import { shell } from 'electron'
 import { homedir } from 'os'
 import {
 	existsSync as fileExists,
@@ -53,8 +54,8 @@ export default class DarwinApplicationSearchEngine extends BaseSearchEngine {
 		}))
 	}
 
-	async launchApp(_path: string) {
-		// TODO
+	async launchApp(path: string) {
+		await shell.openPath(path)
 	}
 
 	private async loadApplications() {

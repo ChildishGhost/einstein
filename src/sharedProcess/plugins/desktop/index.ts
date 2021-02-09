@@ -1,4 +1,5 @@
 import { BasePlugin } from '@/api/plugin'
+import EventType from '@/sharedProcess/plugins/desktop/EventType'
 import LinuxDesktopApplicationSearchEngine from '@/sharedProcess/plugins/desktop/LinuxDesktopApplicationSearchEngine'
 import DarwinApplicationSearchEngine from '@/sharedProcess/plugins/desktop/DarwinApplicationSearchEngine'
 import IApplicationSearchEngine from '@/sharedProcess/plugins/desktop/IApplicationSearchEngine'
@@ -23,6 +24,16 @@ export default class DesktopApplicationsPlugin extends BasePlugin {
 		}
 		default:
 		}
+	}
+
+	onEvent(type: string, data?: any) {
+		switch (type as EventType) {
+		case 'executeApplication':
+			return this.applicationSearchEngine.launchApp(data)
+		default:
+		}
+
+		return Promise.resolve()
 	}
 
 	get searchEngines() {
