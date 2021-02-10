@@ -49,6 +49,7 @@ type LinuxDesktopApplicationIdentifier = {
 
 const DESKTOP_ENTRY = '[Desktop Entry]'
 const DESKTOP_ACTION = '[Desktop Action'
+const TERMINAL_EMULATOR = 'urxvtc -e'
 
 // eslint-disable-next-line max-len
 const isLaunchable = (groupName: string) => groupName === DESKTOP_ENTRY || groupName.startsWith(DESKTOP_ACTION)
@@ -95,8 +96,11 @@ export default class LinuxDesktopApplicationSearchEngine extends BaseSearchEngin
 		console.log(`spawning: ${file}: ${group} ${action}`)
 		console.log(this.desktopFiles[file][group].Exec)
 
+		// use TERMINAL_EMULATOR to launch app if Terminal is set to true
 		cpExec(
-			this.desktopFiles[file][group].Exec,
+			this.desktopFiles[file][group].Terminal === 'true'
+				? `${TERMINAL_EMULATOR} '${this.desktopFiles[file][group].Exec}'`
+				: this.desktopFiles[file][group].Exec,
 			{ env: process.env },
 			(error: Error, _stdout: string, stderr: string) => {
 				if (error) {
