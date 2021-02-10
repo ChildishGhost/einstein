@@ -72,7 +72,7 @@ export default class DarwinApplicationSearchEngine extends BaseSearchEngine {
 				.filter(({ name }) => name.match(/\.app$/))
 				.filter((dirent) => dirent.isDirectory())
 				.map(({ name }) => ({
-					name,
+					name: name.replace(/\.app$/, ''),
 					path: pathJoin(path, name),
 				})))
 
