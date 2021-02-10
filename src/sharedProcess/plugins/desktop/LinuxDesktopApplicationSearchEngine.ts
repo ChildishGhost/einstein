@@ -33,6 +33,10 @@ type LinuxDesktopApplicationPreSearch = {
 	name: string
 	exec: string
 	icon?: string
+	keywords?: string
+	comment?: string
+	categories?: string
+	genericName?: string
 	action: boolean
 }
 
@@ -196,6 +200,10 @@ export default class LinuxDesktopApplicationSearchEngine extends BaseSearchEngin
 							: file[DESKTOP_ENTRY].Name,
 						exec: file[group].Exec,
 						icon: file[group].Icon,
+						keywords: file[group].Keywords,
+						comment: file[group].Comment,
+						categories: file[group].Categories,
+						genericName: file[group].GenericName,
 						action: isAction,
 					})
 				}
@@ -207,7 +215,15 @@ export default class LinuxDesktopApplicationSearchEngine extends BaseSearchEngin
 		console.log(preSearch)
 
 		this.fuse = new Fuse(preSearch, {
-			keys: [ 'file', 'name', 'exec' ],
+			keys: [
+				'file',
+				'name',
+				'exec',
+				'keyword',
+				'comment',
+				'categories',
+				'genericName',
+			],
 			includeScore: true,
 			findAllMatches: true,
 			threshold: 0.4,
