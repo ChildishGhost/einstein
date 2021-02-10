@@ -77,10 +77,10 @@ export default class LinuxDesktopApplicationSearchEngine extends BaseSearchEngin
 		return result
 	}
 
-	async launchApp(_identifier: { exec: string; action: boolean }) {
-		console.log(`spawning: ${_identifier.exec}`)
+	async launchApp(identifier: { exec: string; action: boolean }) {
+		console.log(`spawning: ${identifier.exec}`)
 		cpExec(
-			_identifier.exec,
+			identifier.exec,
 			{ env: process.env },
 			(error: Error, _stdout: string, stderr: string) => {
 				if (error) {
