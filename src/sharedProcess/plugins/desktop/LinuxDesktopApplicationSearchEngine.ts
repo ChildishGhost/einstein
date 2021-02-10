@@ -49,7 +49,6 @@ type LinuxDesktopApplicationIdentifier = {
 
 const DESKTOP_ENTRY = '[Desktop Entry]'
 const DESKTOP_ACTION = '[Desktop Action'
-const TERMINAL_EMULATOR = 'urxvtc -e'
 
 // eslint-disable-next-line max-len
 const isLaunchable = (groupName: string) => groupName === DESKTOP_ENTRY || groupName.startsWith(DESKTOP_ACTION)
@@ -63,10 +62,13 @@ export default class LinuxDesktopApplicationSearchEngine extends BaseSearchEngin
 
 	triggers = [ VOID_TRIGGER ]
 
+	TERMINAL_EMULATOR: string = 'urxvtc -e'
+
 	constructor() {
 		super()
 		this.loadDesktopFiles()
 		this.sanitizeExecCommand()
+		this.inferTerminalEmulator()
 		this.initFuse()
 	}
 
@@ -99,7 +101,7 @@ export default class LinuxDesktopApplicationSearchEngine extends BaseSearchEngin
 		// use TERMINAL_EMULATOR to launch app if Terminal is set to true
 		cpExec(
 			this.desktopFiles[file][group].Terminal === 'true'
-				? `${TERMINAL_EMULATOR} '${this.desktopFiles[file][group].Exec}'`
+				? `${this.TERMINAL_EMULATOR} '${this.desktopFiles[file][group].Exec}'`
 				: this.desktopFiles[file][group].Exec,
 			{ env: process.env },
 			(error: Error, _stdout: string, stderr: string) => {
@@ -271,5 +273,30 @@ export default class LinuxDesktopApplicationSearchEngine extends BaseSearchEngin
 				}
 			})
 		})
+	}
+
+	private inferTerminalEmulator = () => {
+		const basename = (path: string) => path.split('/').reverse()[0]
+
+		const availableTerminalEmulators = Object.values(this.desktopFiles)
+			.filter((file) => {
+				if (!('Categories' in file[DESKTOP_ENTRY])) {
+					return false
+				}
+				return file[DESKTOP_ENTRY].Categories.includes('TerminalEmulator')
+			})
+			// basename of Exec command
+			.map(({ [DESKTOP_ENTRY]: { Exec } }) => basename(Exec))
+
+		// allowlisting for supported terminal emulators
+		if (availableTerminalEmulators.includes('urxvtc')) {
+			this.TERMINAL_EMULATOR = 'urxvtc -e'
+		} else if (availableTerminalEmulators.includes('gnome-terminal')) {
+			this.TERMINAL_EMULATOR = 'gnome-terminal --'
+		} else if (availableTerminalEmulators.includes('uxterm')) {
+			this.TERMINAL_EMULATOR = 'uxterm -e'
+		} else if (availableTerminalEmulators.includes('xterm')) {
+			this.TERMINAL_EMULATOR = 'xterm -e'
+		}
 	}
 }
