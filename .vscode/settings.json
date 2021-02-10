@@ -1,13 +1,13 @@
 {
     "editor.defaultFormatter": "rvest.vs-code-prettier-eslint",
+    "editor.formatOnSave": true,
     "javascript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBrackets": true,
     "javascript.preferences.quoteStyle": "single",
+    "prettier.requireConfig": true,
     "typescript.format.semicolons": "remove",
     "typescript.preferences.importModuleSpecifierEnding": "minimal",
     "typescript.preferences.quoteStyle": "single",
-    "prettier.requireConfig": true,
     "[typescript]": {
         "editor.defaultFormatter": "rvest.vs-code-prettier-eslint"
-    },
-    "editor.formatOnSave": true
+    }
 }
