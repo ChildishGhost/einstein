@@ -5,10 +5,12 @@ import {
 	SearchResult,
 	VOID_TRIGGER,
 } from '@/api/searchEngine'
+import EventType from '@/sharedProcess/plugins/desktop/EventType'
 
 import * as fs from 'fs'
 import * as os from 'os'
-import EventType from '@/sharedProcess/plugins/desktop/EventType'
+import { exec as cpExec } from 'child_process'
+
 /*
 file = {
 	content: "<file content>"      // string -> string
@@ -58,27 +60,37 @@ export default class LinuxDesktopApplicationSearchEngine extends BaseSearchEngin
 
 	async search(term: string, _trigger?: string): Promise<SearchResult[]> {
 		// transform search results into SearchResult
-		const result = this.fuse.search(term as string).map<SearchResult>(
-			({ item }) => ({
-				id: item.file,
-				title: item.name,
-				description: item.exec,
-				completion: item.name,
-				event: {
-					type: EventType.EXECUTE_APPLICATION,
-					data: {
-						exec: item.exec,
-						action: item.action,
-					},
+		const result = this.fuse.search(term).map<SearchResult>(({ item }) => ({
+			id: item.file,
+			title: item.name,
+			description: item.exec,
+			completion: item.name,
+			event: {
+				type: EventType.EXECUTE_APPLICATION,
+				data: {
+					exec: item.exec,
+					action: item.action,
 				},
-			}),
-		)
+			},
+		}))
 
 		return result
 	}
 
-	async launchApp(_identifier: { exec: string, action: boolean }) {
-		// TODO
+	async launchApp(_identifier: { exec: string; action: boolean }) {
+		console.log(`spawning: ${_identifier.exec}`)
+		cpExec(
+			_identifier.exec,
+			{ env: process.env },
+			(error: Error, _stdout: string, stderr: string) => {
+				if (error) {
+					console.log(error)
+				}
+				if (stderr) {
+					console.log(stderr)
+				}
+			},
+		)
 	}
 
 	private loadDesktopFiles = () => {
@@ -111,8 +123,8 @@ export default class LinuxDesktopApplicationSearchEngine extends BaseSearchEngin
 		// Lines beginning with a # and blank lines are considered comments and will be ignored
 		//
 		// Group headers
-		// A group header with name groupname is a line in the format:
-		// [groupname]
+		// A group header with name groupName is a line in the format:
+		// [groupName]
 		//
 		// Entries
 		// Entries in the file are {key,value} pairs in the format:
@@ -132,7 +144,9 @@ export default class LinuxDesktopApplicationSearchEngine extends BaseSearchEngin
 					currentGroup = cur
 					return
 				}
-				const [ k, v ]: string[] = cur.split('=')
+				// Exec may contains more than one =
+				// e.g. Exec=foo --name=bar
+				const [ k, ...v ]: string[] = cur.split('=')
 				// this.desktopFiles[file][currentGroup]
 				if (!(currentGroup in this.desktopFiles[file])) {
 					this.desktopFiles[file][currentGroup] = {} as Record<string, string>
@@ -142,7 +156,7 @@ export default class LinuxDesktopApplicationSearchEngine extends BaseSearchEngin
 					string,
 					string
 				>
-				entries[k] = v
+				entries[k] = v.join('=')
 			})
 
 			// drop ill-formed desktop files
@@ -172,8 +186,8 @@ export default class LinuxDesktopApplicationSearchEngine extends BaseSearchEngin
 						name: isAction
 							? `${file[DESKTOP_ENTRY].Name}: ${file[group].Name}`
 							: file[DESKTOP_ENTRY].Name,
-						exec: file[DESKTOP_ENTRY].Exec,
-						icon: file[DESKTOP_ENTRY].Icon,
+						exec: file[group].Exec,
+						icon: file[group].Icon,
 						action: isAction,
 					})
 				}
@@ -181,7 +195,7 @@ export default class LinuxDesktopApplicationSearchEngine extends BaseSearchEngin
 			return acc
 		}, [])
 
-		console.log('presearch:')
+		console.log('preSearch:')
 		console.log(preSearch)
 
 		this.fuse = new Fuse(preSearch, {
@@ -210,7 +224,9 @@ export default class LinuxDesktopApplicationSearchEngine extends BaseSearchEngin
 				if (isLaunchable(group)) {
 					if (section.Exec.includes('%')) {
 						// we don't pass parameters into the Exec command from the frontend, remove them all
-						this.desktopFiles[filename][group].Exec = sanitize(section.Exec)
+						this.desktopFiles[filename][group].Exec = sanitize(
+							section.Exec,
+						).trim()
 					}
 				}
 			})
