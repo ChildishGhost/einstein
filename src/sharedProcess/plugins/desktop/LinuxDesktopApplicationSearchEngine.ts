@@ -186,8 +186,7 @@ export default class LinuxDesktopApplicationSearchEngine extends BaseSearchEngin
 				|| !('Exec' in thisDesktopEntry)
 				|| !('Type' in thisDesktopEntry)
 				|| thisDesktopEntry.Type !== 'Application'
-				|| ('NoDisplay' in thisDesktopEntry
-					&& thisDesktopEntry.NoDisplay === 'true')
+				|| thisDesktopEntry.NoDisplay === 'true'
 			) {
 				console.log(`ill-formed .desktop file found: ${file}, dropping`)
 				delete this.desktopFiles[file]
