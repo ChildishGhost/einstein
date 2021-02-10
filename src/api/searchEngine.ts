@@ -28,9 +28,4 @@ abstract class BaseSearchEngine implements ISearchEngine {
 	}
 }
 
-export {
-	VOID_TRIGGER,
-	SearchResult,
-	ISearchEngine,
-	BaseSearchEngine,
-}
+export { VOID_TRIGGER, SearchResult, ISearchEngine, BaseSearchEngine }

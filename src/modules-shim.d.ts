@@ -10,8 +10,5 @@ declare module 'file-icon' {
 	function file(identifier: Identifier, options?: Options): Promise<void>
 	function file(identifier: Identifier[], options?: Options): Promise<void>
 
-	export {
-		buffer,
-		file,
-	}
+	export { buffer, file }
 }

@@ -1,15 +1,9 @@
-import Fuse from 'fuse.js'
-
-import {
-	BaseSearchEngine,
-	SearchResult,
-	VOID_TRIGGER,
-} from '@/api/searchEngine'
+import { BaseSearchEngine, SearchResult, VOID_TRIGGER } from '@/api/searchEngine'
 import EventType from '@/sharedProcess/plugins/desktop/EventType'
-
-import * as fs from 'fs'
-import * as os from 'os'
 import { exec as cpExec } from 'child_process'
+import * as fs from 'fs'
+import Fuse from 'fuse.js'
+import * as os from 'os'
 
 /*
 file = {
@@ -74,22 +68,20 @@ export default class LinuxDesktopApplicationSearchEngine extends BaseSearchEngin
 
 	async search(term: string, _trigger?: string): Promise<SearchResult[]> {
 		// transform search results into SearchResult
-		const result = this.fuse
-			.search(term)
-			.map<SearchResult<LinuxDesktopApplicationIdentifier>>(({ item }) => ({
-				id: item.file,
-				title: item.name,
-				description: item.exec,
-				completion: item.name,
-				event: {
-					type: EventType.EXECUTE_APPLICATION,
-					data: {
-						file: item.file,
-						group: item.group,
-						action: item.action,
-					},
+		const result = this.fuse.search(term).map<SearchResult<LinuxDesktopApplicationIdentifier>>(({ item }) => ({
+			id: item.file,
+			title: item.name,
+			description: item.exec,
+			completion: item.name,
+			event: {
+				type: EventType.EXECUTE_APPLICATION,
+				data: {
+					file: item.file,
+					group: item.group,
+					action: item.action,
 				},
-			}))
+			},
+		}))
 
 		return result
 	}
@@ -129,9 +121,7 @@ export default class LinuxDesktopApplicationSearchEngine extends BaseSearchEngin
 			if (fs.existsSync(dir)) {
 				const stats = fs.statSync(dir)
 				if (stats.isDirectory()) {
-					desktopFiles.push(
-						...fs.readdirSync(dir).map((file) => `${dir}${file}`),
-					)
+					desktopFiles.push(...fs.readdirSync(dir).map((file) => `${dir}${file}`))
 				}
 			}
 		})
@@ -174,10 +164,7 @@ export default class LinuxDesktopApplicationSearchEngine extends BaseSearchEngin
 					this.desktopFiles[file][currentGroup] = {} as Record<string, string>
 				}
 
-				const entries = this.desktopFiles[file][currentGroup] as Record<
-					string,
-					string
-				>
+				const entries = this.desktopFiles[file][currentGroup] as Record<string, string>
 				entries[k] = v.join('=')
 			})
 
@@ -188,11 +175,11 @@ export default class LinuxDesktopApplicationSearchEngine extends BaseSearchEngin
 			const thisDesktopFile = this.desktopFiles[file]
 			const thisDesktopEntry = thisDesktopFile[DESKTOP_ENTRY]
 			if (
-				!(DESKTOP_ENTRY in thisDesktopFile)
-				|| !('Exec' in thisDesktopEntry)
-				|| !('Type' in thisDesktopEntry)
-				|| thisDesktopEntry.Type !== 'Application'
-				|| thisDesktopEntry.NoDisplay === 'true'
+				!(DESKTOP_ENTRY in thisDesktopFile) ||
+				!('Exec' in thisDesktopEntry) ||
+				!('Type' in thisDesktopEntry) ||
+				thisDesktopEntry.Type !== 'Application' ||
+				thisDesktopEntry.NoDisplay === 'true'
 			) {
 				console.log(`ill-formed .desktop file found: ${file}, dropping`)
 				delete this.desktopFiles[file]
@@ -204,44 +191,35 @@ export default class LinuxDesktopApplicationSearchEngine extends BaseSearchEngin
 
 	private initFuse() {
 		// flatten this.desktopFiles
-		const preSearch: LinuxDesktopApplicationPreSearch[] = Object.entries(
-			this.desktopFiles,
-		).reduce((acc, [ filename, file ]) => {
-			Object.entries(file).forEach(([ group, _ ]) => {
-				if (isLaunchable(group)) {
-					const isAction = group.startsWith(DESKTOP_ACTION)
-					acc.push({
-						file: filename,
-						name: isAction
-							? `${file[DESKTOP_ENTRY].Name}: ${file[group].Name}`
-							: file[DESKTOP_ENTRY].Name,
-						exec: file[group].Exec,
-						icon: file[group].Icon,
-						keywords: file[group].Keywords,
-						comment: file[group].Comment,
-						categories: file[group].Categories,
-						genericName: file[group].GenericName,
-						group,
-						action: isAction,
-					})
-				}
-			})
-			return acc
-		}, [])
+		const preSearch: LinuxDesktopApplicationPreSearch[] = Object.entries(this.desktopFiles).reduce(
+			(acc, [ filename, file ]) => {
+				Object.entries(file).forEach(([ group, _ ]) => {
+					if (isLaunchable(group)) {
+						const isAction = group.startsWith(DESKTOP_ACTION)
+						acc.push({
+							file: filename,
+							name: isAction ? `${file[DESKTOP_ENTRY].Name}: ${file[group].Name}` : file[DESKTOP_ENTRY].Name,
+							exec: file[group].Exec,
+							icon: file[group].Icon,
+							keywords: file[group].Keywords,
+							comment: file[group].Comment,
+							categories: file[group].Categories,
+							genericName: file[group].GenericName,
+							group,
+							action: isAction,
+						})
+					}
+				})
+				return acc
+			},
+			[],
+		)
 
 		console.log('preSearch:')
 		console.log(preSearch)
 
 		this.fuse = new Fuse(preSearch, {
-			keys: [
-				'file',
-				'name',
-				'exec',
-				'keyword',
-				'comment',
-				'categories',
-				'genericName',
-			],
+			keys: [ 'file', 'name', 'exec', 'keyword', 'comment', 'categories', 'genericName' ],
 			includeScore: true,
 			findAllMatches: true,
 			threshold: 0.4,
@@ -266,9 +244,7 @@ export default class LinuxDesktopApplicationSearchEngine extends BaseSearchEngin
 				if (isLaunchable(group)) {
 					if (section.Exec.includes('%')) {
 						// we don't pass parameters into the Exec command from the frontend, remove them all
-						this.desktopFiles[filename][group].Exec = sanitize(
-							section.Exec,
-						).trim()
+						this.desktopFiles[filename][group].Exec = sanitize(section.Exec).trim()
 					}
 				}
 			})

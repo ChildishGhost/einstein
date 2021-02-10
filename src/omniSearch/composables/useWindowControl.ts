@@ -1,13 +1,7 @@
-import {
-	inject,
-	onMounted,
-	reactive,
-	toRaw,
-	watch,
-} from 'vue'
 import { MessageChannel } from '@/common/MessageChannel'
+import { inject, onMounted, reactive, toRaw, watch } from 'vue'
 
-export default ($app : Element) => {
+export default ($app: Element) => {
 	const withMessageChannel = inject<Promise<MessageChannel>>('$msg')
 	const desiredSize = reactive({})
 
@@ -18,13 +12,15 @@ export default ($app : Element) => {
 		})
 	}
 
-	const resizeWindow = (size : any) => withMessageChannel.then((msg) => {
-		msg.sendMessage('resizeWindow', toRaw(size))
-	})
+	const resizeWindow = (size: any) =>
+		withMessageChannel.then((msg) => {
+			msg.sendMessage('resizeWindow', toRaw(size))
+		})
 
-	const closeWindow = () => withMessageChannel.then((msg) => {
-		msg.sendMessage('closeWindow')
-	})
+	const closeWindow = () =>
+		withMessageChannel.then((msg) => {
+			msg.sendMessage('closeWindow')
+		})
 
 	onMounted(() => calculateDesiredSize())
 	watch(desiredSize, resizeWindow)

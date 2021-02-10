@@ -1,22 +1,18 @@
-import {
-	BrowserWindow,
-	globalShortcut,
-	ipcMain,
-	MessageChannelMain as ElectionMessageChannel,
-} from 'electron'
-import { MessagePortMainProtocol, MessageChannel } from '@/common/MessageChannel.main'
+import { MessageChannel, MessagePortMainProtocol } from '@/common/MessageChannel.main'
+import { BrowserWindow, globalShortcut, ipcMain, MessageChannelMain as ElectionMessageChannel } from 'electron'
 
 const ENTRY_URL = `file://${__dirname}/../renderer/omniSearch.html`
 const { platform } = process
 
-const prepareMessageProtocol = () => new Promise<MessagePortMainProtocol>((resolve) => {
-	ipcMain.once('omniSearch:registerMessageChannel', ({ sender }, { nonce }) => {
-		const { port1: mainPort, port2: spPort } = new ElectionMessageChannel()
+const prepareMessageProtocol = () =>
+	new Promise<MessagePortMainProtocol>((resolve) => {
+		ipcMain.once('omniSearch:registerMessageChannel', ({ sender }, { nonce }) => {
+			const { port1: mainPort, port2: spPort } = new ElectionMessageChannel()
 
-		sender.postMessage('omniSearch:regieterMessageChannel:response', { nonce }, [ spPort ])
-		resolve(new MessagePortMainProtocol(mainPort))
+			sender.postMessage('omniSearch:regieterMessageChannel:response', { nonce }, [ spPort ])
+			resolve(new MessagePortMainProtocol(mainPort))
+		})
 	})
-})
 
 const createWindow = () => {
 	const window = new BrowserWindow({

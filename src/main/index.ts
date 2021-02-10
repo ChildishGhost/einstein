@@ -1,9 +1,7 @@
-import {
-	app, globalShortcut, Menu, MenuItemConstructorOptions,
-} from 'electron'
-import useSharedProcess from '@/main/useSharedProcess'
-import useOmniSearch from '@/main/useOmniSearch'
 import { MessageChannel } from '@/common/MessageChannel'
+import useOmniSearch from '@/main/useOmniSearch'
+import useSharedProcess from '@/main/useSharedProcess'
+import { app, globalShortcut, Menu, MenuItemConstructorOptions } from 'electron'
 
 const { platform } = process
 
@@ -19,10 +17,7 @@ const registerMessageChannelPair = <T = any>(
 }
 
 const createApp = async () => {
-	const {
-		window: sharedProcessWindow,
-		messageChannel: sharedProcessChannel,
-	} = await useSharedProcess()
+	const { window: sharedProcessWindow, messageChannel: sharedProcessChannel } = await useSharedProcess()
 
 	const pluginIsReady = new Promise<void>((resolve) => {
 		sharedProcessChannel.register('plugin:initialized', () => {
@@ -31,10 +26,7 @@ const createApp = async () => {
 	})
 	await pluginIsReady
 
-	const {
-		window: omniSearchWindow,
-		messageChannel: omniSearchChannel,
-	} = await useOmniSearch()
+	const { window: omniSearchWindow, messageChannel: omniSearchChannel } = await useOmniSearch()
 
 	registerMessageChannelPair(omniSearchChannel, sharedProcessChannel, 'search', 'plugin:performSearch')
 	registerMessageChannelPair(sharedProcessChannel, omniSearchChannel, 'plugin:performSearch:reply', 'searchResult')
@@ -58,7 +50,8 @@ const registerMenu = (restartCallback: MenuItemConstructorOptions['click']) => {
 				{ type: 'separator' },
 				{ role: 'quit' },
 			],
-		}, {
+		},
+		{
 			label: 'Edit',
 			submenu: [
 				{ role: 'undo' },

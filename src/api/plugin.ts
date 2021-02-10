@@ -23,12 +23,7 @@ abstract class BasePlugin implements IPlugin {
 }
 
 type WithPluginTagged<T> = T & {
-	pluginUid: UID,
+	pluginUid: UID
 }
 
-export {
-	UID,
-	IPlugin,
-	BasePlugin,
-	WithPluginTagged,
-}
+export { UID, IPlugin, BasePlugin, WithPluginTagged }

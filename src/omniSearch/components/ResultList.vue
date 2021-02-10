@@ -1,9 +1,10 @@
 <template>
-<ResultItem v-for="(result, idx) in results"
-	:key="idx"
-	:result="result"
-	:hovered="idx === hoveredIndex"
-	@hover="hoverItem(idx)"
+	<ResultItem
+		v-for="(result, idx) in results"
+		:key="idx"
+		:result="result"
+		:hovered="idx === hoveredIndex"
+		@hover="hoverItem(idx)"
 	/>
 </template>
 

@@ -1,7 +1,7 @@
 import { IPlugin, UID, WithPluginTagged } from '@/api/plugin'
 import { SearchResult, VOID_TRIGGER } from '@/api/searchEngine'
 
-type TriggerPointer = { pluginUid: UID, engineName: string }
+type TriggerPointer = { pluginUid: UID; engineName: string }
 
 class PluginManager {
 	private plugins: IPlugin[]
@@ -14,7 +14,7 @@ class PluginManager {
 	}
 
 	register(plugin: IPlugin): this {
-		if (this.plugins.find((({ uid }) => uid === plugin.uid))) {
+		if (this.plugins.find(({ uid }) => uid === plugin.uid)) {
 			return this // duplicated
 		}
 		this.plugins.push(plugin)
@@ -58,29 +58,24 @@ class PluginManager {
 		return this.plugins.find(({ uid: id }) => id === uid)
 	}
 
-	private async performSearch(
-		engines: TriggerPointer[],
-		term: string,
-		trigger: string = VOID_TRIGGER,
-	) {
-		const results = await Promise.all(engines.map(({ pluginUid, engineName }) => (
-			this.performSearchOnPlugin(pluginUid, engineName, term, trigger)
-		)))
+	private async performSearch(engines: TriggerPointer[], term: string, trigger: string = VOID_TRIGGER) {
+		const results = await Promise.all(
+			engines.map(({ pluginUid, engineName }) => this.performSearchOnPlugin(pluginUid, engineName, term, trigger)),
+		)
 
 		return results.flat()
 	}
 
-	private async performSearchOnPlugin(
-		pluginUid: UID,
-		engineName: string,
-		term: string,
-		trigger: string,
-	) {
+	private async performSearchOnPlugin(pluginUid: UID, engineName: string, term: string, trigger: string) {
 		const plugin = this.getPlugin(pluginUid)
-		if (!plugin) { return [] }
+		if (!plugin) {
+			return []
+		}
 
 		const engine = plugin.searchEngines.find(({ name }) => name === engineName)
-		if (!engine) { return [] }
+		if (!engine) {
+			return []
+		}
 
 		const result = await engine.search(term, trigger)
 

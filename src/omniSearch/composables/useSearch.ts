@@ -2,13 +2,7 @@ import { SearchResult } from '@/api/searchEngine'
 import { MessageChannel } from '@/common/MessageChannel'
 import PerformSearch from '@/common/types/PerformSearch'
 import PerformSearchReply from '@/common/types/PerformSearchReply'
-import {
-	inject,
-	onMounted,
-	onUnmounted,
-	ref,
-	watch,
-} from 'vue'
+import { inject, onMounted, onUnmounted, ref, watch } from 'vue'
 
 export default () => {
 	const withMessageChannel = inject<Promise<MessageChannel>>('$msg')
@@ -24,17 +18,23 @@ export default () => {
 		}
 	}
 
-	watch(term, (value) => withMessageChannel.then((msg) => {
-		msg.sendMessage<PerformSearch>('search', { term: value })
-	}))
+	watch(term, (value) =>
+		withMessageChannel.then((msg) => {
+			msg.sendMessage<PerformSearch>('search', { term: value })
+		}),
+	)
 
-	onMounted(() => withMessageChannel.then((msg) => {
-		msg.register('searchResult', resultHandler)
-	}))
+	onMounted(() =>
+		withMessageChannel.then((msg) => {
+			msg.register('searchResult', resultHandler)
+		}),
+	)
 
-	onUnmounted(() => withMessageChannel.then((msg) => {
-		msg.unregister('searchResult', resultHandler)
-	}))
+	onUnmounted(() =>
+		withMessageChannel.then((msg) => {
+			msg.unregister('searchResult', resultHandler)
+		}),
+	)
 
 	return {
 		term,

@@ -1,18 +1,16 @@
-import Fuse from 'fuse.js'
+import PerformSearchReply from '@/common/types/PerformSearchReply'
+import PluginEvent from '@/common/types/PluginEvent'
 import PluginManager from '@/sharedProcess/PluginManager'
 import DesktopApplicationsPlugin from '@/sharedProcess/plugins/desktop'
 import useMessageChannel from '@/sharedProcess/useMessageChannel'
-import PerformSearchReply from '@/common/types/PerformSearchReply'
-import PluginEvent from '@/common/types/PluginEvent'
+import Fuse from 'fuse.js'
 
 const pluginManager = new PluginManager()
 
 ;(async () => {
 	const messageChannel = await useMessageChannel()
 
-	await pluginManager
-		.register(new DesktopApplicationsPlugin())
-		.setup()
+	await pluginManager.register(new DesktopApplicationsPlugin()).setup()
 
 	messageChannel.register('plugin:performSearch', async ({ term }) => {
 		const results = await pluginManager.search(term)
@@ -25,8 +23,7 @@ const pluginManager = new PluginManager()
 		})
 
 		// use the rest of the search terms if trigger is set
-		const fuzzTerm = term.includes(' ')
-			? term.split(' ').slice(1).join(' ') : term
+		const fuzzTerm = term.includes(' ') ? term.split(' ').slice(1).join(' ') : term
 
 		const rankedResult = fuse.search(fuzzTerm, { limit: 10 }).map(({ item }) => item)
 
@@ -42,7 +39,9 @@ const pluginManager = new PluginManager()
 
 	messageChannel.register<PluginEvent>('plugin:event', async ({ pluginUid, type, data }) => {
 		const plugin = pluginManager.getPlugin(pluginUid)
-		if (!plugin) { return }
+		if (!plugin) {
+			return
+		}
 
 		await plugin.onEvent(type, data)
 	})

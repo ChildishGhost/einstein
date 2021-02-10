@@ -1,19 +1,19 @@
 <template>
-<div @mousemove="$emit('hover')" :class="[ style.wrapper, { [style.hover]: hovered } ]">
-	<div :class="style.container">
-		<aside :class="style.icon">
-			<img v-if="result.icon" :src="result.icon" />
-		</aside>
-		<main :class="style.main">
-			<h1 :class="style.title">
-				{{ result.title }}
-			</h1>
-			<div :class="style.description">
-				{{ result.description }}
-			</div>
-		</main>
+	<div @mousemove="$emit('hover')" :class="[style.wrapper, { [style.hover]: hovered }]">
+		<div :class="style.container">
+			<aside :class="style.icon">
+				<img v-if="result.icon" :src="result.icon" />
+			</aside>
+			<main :class="style.main">
+				<h1 :class="style.title">
+					{{ result.title }}
+				</h1>
+				<div :class="style.description">
+					{{ result.description }}
+				</div>
+			</main>
+		</div>
 	</div>
-</div>
 </template>
 
 <script lang="ts">
@@ -79,8 +79,8 @@ export default defineComponent({
 	color: #eee;
 	line-height: 24px;
 	white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .description {
@@ -88,7 +88,7 @@ export default defineComponent({
 	color: #999;
 	line-height: 16px;
 	white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 </style>

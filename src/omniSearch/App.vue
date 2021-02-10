@@ -1,6 +1,7 @@
 <template>
 	<div>
-		<SearchBox ref="searchBoxRef"
+		<SearchBox
+			ref="searchBoxRef"
 			v-model="searchTerm"
 			@update:result="searchResult = $event"
 			@search:cancel="closeWindow"
@@ -8,13 +9,9 @@
 			@search:next="moveCursor(1)"
 			@search:previous="moveCursor(-1)"
 			@search:go="execute"
-			/>
-	</div>
-	<ResultList
-		v-if="searchTerm !== ''"
-		v-model="selectedItemIndex"
-		:results="searchResult"
 		/>
+	</div>
+	<ResultList v-if="searchTerm !== ''" v-model="selectedItemIndex" :results="searchResult" />
 </template>
 
 <script lang="ts">

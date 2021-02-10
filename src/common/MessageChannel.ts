@@ -43,9 +43,13 @@ export class MessageChannel implements IMessageChannel {
 	}
 
 	unregister<T>(channel: string, handler: ChannelHandler<T>): void {
-		if (!this.handlers[channel]) { return }
+		if (!this.handlers[channel]) {
+			return
+		}
 		const index = this.handlers[channel].indexOf(handler)
-		if (index === -1) { return }
+		if (index === -1) {
+			return
+		}
 
 		this.handlers[channel].splice(index, 1)
 	}

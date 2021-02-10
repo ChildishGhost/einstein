@@ -1,12 +1,13 @@
 <template>
-<input ref="inputRef"
-	v-model="term"
-	:class="style.searchBox"
-	@keydown.esc.prevent="$emit('search:cancel')"
-	@keydown.tab.exact.prevent="$emit('search:completion')"
-	@keydown.up.exact.prevent="$emit('search:previous')"
-	@keydown.down.exact.prevent="$emit('search:next')"
-	@keydown.enter.exact.prevent="$emit('search:go')"
+	<input
+		ref="inputRef"
+		v-model="term"
+		:class="style.searchBox"
+		@keydown.esc.prevent="$emit('search:cancel')"
+		@keydown.tab.exact.prevent="$emit('search:completion')"
+		@keydown.up.exact.prevent="$emit('search:previous')"
+		@keydown.down.exact.prevent="$emit('search:next')"
+		@keydown.enter.exact.prevent="$emit('search:go')"
 	/>
 </template>
 
