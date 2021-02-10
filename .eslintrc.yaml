@@ -11,8 +11,12 @@ plugins:
 
 extends:
   - airbnb-base
-  - plugin:vue/vue3-essential
   - plugin:@typescript-eslint/eslint-recommended
+  - plugin:vue/vue3-essential
+  - prettier
+  - prettier/@typescript-eslint
+  - prettier/prettier
+  - prettier/vue
 
 parser: vue-eslint-parser
 parserOptions:
@@ -23,9 +27,12 @@ parserOptions:
     project: ./tsconfig.json
 
 rules:
+  # Replace eslint rules with @typescript-eslint
+  no-unused-vars: off
   '@typescript-eslint/no-unused-vars':
     - error
     - argsIgnorePattern: '^_'
+
   array-bracket-spacing:
     - error
     - always
@@ -42,7 +49,6 @@ rules:
     - tab
   max-classes-per-file: off
   no-tabs: off
-  no-unused-vars: off # use typescript rule
   semi:
     - error
     - never

@@ -1,2 +1,14 @@
+---
+# Suggested 120 words per line, we use modern wide-monitors now.
+printWidth: 120
+# Tabs will be used only for indentation,
+# and we use spaces to align things, such as in ternaries.
+tabWidth: 2
+useTabs: true
+# We add trailing comma on every place it can be placed,
+# which matches to Airbnb style
+# ref: https://github.com/airbnb/javascript#functions--signature-invocation-indentation
+trailingComma: all
+
 semi: false
 singleQuote: true
