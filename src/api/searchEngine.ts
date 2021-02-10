@@ -1,6 +1,6 @@
 const VOID_TRIGGER = ''
 
-type SearchResult = {
+type SearchResult<EventType = any> = {
 	id: string
 	title: string
 	description?: string
@@ -8,7 +8,7 @@ type SearchResult = {
 	completion?: string
 	event?: {
 		type: string
-		data?: any
+		data?: EventType
 	}
 }
 

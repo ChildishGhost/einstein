@@ -37,6 +37,13 @@ type LinuxDesktopApplicationPreSearch = {
 	comment?: string
 	categories?: string
 	genericName?: string
+	group: string
+	action: boolean
+}
+
+type LinuxDesktopApplicationIdentifier = {
+	file: string
+	group: string
 	action: boolean
 }
 
@@ -64,27 +71,32 @@ export default class LinuxDesktopApplicationSearchEngine extends BaseSearchEngin
 
 	async search(term: string, _trigger?: string): Promise<SearchResult[]> {
 		// transform search results into SearchResult
-		const result = this.fuse.search(term).map<SearchResult>(({ item }) => ({
-			id: item.file,
-			title: item.name,
-			description: item.exec,
-			completion: item.name,
-			event: {
-				type: EventType.EXECUTE_APPLICATION,
-				data: {
-					exec: item.exec,
-					action: item.action,
+		const result = this.fuse
+			.search(term)
+			.map<SearchResult<LinuxDesktopApplicationIdentifier>>(({ item }) => ({
+				id: item.file,
+				title: item.name,
+				description: item.exec,
+				completion: item.name,
+				event: {
+					type: EventType.EXECUTE_APPLICATION,
+					data: {
+						file: item.file,
+						group: item.group,
+						action: item.action,
+					},
 				},
-			},
-		}))
+			}))
 
 		return result
 	}
 
-	async launchApp(identifier: { exec: string; action: boolean }) {
-		console.log(`spawning: ${identifier.exec}`)
+	async launchApp({ file, group, action }: LinuxDesktopApplicationIdentifier) {
+		console.log(`spawning: ${file}: ${group} ${action}`)
+		console.log(this.desktopFiles[file][group].Exec)
+
 		cpExec(
-			identifier.exec,
+			this.desktopFiles[file][group].Exec,
 			{ env: process.env },
 			(error: Error, _stdout: string, stderr: string) => {
 				if (error) {
@@ -204,6 +216,7 @@ export default class LinuxDesktopApplicationSearchEngine extends BaseSearchEngin
 						comment: file[group].Comment,
 						categories: file[group].Categories,
 						genericName: file[group].GenericName,
+						group,
 						action: isAction,
 					})
 				}
