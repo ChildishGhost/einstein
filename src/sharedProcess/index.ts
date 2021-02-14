@@ -2,6 +2,7 @@ import PerformSearchReply from '@/common/types/PerformSearchReply'
 import PluginEvent from '@/common/types/PluginEvent'
 import PluginManager from '@/sharedProcess/PluginManager'
 import DesktopApplicationsPlugin from '@/sharedProcess/plugins/desktop'
+import PassPlugin from '@/sharedProcess/plugins/pass'
 import useMessageChannel from '@/sharedProcess/useMessageChannel'
 import Fuse from 'fuse.js'
 
@@ -10,7 +11,7 @@ const pluginManager = new PluginManager()
 ;(async () => {
 	const messageChannel = await useMessageChannel()
 
-	await pluginManager.register(new DesktopApplicationsPlugin()).setup()
+	await pluginManager.register(new DesktopApplicationsPlugin()).register(new PassPlugin()).setup()
 
 	messageChannel.register('plugin:performSearch', async ({ term }) => {
 		const results = await pluginManager.search(term)
