@@ -10,7 +10,9 @@ class PluginManager {
 
 	constructor() {
 		this.plugins = []
-		this.searchTriggers = {}
+		this.searchTriggers = {
+			[VOID_TRIGGER]: [],
+		}
 	}
 
 	register(plugin: IPlugin): this {
