@@ -44,7 +44,7 @@ export default class LinuxPassSearchEngine extends BaseSearchEngine {
 			id: item.file,
 			title: item.name,
 			description: item.file,
-			completion: item.name,
+			completion: `${this.triggers[0]} ${item.name}`,
 			event: {
 				type: 'pass',
 				data: {
