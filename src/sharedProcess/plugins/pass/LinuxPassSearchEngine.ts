@@ -1,5 +1,5 @@
 import { BaseSearchEngine, SearchResult } from '@/api/searchEngine'
-import { exec as cpExec } from 'child_process'
+import { exec } from '@/sharedProcess/utils'
 import * as fs from 'fs'
 import Fuse from 'fuse.js'
 import * as os from 'os'
@@ -67,25 +67,11 @@ export default class LinuxPassSearchEngine extends BaseSearchEngine {
 	}
 
 	async copyPassword({ file }: PassInput) {
-		cpExec(`pass -c ${file}`, { env: process.env }, (error: Error, _stdout: string, stderr: string) => {
-			if (error) {
-				console.log(error)
-			}
-			if (stderr) {
-				console.log(stderr)
-			}
-		})
+		exec(`pass -c ${file}`)
 	}
 
 	async showPasswordQR({ file }: PassInput) {
-		cpExec(`pass show -q ${file}`, { env: process.env }, (error: Error, _stdout: string, stderr: string) => {
-			if (error) {
-				console.log(error)
-			}
-			if (stderr) {
-				console.log(stderr)
-			}
-		})
+		exec(`pass show -q ${file}`)
 	}
 
 	private searchAndShow(term: string) {

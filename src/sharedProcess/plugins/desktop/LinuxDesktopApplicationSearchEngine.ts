@@ -1,6 +1,6 @@
 import { BaseSearchEngine, SearchResult, VOID_TRIGGER } from '@/api/searchEngine'
 import EventType from '@/sharedProcess/plugins/desktop/EventType'
-import { exec as cpExec } from 'child_process'
+import { exec } from '@/sharedProcess/utils'
 import * as fs from 'fs'
 import Fuse from 'fuse.js'
 import * as os from 'os'
@@ -91,19 +91,10 @@ export default class LinuxDesktopApplicationSearchEngine extends BaseSearchEngin
 		console.log(this.desktopFiles[file][group].Exec)
 
 		// use TERMINAL_EMULATOR to launch app if Terminal is set to true
-		cpExec(
+		exec(
 			this.desktopFiles[file][group].Terminal === 'true'
 				? `${this.TERMINAL_EMULATOR} '${this.desktopFiles[file][group].Exec}'`
 				: this.desktopFiles[file][group].Exec,
-			{ env: process.env },
-			(error: Error, _stdout: string, stderr: string) => {
-				if (error) {
-					console.log(error)
-				}
-				if (stderr) {
-					console.log(stderr)
-				}
-			},
 		)
 	}
 
@@ -237,7 +228,7 @@ export default class LinuxDesktopApplicationSearchEngine extends BaseSearchEngin
 		//
 		// The action group is a group named Desktop Action %s, where %s is the action identifier.
 		// https://specifications.freedesktop.org/desktop-entry-spec/latest/ar01s11.html
-		const sanitize = (exec: string) => exec.replace(/%[FfUuDdNnickvm]/gm, '')
+		const sanitize = (execCmd: string) => execCmd.replace(/%[FfUuDdNnickvm]/gm, '')
 
 		Object.entries(this.desktopFiles).forEach(([ filename, file ]) => {
 			Object.entries(file).forEach(([ group, section ]) => {
