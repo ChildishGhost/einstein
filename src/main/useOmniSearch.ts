@@ -31,10 +31,6 @@ const createWindow = () => {
 
 	window.loadURL(ENTRY_URL)
 
-	window.on('ready-to-show', () => {
-		window.webContents.openDevTools()
-	})
-
 	return window
 }
 

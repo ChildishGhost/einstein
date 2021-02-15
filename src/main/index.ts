@@ -32,14 +32,23 @@ const createApp = async () => {
 	registerMessageChannelPair(sharedProcessChannel, omniSearchChannel, 'plugin:performSearch:reply', 'searchResult')
 	registerMessageChannelPair(omniSearchChannel, sharedProcessChannel, 'plugin:event')
 
-	return () => {
-		globalShortcut.unregisterAll()
-		omniSearchWindow.destroy()
-		sharedProcessWindow.destroy()
+	return {
+		destroyApp: () => {
+			globalShortcut.unregisterAll()
+			omniSearchWindow.destroy()
+			sharedProcessWindow.destroy()
+		},
+		showDevTools: () => {
+			omniSearchWindow.webContents.openDevTools()
+			sharedProcessWindow.webContents.openDevTools()
+		},
 	}
 }
 
-const registerMenu = (restartCallback: MenuItemConstructorOptions['click']) => {
+const registerMenu = (
+	restartCallback: MenuItemConstructorOptions['click'],
+	showDevToolsCallback: MenuItemConstructorOptions['click'],
+) => {
 	const template: MenuItemConstructorOptions[] = [
 		{
 			label: platform === 'darwin' ? app.name : 'App',
@@ -47,6 +56,8 @@ const registerMenu = (restartCallback: MenuItemConstructorOptions['click']) => {
 				{ role: 'about' },
 				{ type: 'separator' },
 				{ label: 'Restart', accelerator: 'CommandOrControl+R', click: restartCallback },
+				{ type: 'separator' },
+				{ label: 'DevTools', accelerator: 'CommandOrControl+Shift+I', click: showDevToolsCallback },
 				{ type: 'separator' },
 				{ role: 'quit' },
 			],
@@ -70,12 +81,17 @@ const registerMenu = (restartCallback: MenuItemConstructorOptions['click']) => {
 }
 
 app.on('ready', async () => {
-	let destroyApp = await createApp()
+	let operation = await createApp() // eslint-disable-line prefer-const
 
-	registerMenu(async () => {
-		destroyApp()
-		destroyApp = await createApp()
-	})
+	registerMenu(
+		async () => {
+			operation.destroyApp()
+			operation = await createApp()
+		},
+		() => {
+			operation.showDevTools()
+		},
+	)
 })
 
 app.on('will-quit', () => {
