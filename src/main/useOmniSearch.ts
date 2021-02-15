@@ -23,6 +23,7 @@ const createWindow = () => {
 		frame: false,
 		type: platform === 'linux' ? 'toolbar' : null,
 		show: false,
+		alwaysOnTop: true,
 		webPreferences: {
 			nodeIntegration: true,
 		},
