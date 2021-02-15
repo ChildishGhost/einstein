@@ -14,6 +14,8 @@ export default class PassPlugin extends BasePlugin {
 		switch (type) {
 		case 'pass':
 			return this.passSearchEngine.copyPassword(data)
+		case 'pass show':
+			return this.passSearchEngine.showPasswordQR(data)
 		default:
 		}
 

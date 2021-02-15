@@ -24,6 +24,31 @@ export default class LinuxPassSearchEngine extends BaseSearchEngine {
 
 	triggers = [ 'pass' ]
 
+	private subCommand = [ 'show' ]
+
+	help = [
+		{
+			id: 'pass trigger help',
+			title: 'pass',
+			description: 'the standard unix password manager',
+			completion: 'pass',
+			event: {
+				type: 'noop',
+				data: {},
+			},
+		},
+		{
+			id: 'pass trigger help',
+			title: 'pass show',
+			description: 'show password in QR code',
+			completion: 'pass show',
+			event: {
+				type: 'noop',
+				data: {},
+			},
+		},
+	]
+
 	constructor() {
 		super()
 		this.loadPassStore()
@@ -32,14 +57,59 @@ export default class LinuxPassSearchEngine extends BaseSearchEngine {
 
 	async search(term: string, trigger?: string): Promise<SearchResult[]> {
 		if (trigger === `${this.triggers[0]}`) {
-			const result = this.searchOnTerm(term)
-
-			return result
+			const [ subCommand, ...remaining ] = term.split(' ')
+			if (subCommand === `${this.subCommand[0]}`) {
+				return this.searchAndShow(remaining.join(' '))
+			}
+			return this.searchOnTerm(term)
 		}
 		return []
 	}
 
+	async copyPassword({ file }: PassInput) {
+		cpExec(`pass -c ${file}`, { env: process.env }, (error: Error, _stdout: string, stderr: string) => {
+			if (error) {
+				console.log(error)
+			}
+			if (stderr) {
+				console.log(stderr)
+			}
+		})
+	}
+
+	async showPasswordQR({ file }: PassInput) {
+		cpExec(`pass show -q ${file}`, { env: process.env }, (error: Error, _stdout: string, stderr: string) => {
+			if (error) {
+				console.log(error)
+			}
+			if (stderr) {
+				console.log(stderr)
+			}
+		})
+	}
+
+	private searchAndShow(term: string) {
+		if (term.length === 0) {
+			return [ this.help[1] ]
+		}
+		return this.fuse.search(term).map<SearchResult<PassInput>>(({ item }) => ({
+			id: item.file,
+			title: item.name,
+			description: item.file,
+			completion: `${this.triggers[0]} show ${item.name}`,
+			event: {
+				type: 'pass show',
+				data: {
+					file: item.file,
+				},
+			},
+		}))
+	}
+
 	private searchOnTerm(term: string) {
+		if (term.length === 0) {
+			return this.help
+		}
 		return this.fuse.search(term).map<SearchResult<PassInput>>(({ item }) => ({
 			id: item.file,
 			title: item.name,
@@ -52,17 +122,6 @@ export default class LinuxPassSearchEngine extends BaseSearchEngine {
 				},
 			},
 		}))
-	}
-
-	async copyPassword({ file }: PassInput) {
-		cpExec(`pass -c ${file}`, { env: process.env }, (error: Error, _stdout: string, stderr: string) => {
-			if (error) {
-				console.log(error)
-			}
-			if (stderr) {
-				console.log(stderr)
-			}
-		})
 	}
 
 	private loadPassStore() {
