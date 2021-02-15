@@ -3,12 +3,14 @@
 	"version": "0.0.1",
 	"main": "./dist/main/main.js",
 	"scripts": {
-		"build": "webpack",
-		"clean": "rm -rf node_modules && rm -rf dist/{main,renderer}",
+		"build": "npm run build:webpack && npm run build:electron",
+		"build:webpack": "webpack",
+		"build:electron": ".bin/build-electron.sh",
+		"clean": "rm -rf node_modules && rm -rf dist/{main,renderer,electron}",
 		"lint": "eslint src/ --ext .ts,.js,.vue",
 		"lint:fix": "npm run lint -- --fix",
 		"format": "prettier -w src/ && eslint --ext .ts,.js,.vue --fix src/",
-		"run": "npm run build && electron .",
+		"run": "npm run build:webpack && electron .",
 		"run:without-build": "electron .",
 		"watch": "webpack --watch"
 	},
