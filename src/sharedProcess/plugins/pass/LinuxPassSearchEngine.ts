@@ -9,6 +9,7 @@ type LinuxPassPreSearch = {
 	name: string
 }
 
+type PassInput = { file: string }
 /**
  * This search engine implements pass password manager integration
  *
@@ -31,25 +32,29 @@ export default class LinuxPassSearchEngine extends BaseSearchEngine {
 
 	async search(term: string, trigger?: string): Promise<SearchResult[]> {
 		if (trigger === `${this.triggers[0]}`) {
-			const result = this.fuse.search(term).map(({ item }) => ({
-				id: item.file,
-				title: item.name,
-				description: item.file,
-				completion: item.name,
-				event: {
-					type: 'pass',
-					data: {
-						file: item.file,
-					},
-				},
-			}))
+			const result = this.searchOnTerm(term)
 
 			return result
 		}
 		return []
 	}
 
-	async copyPassword({ file }: { file: string }) {
+	private searchOnTerm(term: string) {
+		return this.fuse.search(term).map<SearchResult<PassInput>>(({ item }) => ({
+			id: item.file,
+			title: item.name,
+			description: item.file,
+			completion: item.name,
+			event: {
+				type: 'pass',
+				data: {
+					file: item.file,
+				},
+			},
+		}))
+	}
+
+	async copyPassword({ file }: PassInput) {
 		cpExec(`pass -c ${file}`, { env: process.env }, (error: Error, _stdout: string, stderr: string) => {
 			if (error) {
 				console.log(error)
