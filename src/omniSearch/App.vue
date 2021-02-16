@@ -11,7 +11,7 @@
 			@search:go="execute"
 		/>
 	</div>
-	<ResultList v-if="searchTerm !== ''" v-model="selectedItemIndex" :results="searchResult" />
+	<ResultList v-if="searchTerm !== ''" v-model="selectedItemIndex" :results="searchResult" @click="execute" />
 </template>
 
 <script lang="ts">

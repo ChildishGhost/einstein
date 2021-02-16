@@ -5,6 +5,7 @@
 		:result="result"
 		:hovered="idx === hoveredIndex"
 		@hover="hoverItem(idx)"
+		@click="clickItem(idx)"
 	/>
 </template>
 
@@ -34,7 +35,7 @@ export default defineComponent({
 			default: -1,
 		},
 	},
-	emits: [ 'update:modelValue' ],
+	emits: [ 'update:modelValue', 'click' ],
 	setup(props, { emit }) {
 		const { modelValue } = toRefs(props)
 		const hoveredIndex = ref(props.modelValue)
@@ -45,11 +46,19 @@ export default defineComponent({
 			emit('update:modelValue', idx)
 		}
 
+		const clickItem = (idx: number) => {
+			if (idx !== hoveredIndex.value) {
+				hoverItem(idx)
+			}
+			emit('click')
+		}
+
 		watch(modelValue, (val) => {
 			hoveredIndex.value = val
 		})
 
 		return {
+			clickItem,
 			hoverItem,
 			hoveredIndex,
 		}

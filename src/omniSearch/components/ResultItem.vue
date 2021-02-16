@@ -1,5 +1,5 @@
 <template>
-	<div @mousemove="$emit('hover')" :class="[style.wrapper, { [style.hover]: hovered }]">
+	<div @mousemove="$emit('hover')" @click="$emit('click')" :class="[style.wrapper, { [style.hover]: hovered }]">
 		<div :class="style.container">
 			<aside :class="style.icon">
 				<img v-if="result.icon" :src="result.icon" />
@@ -30,7 +30,7 @@ export default defineComponent({
 			default: false,
 		},
 	},
-	emits: [ 'hover' ],
+	emits: [ 'hover', 'click' ],
 	setup: () => ({
 		style: useCssModule(),
 	}),
