@@ -1,6 +1,7 @@
 {
     "editor.defaultFormatter": "rvest.vs-code-prettier-eslint",
     "editor.formatOnSave": true,
+    "editor.formatOnSaveMode": "file",
     "javascript.format.insertSpaceAfterOpeningAndBeforeClosingNonemptyBrackets": true,
     "javascript.preferences.quoteStyle": "single",
     "prettier.requireConfig": true,
