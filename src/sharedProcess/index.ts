@@ -6,6 +6,8 @@ import PassPlugin from '@/sharedProcess/plugins/pass'
 import useMessageChannel from '@/sharedProcess/useMessageChannel'
 import Fuse from 'fuse.js'
 
+const SEARCH_LIMIT = 10
+
 const pluginManager = new PluginManager()
 
 ;(async () => {
@@ -23,7 +25,10 @@ const pluginManager = new PluginManager()
 			threshold: 1.0,
 		})
 
-		const rankedResult = term.length > 0 ? fuse.search(term, { limit: 10 }).map(({ item }) => item) : result
+		const rankedResult =
+			term.length > 0
+				? fuse.search(term, { limit: SEARCH_LIMIT }).map(({ item }) => item)
+				: result.slice(0, SEARCH_LIMIT)
 
 		console.log(`Fuzzing on: ${term}`)
 		console.log(result)
