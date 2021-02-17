@@ -31,13 +31,13 @@ export default class PassSearchEngine extends BaseSearchEngine {
 			id: 'pass trigger help',
 			title: 'pass',
 			description: 'the standard unix password manager',
-			completion: 'pass',
+			completion: 'pass ',
 		},
 		{
 			id: 'pass trigger help',
 			title: 'pass show',
 			description: 'show password in QR code',
-			completion: 'pass show',
+			completion: 'pass show ',
 		},
 	]
 
