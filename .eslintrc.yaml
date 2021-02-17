@@ -8,6 +8,7 @@ env:
 plugins:
   - vue
   - '@typescript-eslint'
+  - eslint-plugin-tsdoc
 
 extends:
   - airbnb-base
@@ -56,6 +57,8 @@ rules:
   semi-style:
     - error
     - first
+  tsdoc/syntax: warn
+
 settings:
   import/core-modules:
     - electron
