@@ -73,7 +73,12 @@ export default defineComponent({
 			if (selectedItemIndex.value >= searchResult.value.length) { return }
 
 			const suggestion = searchResult.value[selectedItemIndex.value]
-			if (!suggestion.event) { return }
+			if (!suggestion.event) {
+				if (suggestion.completion) {
+					completeInput()
+				}
+				return
+			}
 
 			withMessageChannel.then((msg) => {
 				msg.sendMessage<PluginEvent>('plugin:event', {
