@@ -48,12 +48,20 @@ class PluginManager {
 		// Option 1: trigger' 'terms...
 		const engines = this.searchTriggers[trigger]
 		if (engines) {
-			return this.performSearch(engines, terms.join(' '), trigger)
+			return {
+				trigger,
+				term: terms.join(' '),
+				result: await this.performSearch(engines, terms.join(' '), trigger),
+			}
 		}
 
 		// Option 2: terms...
 		const voidEngines = this.searchTriggers[VOID_TRIGGER]
-		return this.performSearch(voidEngines, term)
+		return {
+			trigger: VOID_TRIGGER,
+			term,
+			result: await this.performSearch(voidEngines, term),
+		}
 	}
 
 	getPlugin(uid: UID): IPlugin | undefined {

@@ -13,27 +13,24 @@ const pluginManager = new PluginManager()
 
 	await pluginManager.register(new DesktopApplicationsPlugin()).register(new PassPlugin()).setup()
 
-	messageChannel.register('plugin:performSearch', async ({ term }) => {
-		const results = await pluginManager.search(term)
+	messageChannel.register('plugin:performSearch', async ({ term: rawTerm }) => {
+		const { term, result } = await pluginManager.search(rawTerm.trim())
 
-		const fuse = new Fuse(results, {
+		const fuse = new Fuse(result, {
 			keys: [ 'title', 'description' ],
 			includeScore: true,
 			findAllMatches: true,
 			threshold: 1.0,
 		})
 
-		// use the rest of the search terms if trigger is set
-		const fuzzTerm = term.includes(' ') ? term.split(' ').slice(1).join(' ') : term
+		const rankedResult = term.length > 0 ? fuse.search(term, { limit: 10 }).map(({ item }) => item) : result
 
-		const rankedResult = fuse.search(fuzzTerm, { limit: 10 }).map(({ item }) => item)
-
-		console.log(`Fuzzing on: ${fuzzTerm}`)
-		console.log(results)
+		console.log(`Fuzzing on: ${term}`)
+		console.log(result)
 		console.log(rankedResult)
 
 		messageChannel.sendMessage<PerformSearchReply>('plugin:performSearch:reply', {
-			term,
+			term: rawTerm,
 			result: rankedResult,
 		})
 	})
