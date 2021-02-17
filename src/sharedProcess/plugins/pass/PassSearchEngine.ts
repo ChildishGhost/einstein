@@ -4,7 +4,7 @@ import * as fs from 'fs'
 import Fuse from 'fuse.js'
 import * as os from 'os'
 
-type LinuxPassPreSearch = {
+type PreSearch = {
 	file: string
 	name: string
 }
@@ -15,10 +15,10 @@ type PassInput = { file: string }
  *
  * @see https://www.passwordstore.org/
  */
-export default class LinuxPassSearchEngine extends BaseSearchEngine {
+export default class PassSearchEngine extends BaseSearchEngine {
 	private passFiles: string[]
 
-	private fuse: Fuse<LinuxPassPreSearch> = null
+	private fuse: Fuse<PreSearch> = null
 
 	name = 'tw.childish.einstein.plugin.pass.linux'
 
@@ -139,7 +139,7 @@ export default class LinuxPassSearchEngine extends BaseSearchEngine {
 	}
 
 	private initFuse() {
-		const preSearch: LinuxPassPreSearch[] = this.passFiles.map((f) => {
+		const preSearch: PreSearch[] = this.passFiles.map((f) => {
 			return { file: f, name: f.split('/').reverse()[0] }
 		})
 		console.log(preSearch)

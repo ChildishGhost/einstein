@@ -1,13 +1,13 @@
 import { BasePlugin } from '@/api/plugin'
-import LinuxPassSearchEngine from '@/sharedProcess/plugins/pass/LinuxPassSearchEngine'
+import PassSearchEngine from '@/sharedProcess/plugins/pass/PassSearchEngine'
 
 export default class PassPlugin extends BasePlugin {
 	readonly uid = 'tw.childish.einstein.plugin.pass'
 
-	private passSearchEngine: LinuxPassSearchEngine = null
+	private passSearchEngine: PassSearchEngine = null
 
 	async setup() {
-		this.passSearchEngine = new LinuxPassSearchEngine()
+		this.passSearchEngine = new PassSearchEngine()
 	}
 
 	onEvent(type: string, data?: any) {
