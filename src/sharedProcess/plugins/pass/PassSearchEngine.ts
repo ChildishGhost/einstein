@@ -32,20 +32,12 @@ export default class PassSearchEngine extends BaseSearchEngine {
 			title: 'pass',
 			description: 'the standard unix password manager',
 			completion: 'pass',
-			event: {
-				type: 'noop',
-				data: {},
-			},
 		},
 		{
 			id: 'pass trigger help',
 			title: 'pass show',
 			description: 'show password in QR code',
 			completion: 'pass show',
-			event: {
-				type: 'noop',
-				data: {},
-			},
 		},
 	]
 
