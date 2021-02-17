@@ -63,7 +63,11 @@ export default class PassSearchEngine extends BaseSearchEngine {
 	}
 
 	async showPasswordQR({ file }: PassInput) {
-		exec(`pass show -q ${file}`)
+		if (os.platform() === 'darwin') {
+			exec(`pass show ${file} | head -n1 | qrencode -s 10 -o - | open -fa Preview.app`)
+		} else {
+			exec(`pass show -q ${file}`)
+		}
 	}
 
 	private searchAndShow(term: string) {
