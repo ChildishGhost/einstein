@@ -9,6 +9,8 @@ const exec = (command: string) => {
 	cmd.stderr.on('data', (data) => {
 		console.error(`stderr: ${data}`)
 	})
+
+	cmd.unref()
 }
 
 /* eslint-disable-next-line import/prefer-default-export */
