@@ -1,5 +1,6 @@
 import { MessageChannel } from '@/common/MessageChannel'
 import useOmniSearch from '@/main/useOmniSearch'
+import usePluginHost from '@/main/usePluginHost'
 import useSharedProcess from '@/main/useSharedProcess'
 import { app, globalShortcut, Menu, MenuItemConstructorOptions } from 'electron'
 import 'source-map-support/register'
@@ -83,6 +84,9 @@ const registerMenu = (
 
 app.on('ready', async () => {
 	let operation = await createApp() // eslint-disable-line prefer-const
+	const { exitProcess: closePluginHost } = await usePluginHost()
+
+	app.once('will-quit', () => closePluginHost())
 
 	registerMenu(
 		async () => {

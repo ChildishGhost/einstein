@@ -1,5 +1,5 @@
 import { memoize } from '@/common/decorator'
-import { dirname } from 'path'
+import { dirname, join as joinPath } from 'path'
 
 /**
  * All application-related environment configs will be placed here.
@@ -8,6 +8,7 @@ export interface IEnvironment {
 	appRoot: string
 	omniSearchEntryPath: string
 	sharedProcessEntryPath: string
+	pluginHostEntryPath: string
 }
 
 class Environment implements IEnvironment {
@@ -24,6 +25,11 @@ class Environment implements IEnvironment {
 	@memoize
 	get sharedProcessEntryPath() {
 		return `file://${this.appRoot}/renderer/sharedProcess.html`
+	}
+
+	@memoize
+	get pluginHostEntryPath() {
+		return joinPath(this.appRoot, 'node/pluginHost')
 	}
 }
 
