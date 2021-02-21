@@ -1,6 +1,6 @@
 import { ipcRenderer } from 'electron'
 
-import { MessageChannel, MessagePortProtocol } from '@/common/MessageChannel.renderer'
+import { MessageTunnel, MessagePortProtocol } from '@/common/message/MessagePortProtocol.renderer'
 
 const createProtocol = (): Promise<MessagePortProtocol> => {
 	const nonce = new Date().getUTCMilliseconds().toString()
@@ -20,4 +20,4 @@ const createProtocol = (): Promise<MessagePortProtocol> => {
 	return promise
 }
 
-export default async () => new MessageChannel(await createProtocol())
+export default async () => new MessageTunnel(await createProtocol())

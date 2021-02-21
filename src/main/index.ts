@@ -2,16 +2,16 @@ import 'source-map-support/register'
 
 import { app, globalShortcut, Menu, MenuItemConstructorOptions } from 'electron'
 
-import { MessageChannel } from '@/common/MessageChannel'
+import { MessageTunnel } from '@/common/message/MessageTunnel'
 import useOmniSearch from '@/main/useOmniSearch'
 import usePluginHost from '@/main/usePluginHost'
 import useSharedProcess from '@/main/useSharedProcess'
 
 const { platform } = process
 
-const registerMessageChannelPair = <T = any>(
-	listen: MessageChannel,
-	to: MessageChannel,
+const registerMessageTunnelPair = <T = any>(
+	listen: MessageTunnel,
+	to: MessageTunnel,
 	channelName: string,
 	toChannel: string = channelName,
 ) => {
@@ -21,20 +21,20 @@ const registerMessageChannelPair = <T = any>(
 }
 
 const createApp = async () => {
-	const { window: sharedProcessWindow, messageChannel: sharedProcessChannel } = await useSharedProcess()
+	const { window: sharedProcessWindow, messageTunnel: sharedProcessTunnel } = await useSharedProcess()
 
 	const pluginIsReady = new Promise<void>((resolve) => {
-		sharedProcessChannel.register('plugin:initialized', () => {
+		sharedProcessTunnel.register('plugin:initialized', () => {
 			resolve()
 		})
 	})
 	await pluginIsReady
 
-	const { window: omniSearchWindow, messageChannel: omniSearchChannel } = await useOmniSearch()
+	const { window: omniSearchWindow, messageTunnel: omniSearchTunnel } = await useOmniSearch()
 
-	registerMessageChannelPair(omniSearchChannel, sharedProcessChannel, 'search', 'plugin:performSearch')
-	registerMessageChannelPair(sharedProcessChannel, omniSearchChannel, 'plugin:performSearch:reply', 'searchResult')
-	registerMessageChannelPair(omniSearchChannel, sharedProcessChannel, 'plugin:event')
+	registerMessageTunnelPair(omniSearchTunnel, sharedProcessTunnel, 'search', 'plugin:performSearch')
+	registerMessageTunnelPair(sharedProcessTunnel, omniSearchTunnel, 'plugin:performSearch:reply', 'searchResult')
+	registerMessageTunnelPair(omniSearchTunnel, sharedProcessTunnel, 'plugin:event')
 
 	return {
 		destroyApp: () => {

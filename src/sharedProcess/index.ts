@@ -7,18 +7,18 @@ import PluginEvent from '@/common/types/PluginEvent'
 import PluginManager from '@/sharedProcess/PluginManager'
 import DesktopApplicationsPlugin from '@/sharedProcess/plugins/desktop'
 import PassPlugin from '@/sharedProcess/plugins/pass'
-import useMessageChannel from '@/sharedProcess/useMessageChannel'
+import useMessageTunnel from '@/sharedProcess/useMessageTunnel'
 
 const SEARCH_LIMIT = 10
 
 const pluginManager = new PluginManager()
 
 ;(async () => {
-	const messageChannel = await useMessageChannel()
+	const messageTunnel = await useMessageTunnel()
 
 	await pluginManager.register(new DesktopApplicationsPlugin()).register(new PassPlugin()).setup()
 
-	messageChannel.register('plugin:performSearch', async ({ term: rawTerm }) => {
+	messageTunnel.register('plugin:performSearch', async ({ term: rawTerm }) => {
 		const { term, result } = await pluginManager.search(rawTerm.trim())
 
 		const fuse = new Fuse(result, {
@@ -37,13 +37,13 @@ const pluginManager = new PluginManager()
 		console.log(result)
 		console.log(rankedResult)
 
-		messageChannel.sendMessage<PerformSearchReply>('plugin:performSearch:reply', {
+		messageTunnel.sendMessage<PerformSearchReply>('plugin:performSearch:reply', {
 			term: rawTerm,
 			result: rankedResult,
 		})
 	})
 
-	messageChannel.register<PluginEvent>('plugin:event', async ({ pluginUid, type, data }) => {
+	messageTunnel.register<PluginEvent>('plugin:event', async ({ pluginUid, type, data }) => {
 		const plugin = pluginManager.getPlugin(pluginUid)
 		if (!plugin) {
 			return
@@ -52,5 +52,5 @@ const pluginManager = new PluginManager()
 		await plugin.onEvent(type, data)
 	})
 
-	messageChannel.sendMessage('plugin:initialized')
+	messageTunnel.sendMessage('plugin:initialized')
 })()

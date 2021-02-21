@@ -1,6 +1,6 @@
 import { BrowserWindow, globalShortcut, ipcMain, MessageChannelMain as ElectionMessageChannel } from 'electron'
 
-import { MessageChannel, MessagePortMainProtocol } from '@/common/MessageChannel.main'
+import { MessageTunnel, MessagePortMainProtocol } from '@/common/message/MessagePortMainProtocol.main'
 import Environment from '@/main/Environment'
 
 const { platform } = process
@@ -38,14 +38,14 @@ const createWindow = () => {
 export default async () => {
 	const protocol = prepareMessageProtocol()
 	const window = createWindow()
-	const messageChannel = new MessageChannel(await protocol)
+	const messageTunnel = new MessageTunnel(await protocol)
 
-	messageChannel.register('resizeWindow', ({ height }: any) => {
+	messageTunnel.register('resizeWindow', ({ height }: any) => {
 		const [ width ] = window.getSize()
 		window.setSize(width, height, true)
 	})
 
-	messageChannel.register('closeWindow', () => window.hide())
+	messageTunnel.register('closeWindow', () => window.hide())
 
 	const keystroke = platform === 'linux' ? 'Alt+Space' : 'Ctrl+Space'
 
@@ -61,7 +61,7 @@ export default async () => {
 	})
 
 	return {
-		messageChannel,
+		messageTunnel,
 		window,
 	}
 }

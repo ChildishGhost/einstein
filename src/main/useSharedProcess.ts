@@ -1,6 +1,6 @@
 import { BrowserWindow, ipcMain, MessageChannelMain as ElectionMessageChannel } from 'electron'
 
-import { MessageChannel, MessagePortMainProtocol } from '@/common/MessageChannel.main'
+import { MessageTunnel, MessagePortMainProtocol } from '@/common/message/MessagePortMainProtocol.main'
 
 import Environment from './Environment'
 
@@ -30,10 +30,10 @@ const createSharedProcess = () => {
 export default async () => {
 	const protocol = prepareMessageProtocol()
 	const window = createSharedProcess()
-	const messageChannel = new MessageChannel(await protocol)
+	const messageTunnel = new MessageTunnel(await protocol)
 
 	return {
-		messageChannel,
+		messageTunnel,
 		window,
 	}
 }

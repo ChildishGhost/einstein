@@ -10,13 +10,13 @@ export type Message = {
 
 export type ChannelHandler<T = any> = (data?: T) => Promise<void> | void
 
-export interface IMessageChannel {
+export interface IMessageTunnel {
 	register(channel: string, handler: ChannelHandler): void
 	unregister(channel: string, handler: ChannelHandler): void
 	sendMessage(channel: string, data?: any): void
 }
 
-export class MessageChannel implements IMessageChannel {
+export class MessageTunnel implements IMessageTunnel {
 	private protocol: Protocol<Message>
 
 	private handlers: Record<string, ChannelHandler[]> = {}

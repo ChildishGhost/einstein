@@ -19,7 +19,7 @@ import { defineComponent, inject, nextTick, onMounted, ref, toRaw, watch } from 
 
 import { WithPluginTagged } from '@/api/plugin'
 import { SearchResult } from '@/api/searchEngine'
-import { MessageChannel } from '@/common/MessageChannel'
+import { MessageTunnel } from '@/common/message/MessageTunnel'
 import PluginEvent from '@/common/types/PluginEvent'
 import ResultList from '@/omniSearch/components/ResultList.vue'
 import SearchBox from '@/omniSearch/components/SearchBox.vue'
@@ -32,7 +32,7 @@ export default defineComponent({
 	},
 	setup() {
 		const { calculateDesiredSize, closeWindow: realCloseWindow } = useWindowControl(inject('$app'))
-		const withMessageChannel = inject<Promise<MessageChannel>>('$msg')
+		const withMessageTunnel = inject<Promise<MessageTunnel>>('$msg')
 		const searchTerm = ref('')
 		const searchResult = ref<WithPluginTagged<SearchResult>[]>([])
 		const searchBoxRef = ref()
@@ -83,7 +83,7 @@ export default defineComponent({
 				return
 			}
 
-			withMessageChannel.then((msg) => {
+			withMessageTunnel.then((msg) => {
 				msg.sendMessage<PluginEvent>('plugin:event', {
 					...toRaw(suggestion.event),
 					pluginUid: suggestion.pluginUid,
