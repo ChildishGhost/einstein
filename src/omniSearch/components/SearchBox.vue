@@ -12,13 +12,8 @@
 </template>
 
 <script lang="ts">
-import {
-	defineComponent,
-	ref,
-	toRefs,
-	useCssModule,
-	watch,
-} from 'vue'
+import { defineComponent, ref, toRefs, useCssModule, watch } from 'vue'
+
 import useSearch from '@/omniSearch/composables/useSearch'
 
 export default defineComponent({
@@ -42,7 +37,9 @@ export default defineComponent({
 		const { term, result } = useSearch()
 		const inputRef = ref(null)
 
-		watch(modelValue, (val) => { term.value = val })
+		watch(modelValue, (val) => {
+			term.value = val
+		})
 		watch(term, (val) => emit('update:modelValue', val))
 		watch(result, (val) => {
 			emit('update:result', val)

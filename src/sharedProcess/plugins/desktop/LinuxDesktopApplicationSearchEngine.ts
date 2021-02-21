@@ -1,9 +1,11 @@
+import * as fs from 'fs'
+import * as os from 'os'
+
+import Fuse from 'fuse.js'
+
 import { BaseSearchEngine, SearchResult, VOID_TRIGGER } from '@/api/searchEngine'
 import EventType from '@/sharedProcess/plugins/desktop/EventType'
 import { exec } from '@/sharedProcess/utils'
-import * as fs from 'fs'
-import Fuse from 'fuse.js'
-import * as os from 'os'
 
 /*
 file = {

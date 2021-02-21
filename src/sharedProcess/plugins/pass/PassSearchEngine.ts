@@ -1,8 +1,10 @@
+import * as fs from 'fs'
+import * as os from 'os'
+
+import Fuse from 'fuse.js'
+
 import { BaseSearchEngine, SearchResult } from '@/api/searchEngine'
 import { exec } from '@/sharedProcess/utils'
-import * as fs from 'fs'
-import Fuse from 'fuse.js'
-import * as os from 'os'
 
 type PreSearch = {
 	file: string

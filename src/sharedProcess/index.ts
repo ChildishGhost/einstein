@@ -1,11 +1,13 @@
+import 'source-map-support/register'
+
+import Fuse from 'fuse.js'
+
 import PerformSearchReply from '@/common/types/PerformSearchReply'
 import PluginEvent from '@/common/types/PluginEvent'
 import PluginManager from '@/sharedProcess/PluginManager'
 import DesktopApplicationsPlugin from '@/sharedProcess/plugins/desktop'
 import PassPlugin from '@/sharedProcess/plugins/pass'
 import useMessageChannel from '@/sharedProcess/useMessageChannel'
-import Fuse from 'fuse.js'
-import 'source-map-support/register'
 
 const SEARCH_LIMIT = 10
 

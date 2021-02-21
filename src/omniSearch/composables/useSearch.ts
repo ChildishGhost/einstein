@@ -1,8 +1,9 @@
+import { inject, onMounted, onUnmounted, ref, watch } from 'vue'
+
 import { SearchResult } from '@/api/searchEngine'
 import { MessageChannel } from '@/common/MessageChannel'
 import PerformSearch from '@/common/types/PerformSearch'
 import PerformSearchReply from '@/common/types/PerformSearchReply'
-import { inject, onMounted, onUnmounted, ref, watch } from 'vue'
 
 export default () => {
 	const withMessageChannel = inject<Promise<MessageChannel>>('$msg')

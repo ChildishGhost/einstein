@@ -1,11 +1,13 @@
-import { BaseSearchEngine, SearchResult, VOID_TRIGGER } from '@/api/searchEngine'
-import EventType from '@/sharedProcess/plugins/desktop/EventType'
 import { shell } from 'electron'
-import { buffer as appIconAsBuffer } from 'file-icon'
 import { existsSync as fileExists, readdirSync as readdir, statSync as fileStat } from 'fs'
-import Fuse from 'fuse.js'
 import { homedir } from 'os'
 import { join as pathJoin } from 'path'
+
+import { buffer as appIconAsBuffer } from 'file-icon'
+import Fuse from 'fuse.js'
+
+import { BaseSearchEngine, SearchResult, VOID_TRIGGER } from '@/api/searchEngine'
+import EventType from '@/sharedProcess/plugins/desktop/EventType'
 
 type Application = {
 	name: string

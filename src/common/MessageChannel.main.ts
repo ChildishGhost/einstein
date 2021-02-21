@@ -1,5 +1,6 @@
-import { Protocol } from '@/common/MessageChannel'
 import { MessageEvent, MessagePortMain } from 'electron'
+
+import { Protocol } from '@/common/MessageChannel'
 
 export * from '@/common/MessageChannel'
 

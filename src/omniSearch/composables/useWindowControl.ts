@@ -1,5 +1,6 @@
-import { MessageChannel } from '@/common/MessageChannel'
 import { inject, onMounted, reactive, toRaw, watch } from 'vue'
+
+import { MessageChannel } from '@/common/MessageChannel'
 
 export default ($app: Element) => {
 	const withMessageChannel = inject<Promise<MessageChannel>>('$msg')

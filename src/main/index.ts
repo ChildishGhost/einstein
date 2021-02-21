@@ -1,9 +1,11 @@
+import 'source-map-support/register'
+
+import { app, globalShortcut, Menu, MenuItemConstructorOptions } from 'electron'
+
 import { MessageChannel } from '@/common/MessageChannel'
 import useOmniSearch from '@/main/useOmniSearch'
 import usePluginHost from '@/main/usePluginHost'
 import useSharedProcess from '@/main/useSharedProcess'
-import { app, globalShortcut, Menu, MenuItemConstructorOptions } from 'electron'
-import 'source-map-support/register'
 
 const { platform } = process
 

@@ -1,6 +1,7 @@
+import { BrowserWindow, globalShortcut, ipcMain, MessageChannelMain as ElectionMessageChannel } from 'electron'
+
 import { MessageChannel, MessagePortMainProtocol } from '@/common/MessageChannel.main'
 import Environment from '@/main/Environment'
-import { BrowserWindow, globalShortcut, ipcMain, MessageChannelMain as ElectionMessageChannel } from 'electron'
 
 const { platform } = process
 

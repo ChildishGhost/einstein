@@ -33,6 +33,17 @@ rules:
   '@typescript-eslint/no-unused-vars':
     - error
     - argsIgnorePattern: '^_'
+  # Manage order of imports
+  import/order:
+    - error
+    - groups:
+        - builtin
+        - external
+        - internal
+      newlines-between: always
+      alphabetize:
+        order: asc
+        caseInsensitive: true
 
   array-bracket-spacing:
     - error
@@ -62,6 +73,7 @@ rules:
 settings:
   import/core-modules:
     - electron
+  import/internal-regex: '^@/'
   import/resolver:
     node:
       extensions:

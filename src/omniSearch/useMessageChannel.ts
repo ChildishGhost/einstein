@@ -1,5 +1,6 @@
-import { MessageChannel, MessagePortProtocol } from '@/common/MessageChannel.renderer'
 import { ipcRenderer } from 'electron'
+
+import { MessageChannel, MessagePortProtocol } from '@/common/MessageChannel.renderer'
 
 const createProtocol = (): Promise<MessagePortProtocol> => {
 	const nonce = new Date().getUTCMilliseconds().toString()

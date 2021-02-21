@@ -1,5 +1,6 @@
-import { memoize } from '@/common/decorator'
 import { dirname, join as joinPath } from 'path'
+
+import { memoize } from '@/common/decorator'
 
 /**
  * All application-related environment configs will be placed here.

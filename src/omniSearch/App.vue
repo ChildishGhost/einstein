@@ -15,16 +15,15 @@
 </template>
 
 <script lang="ts">
-import {
-	defineComponent, inject, nextTick, onMounted, ref, toRaw, watch,
-} from 'vue'
+import { defineComponent, inject, nextTick, onMounted, ref, toRaw, watch } from 'vue'
+
+import { WithPluginTagged } from '@/api/plugin'
 import { SearchResult } from '@/api/searchEngine'
 import { MessageChannel } from '@/common/MessageChannel'
 import PluginEvent from '@/common/types/PluginEvent'
-import useWindowControl from '@/omniSearch/composables/useWindowControl'
 import ResultList from '@/omniSearch/components/ResultList.vue'
 import SearchBox from '@/omniSearch/components/SearchBox.vue'
-import { WithPluginTagged } from '@/api/plugin'
+import useWindowControl from '@/omniSearch/composables/useWindowControl'
 
 export default defineComponent({
 	components: {
@@ -57,7 +56,9 @@ export default defineComponent({
 		}
 
 		const completeInput = () => {
-			if (selectedItemIndex.value >= searchResult.value.length) { return }
+			if (selectedItemIndex.value >= searchResult.value.length) {
+				return
+			}
 
 			const suggestion = searchResult.value[selectedItemIndex.value]
 
@@ -70,7 +71,9 @@ export default defineComponent({
 		}
 
 		const execute = () => {
-			if (selectedItemIndex.value >= searchResult.value.length) { return }
+			if (selectedItemIndex.value >= searchResult.value.length) {
+				return
+			}
 
 			const suggestion = searchResult.value[selectedItemIndex.value]
 			if (!suggestion.event) {

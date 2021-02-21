@@ -10,15 +10,10 @@
 </template>
 
 <script lang="ts">
-import {
-	defineComponent,
-	PropType,
-	ref,
-	toRefs,
-	watch,
-} from 'vue'
-import ResultItem from '@/omniSearch/components/ResultItem.vue'
+import { defineComponent, PropType, ref, toRefs, watch } from 'vue'
+
 import { SearchResult } from '@/api/searchEngine'
+import ResultItem from '@/omniSearch/components/ResultItem.vue'
 
 export default defineComponent({
 	components: {
@@ -41,7 +36,9 @@ export default defineComponent({
 		const hoveredIndex = ref(props.modelValue)
 
 		const hoverItem = (idx: number) => {
-			if (idx === hoveredIndex.value) { return }
+			if (idx === hoveredIndex.value) {
+				return
+			}
 			hoveredIndex.value = idx
 			emit('update:modelValue', idx)
 		}

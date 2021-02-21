@@ -1,5 +1,7 @@
-import { MessageChannel, MessagePortMainProtocol } from '@/common/MessageChannel.main'
 import { BrowserWindow, ipcMain, MessageChannelMain as ElectionMessageChannel } from 'electron'
+
+import { MessageChannel, MessagePortMainProtocol } from '@/common/MessageChannel.main'
+
 import Environment from './Environment'
 
 const prepareMessageProtocol = () =>
