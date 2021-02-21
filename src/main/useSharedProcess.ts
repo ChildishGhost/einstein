@@ -1,7 +1,6 @@
 import { MessageChannel, MessagePortMainProtocol } from '@/common/MessageChannel.main'
 import { BrowserWindow, ipcMain, MessageChannelMain as ElectionMessageChannel } from 'electron'
-
-const ENTRY_URL = `file://${__dirname}/../renderer/sharedProcess.html`
+import Environment from './Environment'
 
 const prepareMessageProtocol = () =>
 	new Promise<MessagePortMainProtocol>((resolve) => {
@@ -21,7 +20,7 @@ const createSharedProcess = () => {
 		},
 	})
 
-	window.loadURL(ENTRY_URL)
+	window.loadURL(Environment.sharedProcessEntryPath)
 
 	return window
 }

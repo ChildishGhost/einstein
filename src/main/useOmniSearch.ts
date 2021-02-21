@@ -1,7 +1,7 @@
 import { MessageChannel, MessagePortMainProtocol } from '@/common/MessageChannel.main'
+import Environment from '@/main/Environment'
 import { BrowserWindow, globalShortcut, ipcMain, MessageChannelMain as ElectionMessageChannel } from 'electron'
 
-const ENTRY_URL = `file://${__dirname}/../renderer/omniSearch.html`
 const { platform } = process
 
 const prepareMessageProtocol = () =>
@@ -29,7 +29,7 @@ const createWindow = () => {
 		},
 	})
 
-	window.loadURL(ENTRY_URL)
+	window.loadURL(Environment.omniSearchEntryPath)
 
 	return window
 }
