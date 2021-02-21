@@ -1,6 +1,7 @@
 import App from '@/omniSearch/App.vue'
 import '@/omniSearch/index.scss'
 import useMessageChannel from '@/omniSearch/useMessageChannel'
+import 'source-map-support/register'
 import { createApp } from 'vue'
 
 const $app = document.getElementById('app')
