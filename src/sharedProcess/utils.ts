@@ -1,13 +1,13 @@
-import { exec as cpExec } from 'child_process'
+import { spawn as cpSpawn } from 'child_process'
 
 const exec = (command: string) => {
-	cpExec(command, { env: process.env }, (error: Error, _stdout: string, stderr: string) => {
-		if (error) {
-			console.log(error)
-		}
-		if (stderr) {
-			console.log(stderr)
-		}
+	const cmd = cpSpawn('bash', [ '-c', command ], { env: process.env, detached: true })
+	cmd.stdout.on('data', (data) => {
+		console.log(`stdout: ${data}`)
+	})
+
+	cmd.stderr.on('data', (data) => {
+		console.error(`stderr: ${data}`)
 	})
 }
 
