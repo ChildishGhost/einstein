@@ -14,7 +14,32 @@ const withLogger = (fn: (logger: Console) => void) => {
 	/* eslint-enable no-console */
 }
 
-const env = {}
+// prettier-ignore
+const inheritedEnvAllowList = [
+	'BLOCKSIZE',
+	'COLORFGBG', 'COLORTERM',
+	'CHARSET', 'LANG', 'LANGUAGE',
+	'LC_ALL', 'LC_COLLATE', 'LC_CTYPE',
+	'LC_MESSAGES', 'LC_MONETARY', 'LC_NUMERIC', 'LC_TIME',
+	'LINES COLUMNS',
+	'LSCOLORS',
+	'SSH_AUTH_SOCK',
+	'TZ',
+	'DISPLAY', 'XAUTHORIZATION', 'XAUTHORITY',
+	'EDITOR', 'VISUAL',
+	'HOME', 'MAIL',
+	// Linux
+	'XAPPLRESDIR', 'XFILESEARCHPATH', 'XUSERFILESEARCHPATH',
+	'QTDIR', 'KDEDIR',
+	'XDG_SESSION_COOKIE',
+	'XMODIFIERS', 'GTK_IM_MODULE', 'QT_IM_MODULE', 'QT_IM_SWITCHER',
+]
+const permittedEnv = Object.fromEntries(
+	Object.entries(process.env).filter(([ name ]) => inheritedEnvAllowList.includes(name)),
+)
+const env = {
+	...permittedEnv,
+}
 
 const handleProcessOutputStream = (stream: Readable, formatString: string = '%s') => {
 	const decoder = new StringDecoder('utf-8')
