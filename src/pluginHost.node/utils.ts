@@ -4,7 +4,7 @@ const exec = (command: string) => {
 	const cmd = cpSpawn(command, {
 		env: process.env,
 		detached: true,
-		shell: 'bash',
+		shell: true,
 		stdio: [ 'ignore', 'inherit', 'inherit' ],
 	})
 

@@ -4,8 +4,8 @@ import * as os from 'os'
 import Fuse from 'fuse.js'
 
 import { BaseSearchEngine, SearchResult, VOID_TRIGGER } from '@/api/searchEngine'
-import EventType from '@/sharedProcess/plugins/desktop/EventType'
-import { exec } from '@/sharedProcess/utils'
+import EventType from '@/pluginHost.node/plugins/desktop/EventType'
+import { exec } from '@/pluginHost.node/utils'
 
 /*
 file = {

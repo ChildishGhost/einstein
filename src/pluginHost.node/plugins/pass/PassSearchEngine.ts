@@ -4,7 +4,7 @@ import * as os from 'os'
 import Fuse from 'fuse.js'
 
 import { BaseSearchEngine, SearchResult } from '@/api/searchEngine'
-import { exec } from '@/sharedProcess/utils'
+import { exec } from '@/pluginHost.node/utils'
 
 type PreSearch = {
 	file: string

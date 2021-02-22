@@ -1,4 +1,3 @@
-import { shell } from 'electron'
 import { existsSync as fileExists, readdirSync as readdir, statSync as fileStat } from 'fs'
 import { homedir } from 'os'
 import { join as pathJoin } from 'path'
@@ -7,7 +6,8 @@ import { buffer as appIconAsBuffer } from 'file-icon'
 import Fuse from 'fuse.js'
 
 import { BaseSearchEngine, SearchResult, VOID_TRIGGER } from '@/api/searchEngine'
-import EventType from '@/sharedProcess/plugins/desktop/EventType'
+import EventType from '@/pluginHost.node/plugins/desktop/EventType'
+import { exec } from '@/pluginHost.node/utils'
 
 type Application = {
 	name: string
@@ -49,7 +49,7 @@ export default class DarwinApplicationSearchEngine extends BaseSearchEngine {
 	}
 
 	async launchApp(path: string) {
-		await shell.openPath(path)
+		exec(`open ${path}`)
 	}
 
 	private async loadApplications() {

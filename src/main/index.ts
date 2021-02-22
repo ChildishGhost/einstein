@@ -21,10 +21,11 @@ const registerMessageTunnelPair = <T = any>(
 }
 
 const createApp = async () => {
-	const { window: sharedProcessWindow, messageTunnel: sharedProcessTunnel } = await useSharedProcess()
+	const { exitProcess: closePluginHost, messageTunnel: pluginHostTunnel } = await usePluginHost()
+	const { window: sharedProcessWindow } = await useSharedProcess()
 
 	const pluginIsReady = new Promise<void>((resolve) => {
-		sharedProcessTunnel.register('plugin:initialized', () => {
+		pluginHostTunnel.register('plugin:initialized', () => {
 			resolve()
 		})
 	})
@@ -32,12 +33,13 @@ const createApp = async () => {
 
 	const { window: omniSearchWindow, messageTunnel: omniSearchTunnel } = await useOmniSearch()
 
-	registerMessageTunnelPair(omniSearchTunnel, sharedProcessTunnel, 'search', 'plugin:performSearch')
-	registerMessageTunnelPair(sharedProcessTunnel, omniSearchTunnel, 'plugin:performSearch:reply', 'searchResult')
-	registerMessageTunnelPair(omniSearchTunnel, sharedProcessTunnel, 'plugin:event')
+	registerMessageTunnelPair(omniSearchTunnel, pluginHostTunnel, 'search', 'plugin:performSearch')
+	registerMessageTunnelPair(pluginHostTunnel, omniSearchTunnel, 'plugin:performSearch:reply', 'searchResult')
+	registerMessageTunnelPair(omniSearchTunnel, pluginHostTunnel, 'plugin:event')
 
 	return {
 		destroyApp: () => {
+			closePluginHost()
 			globalShortcut.unregisterAll()
 			omniSearchWindow.destroy()
 			sharedProcessWindow.destroy()
@@ -86,9 +88,8 @@ const registerMenu = (
 
 app.on('ready', async () => {
 	let operation = await createApp() // eslint-disable-line prefer-const
-	const { exitProcess: closePluginHost } = await usePluginHost()
 
-	app.once('will-quit', () => closePluginHost())
+	app.once('will-quit', () => operation.destroyApp())
 
 	registerMenu(
 		async () => {
@@ -99,10 +100,6 @@ app.on('ready', async () => {
 			operation.showDevTools()
 		},
 	)
-})
-
-app.on('will-quit', () => {
-	globalShortcut.unregisterAll()
 })
 
 app.on('window-all-closed', () => {})

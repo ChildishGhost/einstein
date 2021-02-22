@@ -1,5 +1,5 @@
 import { BasePlugin } from '@/api/plugin'
-import PassSearchEngine from '@/sharedProcess/plugins/pass/PassSearchEngine'
+import PassSearchEngine from '@/pluginHost.node/plugins/pass/PassSearchEngine'
 
 export default class PassPlugin extends BasePlugin {
 	readonly uid = 'tw.childish.einstein.plugin.pass'

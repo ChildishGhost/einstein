@@ -1,8 +1,8 @@
 import { BasePlugin } from '@/api/plugin'
-import DarwinApplicationSearchEngine from '@/sharedProcess/plugins/desktop/DarwinApplicationSearchEngine'
-import EventType from '@/sharedProcess/plugins/desktop/EventType'
-import IApplicationSearchEngine from '@/sharedProcess/plugins/desktop/IApplicationSearchEngine'
-import LinuxDesktopApplicationSearchEngine from '@/sharedProcess/plugins/desktop/LinuxDesktopApplicationSearchEngine'
+import DarwinApplicationSearchEngine from '@/pluginHost.node/plugins/desktop/DarwinApplicationSearchEngine'
+import EventType from '@/pluginHost.node/plugins/desktop/EventType'
+import IApplicationSearchEngine from '@/pluginHost.node/plugins/desktop/IApplicationSearchEngine'
+import LinuxDesktopApplicationSearchEngine from '@/pluginHost.node/plugins/desktop/LinuxDesktopApplicationSearchEngine'
 
 const { platform } = process
 
