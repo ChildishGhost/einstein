@@ -1,7 +1,8 @@
-import { fork } from 'child_process'
+import { fork, ChildProcess } from 'child_process'
 import { Readable, Writable } from 'stream'
 import { StringDecoder } from 'string_decoder'
 
+import { ChildProcessMessageProtocol, MessageTunnel } from '@/common/message/ChildProcessMessageProtocol.main'
 import Environment from '@/main/Environment'
 
 const errorFormat = '\x1b[1;31m%s\x1b[0m'
@@ -21,7 +22,7 @@ const handleProcessOutputStream = (stream: Readable, formatString: string = '%s'
 
 	let buffer = ''
 
-	stream.pipe(
+	stream.setEncoding('utf-8').pipe(
 		new Writable({
 			write(chunk, _encoding, callback) {
 				buffer += typeof chunk === 'string' ? chunk : decoder.write(chunk)
@@ -61,12 +62,63 @@ const handleProcessExit = (isExpected: boolean, code: number, signal: string) =>
 	})
 }
 
+const prepareMessageProtocol = (childProcess: ChildProcess) => {
+	/**
+	 * Generate random 8-digits hex string
+	 *
+	 * @returns Hex string with 0 left-padded
+	 */
+	const genTokenPart = () =>
+		Math.floor(Math.random() * 16 ** 8)
+			.toString(16)
+			.padStart(8, '0')
+
+	/**
+	 * @returns 32-digit token
+	 */
+	const genToken = () => [ ...Array(4) ].map(genTokenPart).join('')
+
+	const isHandshake = (
+		obj: any,
+	): obj is {
+		type: 'pluginHost:registerMessageTunnel'
+		nonce: string
+		token: string
+	} => {
+		return (
+			typeof obj === 'object' &&
+			obj.type === 'pluginHost:registerMessageTunnel' &&
+			typeof obj.nonce === 'string' &&
+			typeof obj.token === 'string' &&
+			obj.token.length === 32
+		)
+	}
+
+	return new Promise<ChildProcessMessageProtocol>((resolve) => {
+		const messageHandler = (data: any) => {
+			if (!isHandshake(data)) {
+				return
+			}
+
+			const token = genToken()
+			const { nonce, token: remoteToken } = data
+
+			childProcess.removeListener('message', messageHandler)
+			childProcess.send({ type: 'pluginHost:registerMessageTunnel:response', nonce, token })
+			resolve(new ChildProcessMessageProtocol(token, remoteToken, childProcess))
+		}
+
+		childProcess.on('message', messageHandler)
+	})
+}
+
 const createProcess = () => {
 	let exiting = false
 	const process = fork(Environment.pluginHostEntryPath, {
 		env,
 		silent: true,
-	})
+		serialization: 'advanced',
+	} as any) // I don't know why 'serialization' is not in the definition...
 
 	handleProcessOutputStream(process.stdout!)
 	handleProcessOutputStream(process.stderr!, errorFormat)
@@ -90,9 +142,11 @@ const createProcess = () => {
 
 export default async () => {
 	const { process, exitProcess } = createProcess()
+	const messageTunnel = new MessageTunnel(await prepareMessageProtocol(process))
 
 	return {
 		process,
 		exitProcess,
+		messageTunnel,
 	}
 }

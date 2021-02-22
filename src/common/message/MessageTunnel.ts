@@ -8,6 +8,10 @@ export type Message = {
 	data?: any
 }
 
+export function isMessage(obj: any): obj is Message {
+	return typeof obj === 'object' && typeof obj.channel === 'string' && obj.channel.length
+}
+
 export type ChannelHandler<T = any> = (data?: T) => Promise<void> | void
 
 export interface IMessageTunnel {

@@ -1,7 +1,15 @@
 import 'source-map-support/register'
 
-process.on('message', ({ type, _data }) => {
-	if (type === 'pluginHost:exit') {
-		process.exit()
-	}
-})
+import useMessageTunnel from '@/pluginHost.node/useMessageTunnel'
+//
+;(async () => {
+	process.on('message', ({ type }) => {
+		if (type === 'pluginHost:exit') {
+			process.exit()
+		}
+	})
+
+	const messageTunnel = await useMessageTunnel()
+
+	messageTunnel.sendMessage('test', 'hi')
+})()
