@@ -1,9 +1,9 @@
 import * as fs from 'fs'
 import * as os from 'os'
 
+import { BaseSearchEngine, SearchResult, VOID_TRIGGER } from 'einstein'
 import Fuse from 'fuse.js'
 
-import { BaseSearchEngine, SearchResult, VOID_TRIGGER } from '@/api/searchEngine'
 import { findIcon, exec, walk } from '@/pluginHost.node/utils'
 
 type Bookmark = {

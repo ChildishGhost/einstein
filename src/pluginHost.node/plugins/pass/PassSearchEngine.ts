@@ -1,8 +1,8 @@
 import * as os from 'os'
 
+import { BaseSearchEngine, SearchResult } from 'einstein'
 import Fuse from 'fuse.js'
 
-import { BaseSearchEngine, SearchResult } from '@/api/searchEngine'
 import { exec, findIcon, walk } from '@/pluginHost.node/utils'
 
 type PreSearch = {

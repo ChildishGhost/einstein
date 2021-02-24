@@ -1,9 +1,9 @@
 import * as fs from 'fs'
 import * as os from 'os'
 
+import { BaseSearchEngine, SearchResult, VOID_TRIGGER } from 'einstein'
 import Fuse from 'fuse.js'
 
-import { BaseSearchEngine, SearchResult, VOID_TRIGGER } from '@/api/searchEngine'
 import EventType from '@/pluginHost.node/plugins/desktop/EventType'
 import { findIcon, exec } from '@/pluginHost.node/utils'
 

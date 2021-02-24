@@ -1,4 +1,4 @@
-import { UID } from '@/api/plugin'
+import { UID } from 'einstein'
 
 type PluginEvent = {
 	pluginUid: UID

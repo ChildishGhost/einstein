@@ -1,6 +1,6 @@
+import { SearchResult } from 'einstein'
 import { inject, onMounted, onUnmounted, ref, watch } from 'vue'
 
-import { SearchResult } from '@/api/searchEngine'
 import { MessageTunnel } from '@/common/message/MessageTunnel'
 import PerformSearch from '@/common/types/PerformSearch'
 import PerformSearchReply from '@/common/types/PerformSearchReply'

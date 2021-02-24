@@ -1,5 +1,4 @@
-import { IPlugin, UID, WithPluginTagged } from '@/api/plugin'
-import { SearchResult, VOID_TRIGGER } from '@/api/searchEngine'
+import { IPlugin, UID, WithPluginTagged, SearchResult, VOID_TRIGGER } from 'einstein'
 
 type TriggerPointer = { pluginUid: UID; engineName: string }
 

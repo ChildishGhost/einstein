@@ -17,9 +17,8 @@
 </template>
 
 <script lang="ts">
+import { SearchResult } from 'einstein'
 import { defineComponent, PropType, useCssModule } from 'vue'
-
-import { SearchResult } from '@/api/searchEngine'
 
 export default defineComponent({
 	props: {

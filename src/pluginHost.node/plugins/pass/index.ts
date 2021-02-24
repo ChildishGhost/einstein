@@ -1,4 +1,5 @@
-import { BasePlugin } from '@/api/plugin'
+import { BasePlugin } from 'einstein'
+
 import PassSearchEngine from '@/pluginHost.node/plugins/pass/PassSearchEngine'
 
 export default class PassPlugin extends BasePlugin {

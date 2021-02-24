@@ -2,10 +2,10 @@ import { existsSync as fileExists, readdirSync as readdir, statSync as fileStat 
 import { homedir } from 'os'
 import { join as pathJoin } from 'path'
 
+import { BaseSearchEngine, SearchResult, VOID_TRIGGER } from 'einstein'
 import { fileIconToBuffer as appIconAsBuffer } from 'file-icon'
 import Fuse from 'fuse.js'
 
-import { BaseSearchEngine, SearchResult, VOID_TRIGGER } from '@/api/searchEngine'
 import EventType from '@/pluginHost.node/plugins/desktop/EventType'
 import { exec } from '@/pluginHost.node/utils'
 

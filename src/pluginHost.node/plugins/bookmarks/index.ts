@@ -1,4 +1,5 @@
-import { BasePlugin } from '@/api/plugin'
+import { BasePlugin } from 'einstein'
+
 import ChromiumBookmarksSearchEngine from '@/pluginHost.node/plugins/bookmarks/BookmarksSearchEngine'
 
 export default class BookmarksPlugin extends BasePlugin {
