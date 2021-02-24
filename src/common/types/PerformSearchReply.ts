@@ -1,5 +1,4 @@
-import { WithPluginTagged } from '@/api/plugin'
-import { SearchResult } from '@/api/searchEngine'
+import { WithPluginTagged, SearchResult } from 'einstein'
 
 type PerformSearchReply = {
 	term: string

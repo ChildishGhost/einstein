@@ -1,5 +1,4 @@
-import { BasePlugin } from '@/api/plugin'
-import { ISearchEngine, VOID_TRIGGER } from '@/api/searchEngine'
+import { BasePlugin, ISearchEngine, VOID_TRIGGER } from 'einstein'
 
 const searchEngine: ISearchEngine = {
 	name: 'fooEngine',

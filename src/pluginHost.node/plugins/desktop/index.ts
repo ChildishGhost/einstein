@@ -1,4 +1,5 @@
-import { BasePlugin } from '@/api/plugin'
+import { BasePlugin } from 'einstein'
+
 import DarwinApplicationSearchEngine from '@/pluginHost.node/plugins/desktop/DarwinApplicationSearchEngine'
 import EventType from '@/pluginHost.node/plugins/desktop/EventType'
 import IApplicationSearchEngine from '@/pluginHost.node/plugins/desktop/IApplicationSearchEngine'

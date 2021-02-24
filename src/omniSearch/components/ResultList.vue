@@ -10,9 +10,9 @@
 </template>
 
 <script lang="ts">
+import { SearchResult } from 'einstein'
 import { defineComponent, PropType, ref, toRefs, watch } from 'vue'
 
-import { SearchResult } from '@/api/searchEngine'
 import ResultItem from '@/omniSearch/components/ResultItem.vue'
 
 export default defineComponent({

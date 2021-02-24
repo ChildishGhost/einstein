@@ -15,10 +15,9 @@
 </template>
 
 <script lang="ts">
+import { WithPluginTagged, SearchResult } from 'einstein'
 import { defineComponent, inject, nextTick, onMounted, ref, toRaw, watch } from 'vue'
 
-import { WithPluginTagged } from '@/api/plugin'
-import { SearchResult } from '@/api/searchEngine'
 import { MessageTunnel } from '@/common/message/MessageTunnel'
 import PluginEvent from '@/common/types/PluginEvent'
 import ResultList from '@/omniSearch/components/ResultList.vue'

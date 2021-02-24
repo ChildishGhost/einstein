@@ -17,6 +17,7 @@ const babelOptions = {
 		['module-resolver', {
 			alias: {
 				'@': './src',
+				'einstein': './src/api',
 			},
 		}]
 	],
@@ -32,6 +33,7 @@ module.exports = {
 	resolve: {
 		alias: {
 			'@': rel('src'),
+			'einstein': rel('src/api'),
 		},
 	},
 	devtool: 'source-map',

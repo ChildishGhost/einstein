@@ -9,5 +9,8 @@ rules:
     - error
     - paths:
         - electron
+        - name: '@/api'
+          message: Please import from 'einstein' instead.
       patterns:
         - electron/*
+        - '@/api/*'
