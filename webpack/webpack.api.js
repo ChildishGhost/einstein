@@ -4,8 +4,17 @@ const path = require('path');
 const { ProgressPlugin } = require('webpack');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const ESLintPlugin = require('eslint-webpack-plugin');
+const CreateFileWebpack = require('create-file-webpack');
+const { name, version } = require('../package');
 
 const rel = path.resolve.bind(null, __dirname, '..');
+
+const createPackage = () => ({
+	name,
+	version,
+	module: 'index.js',
+	types: 'index.d.ts',
+});
 
 const babelOptions = {
 	presets: [['@babel/preset-env', {
@@ -32,7 +41,7 @@ const condition = {
 }
 
 module.exports = {
-	name: 'node',
+	name,
 	cache: true,
 	mode: 'production',
 	entry: rel('src/api/index.ts'),
@@ -47,7 +56,7 @@ module.exports = {
 		filename: 'index.js',
 		chunkFilename: '[chunkhash].js',
 		library: {
-			name: 'einstein',
+			name,
 			type: 'umd',
 		},
 	},
@@ -91,6 +100,11 @@ module.exports = {
 			extensions: ['.js', '.ts'],
 		}),
 		new CleanWebpackPlugin(),
+		new CreateFileWebpack({
+			path: rel('dist/api'),
+			fileName: 'package.json',
+			content: JSON.stringify(createPackage(), null, 2),
+		}),
 	],
 	target: 'node',
 };
