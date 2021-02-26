@@ -18,5 +18,6 @@ cp -r "${ELECTRON_DIR}" "${DIST_ELECTRON}"
 mkdir -p "${DIST_RESOURCES}dist"
 cp -r "${DIR}dist/main" "${DIST_RESOURCES}dist/main"
 cp -r "${DIR}dist/renderer" "${DIST_RESOURCES}dist/renderer"
+cp -r "${DIR}dist/node" "${DIST_RESOURCES}dist/node"
 
 cp "${DIR}package.json" "${DIST_RESOURCES}package.json"

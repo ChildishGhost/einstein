@@ -6,7 +6,7 @@
 		"build": "npm run build:webpack && npm run build:electron",
 		"build:webpack": "webpack",
 		"build:electron": ".bin/build-electron.sh",
-		"clean": "rm -rf node_modules && rm -rf dist/{main,renderer,electron}",
+		"clean": "rm -rf node_modules && rm -rf dist/{electron,main,node,renderer}",
 		"lint": "eslint src/ --ext .ts,.js,.vue",
 		"lint:fix": "npm run lint -- --fix",
 		"format": "prettier -w src/ && eslint --ext .ts,.js,.vue --fix src/",
