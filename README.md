@@ -2,6 +2,8 @@
 
 A completely reinvented cross-platform enthusiast-oriented `Spotlight` :mag:-like world-class productivity tool to optimize high-quality desktop experience and automation with excessively flexible community-driven plugin eco-system.
 
+![The awesome screenshot!](./.github/screenshot1.png)
+
 ## Getting started
 
 See build instructions below.
