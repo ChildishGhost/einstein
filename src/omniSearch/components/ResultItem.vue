@@ -77,6 +77,7 @@ export default defineComponent({
 .title {
 	margin: 0;
 	font-size: 20px;
+	font-family: 'Noto Sans CJK TC', 'LiHei Pro', system-ui, sans-serif;
 	color: #eee;
 	line-height: 24px;
 	white-space: nowrap;
