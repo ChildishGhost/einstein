@@ -1,10 +1,9 @@
-import * as fs from 'fs'
 import * as os from 'os'
 
 import Fuse from 'fuse.js'
 
 import { BaseSearchEngine, SearchResult } from '@/api/searchEngine'
-import { exec } from '@/pluginHost.node/utils'
+import { exec, walk } from '@/pluginHost.node/utils'
 
 type PreSearch = {
 	file: string
@@ -110,24 +109,6 @@ export default class PassSearchEngine extends BaseSearchEngine {
 
 	private loadPassStore() {
 		const passStoreDir = `${os.homedir()}/.password-store`
-
-		// walk directory recursively
-		const walk = (path: string, acc: string[]) => {
-			if (fs.existsSync(path)) {
-				const stats = fs.statSync(path)
-				if (stats.isDirectory()) {
-					acc.push(
-						...fs
-							.readdirSync(path)
-							.map((file) => walk(`${path}/${file}`, []))
-							.flat(),
-					)
-				} else {
-					acc.push(path)
-				}
-			}
-			return acc
-		}
 
 		// collect all available .gpg files and remove passstore directory path
 		this.passFiles = walk(passStoreDir, [])
