@@ -4,7 +4,7 @@ import * as os from 'os'
 import Fuse from 'fuse.js'
 
 import { BaseSearchEngine, SearchResult, VOID_TRIGGER } from '@/api/searchEngine'
-import { exec, walk } from '@/pluginHost.node/utils'
+import { findIcon, exec, walk } from '@/pluginHost.node/utils'
 
 type BookmarkType = {
 	name: string
@@ -41,6 +41,7 @@ export default class ChromiumBookmarksSearchEngine extends BaseSearchEngine {
 			id: item.url,
 			title: item.name,
 			description: item.name,
+			icon: findIcon('www'),
 			completion: item.name,
 			event: {
 				type: os.platform() === 'linux' ? 'linux' : 'unknown',

@@ -5,7 +5,7 @@ import Fuse from 'fuse.js'
 
 import { BaseSearchEngine, SearchResult, VOID_TRIGGER } from '@/api/searchEngine'
 import EventType from '@/pluginHost.node/plugins/desktop/EventType'
-import { exec } from '@/pluginHost.node/utils'
+import { findIcon, exec } from '@/pluginHost.node/utils'
 
 /*
 file = {
@@ -74,6 +74,7 @@ export default class LinuxDesktopApplicationSearchEngine extends BaseSearchEngin
 			id: item.file,
 			title: item.name,
 			description: item.exec,
+			icon: item.icon,
 			completion: item.name,
 			event: {
 				type: EventType.EXECUTE_APPLICATION,
@@ -193,7 +194,7 @@ export default class LinuxDesktopApplicationSearchEngine extends BaseSearchEngin
 							file: filename,
 							name: isAction ? `${file[DESKTOP_ENTRY].Name}: ${file[group].Name}` : file[DESKTOP_ENTRY].Name,
 							exec: file[group].Exec,
-							icon: file[group].Icon,
+							icon: findIcon(file[DESKTOP_ENTRY].Icon),
 							keywords: file[group].Keywords,
 							comment: file[group].Comment,
 							categories: file[group].Categories,

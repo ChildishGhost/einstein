@@ -3,7 +3,7 @@ import * as os from 'os'
 import Fuse from 'fuse.js'
 
 import { BaseSearchEngine, SearchResult } from '@/api/searchEngine'
-import { exec, walk } from '@/pluginHost.node/utils'
+import { exec, findIcon, walk } from '@/pluginHost.node/utils'
 
 type PreSearch = {
 	file: string
@@ -32,12 +32,14 @@ export default class PassSearchEngine extends BaseSearchEngine {
 			id: 'pass trigger help',
 			title: 'pass',
 			description: 'the standard unix password manager',
+			icon: findIcon('dialog-password'),
 			completion: 'pass ',
 		},
 		{
 			id: 'pass trigger help',
 			title: 'pass show',
 			description: 'show password in QR code',
+			icon: findIcon('dialog-password'),
 			completion: 'pass show ',
 		},
 	]
@@ -79,6 +81,7 @@ export default class PassSearchEngine extends BaseSearchEngine {
 			id: item.file,
 			title: item.name,
 			description: item.file,
+			icon: findIcon('dialog-password'),
 			completion: `${this.triggers[0]} show ${item.name}`,
 			event: {
 				type: 'pass show',
@@ -97,6 +100,7 @@ export default class PassSearchEngine extends BaseSearchEngine {
 			id: item.file,
 			title: item.name,
 			description: item.file,
+			icon: findIcon('dialog-password'),
 			completion: `${this.triggers[0]} ${item.name}`,
 			event: {
 				type: 'pass',
