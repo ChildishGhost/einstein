@@ -6,7 +6,7 @@ import Fuse from 'fuse.js'
 import { BaseSearchEngine, SearchResult, VOID_TRIGGER } from '@/api/searchEngine'
 import { findIcon, exec, walk } from '@/pluginHost.node/utils'
 
-type BookmarkType = {
+type Bookmark = {
 	name: string
 	url: string
 }
@@ -14,8 +14,8 @@ type BookmarkType = {
 // fields we are interested in
 // See BookmarkTreeNode in the below reference
 // https://developer.chrome.com/docs/extensions/reference/bookmarks/#type-BookmarkTreeNode
-type BookmarkTreeNodeType = {
-	children?: BookmarkTreeNodeType[]
+type BookmarkTreeNode = {
+	children?: BookmarkTreeNode[]
 	name: string
 	url: string
 	type: string
@@ -26,9 +26,9 @@ export default class ChromiumBookmarksSearchEngine extends BaseSearchEngine {
 
 	triggers = [ VOID_TRIGGER ]
 
-	private fuse: Fuse<BookmarkType> = null
+	private fuse: Fuse<Bookmark> = null
 
-	private bookmarks: BookmarkType[] = []
+	private bookmarks: Bookmark[] = []
 
 	constructor() {
 		super()
@@ -37,7 +37,7 @@ export default class ChromiumBookmarksSearchEngine extends BaseSearchEngine {
 	}
 
 	async search(term: string, _trigger?: string): Promise<SearchResult[]> {
-		return this.fuse.search(term).map<SearchResult<BookmarkType>>(({ item }) => ({
+		return this.fuse.search(term).map<SearchResult<Bookmark>>(({ item }) => ({
 			id: item.url,
 			title: item.name,
 			description: item.name,
@@ -53,7 +53,7 @@ export default class ChromiumBookmarksSearchEngine extends BaseSearchEngine {
 		}))
 	}
 
-	async openBookmark({ url }: BookmarkType) {
+	async openBookmark({ url }: Bookmark) {
 		exec(`xdg-open ${url}`)
 	}
 
@@ -76,16 +76,16 @@ export default class ChromiumBookmarksSearchEngine extends BaseSearchEngine {
 		console.log(`${this.bookmarks.length} bookmark(s) loaded`)
 	}
 
-	private processBookmarkFiles(bookmarks: string[]): BookmarkType[] {
-		const collected: BookmarkType[] = []
+	private processBookmarkFiles(bookmarks: string[]): Bookmark[] {
+		const collected: Bookmark[] = []
 
 		// process each Bookmark file
 		bookmarks.forEach((b) => {
 			collected.push(...this.processBookmarkFile(b))
 		})
 
-		const deDups = (array: BookmarkType[]) => {
-			const newArray: BookmarkType[] = []
+		const deDups = (array: Bookmark[]) => {
+			const newArray: Bookmark[] = []
 			const map = new Map<string, boolean>()
 			array.forEach((e) => {
 				const s = JSON.stringify(e)
@@ -101,20 +101,20 @@ export default class ChromiumBookmarksSearchEngine extends BaseSearchEngine {
 		return deDups(collected)
 	}
 
-	private processBookmarkFile(bookmark: string): BookmarkType[] {
+	private processBookmarkFile(bookmark: string): Bookmark[] {
 		console.log(`parsing ${bookmark}`)
 		const j = JSON.parse(fs.readFileSync(bookmark, { encoding: 'utf8' }))
 
 		// recursively parse json.roots for all children objects
 		return Object.values(j.roots)
 			.filter((v) => typeof v === 'object')
-			.map((v: BookmarkTreeNodeType) => {
+			.map((v: BookmarkTreeNode) => {
 				return this.recursion(v, [])
 			})
 			.flat()
 	}
 
-	private recursion(json: BookmarkTreeNodeType, acc: BookmarkType[]): BookmarkType[] {
+	private recursion(json: BookmarkTreeNode, acc: Bookmark[]): Bookmark[] {
 		if (json) {
 			// collect all children nodes
 			if (json.type === 'folder') {
