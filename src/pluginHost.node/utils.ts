@@ -54,7 +54,7 @@ const findIcons = (app: string) => {
 const findIcon = (app: string) => {
 	// return the largest icon we found
 	const icons = findIcons(app)
-	return icons && icons.length >= 1 ? icons[0] : undefined
+	return icons && icons.length >= 1 ? `file://${icons[0]}` : undefined
 }
 
 /* eslint-disable-next-line import/prefer-default-export */
