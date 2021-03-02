@@ -13,9 +13,6 @@ import useMessageTunnel from '@/pluginHost.node/useMessageTunnel'
 const SEARCH_LIMIT = 10
 
 const pluginManager = new PluginManager()
-	.register(new DesktopApplicationsPlugin())
-	.register(new PassPlugin())
-	.register(new BookmarksPlugin())
 
 ;(async () => {
 	process.on('message', ({ type }) => {
@@ -26,7 +23,25 @@ const pluginManager = new PluginManager()
 
 	const messageTunnel = await useMessageTunnel()
 
-	await pluginManager.setup()
+	// TODO(davy): load as normal plugin
+	await pluginManager.loadPlugin({
+		uid: 'tw.childish.einstein.plugin.pass',
+		name: 'Pass',
+		entry: 'internal',
+		setup: PassPlugin,
+	})
+	await pluginManager.loadPlugin({
+		uid: 'tw.childish.einstein.plugin.desktop',
+		name: 'Desktop Applications',
+		entry: 'internal',
+		setup: DesktopApplicationsPlugin,
+	})
+	await pluginManager.loadPlugin({
+		uid: 'tw.childish.einstein.plugin.bookmarks.chromium',
+		name: 'Bookmarks',
+		entry: 'internal',
+		setup: BookmarksPlugin,
+	})
 
 	messageTunnel.register('plugin:performSearch', async ({ term: rawTerm }) => {
 		const { term, result } = await pluginManager.search(rawTerm.trim())
@@ -49,13 +64,8 @@ const pluginManager = new PluginManager()
 		})
 	})
 
-	messageTunnel.register<PluginEvent>('plugin:event', async ({ pluginUid, type, data }) => {
-		const plugin = pluginManager.getPlugin(pluginUid)
-		if (!plugin) {
-			return
-		}
-
-		await plugin.onEvent(type, data)
+	messageTunnel.register<PluginEvent>('plugin:event', ({ pluginUid, type, data }) => {
+		return pluginManager.notifyPlugin(pluginUid, type, data)
 	})
 
 	messageTunnel.sendMessage('plugin:initialized')

@@ -1,4 +1,4 @@
-import { BasePlugin } from 'einstein'
+import { PluginContext, PluginSetup } from 'einstein'
 
 import DarwinApplicationSearchEngine from '@/pluginHost.node/plugins/desktop/DarwinApplicationSearchEngine'
 import EventType from '@/pluginHost.node/plugins/desktop/EventType'
@@ -7,37 +7,25 @@ import LinuxDesktopApplicationSearchEngine from '@/pluginHost.node/plugins/deskt
 
 const { platform } = process
 
-export default class DesktopApplicationsPlugin extends BasePlugin {
-	uid = 'tw.childish.einstein.plugin.desktop'
-
-	private applicationSearchEngine: IApplicationSearchEngine = null
-
-	async setup() {
-		switch (platform) {
-		case 'linux':
-			this.applicationSearchEngine = new LinuxDesktopApplicationSearchEngine()
-			break
-		case 'darwin': {
-			const darwinEngine = new DarwinApplicationSearchEngine()
-			await darwinEngine.setup()
-			this.applicationSearchEngine = darwinEngine
-			break
-		}
-		default:
-		}
+const createEngine = async (): Promise<IApplicationSearchEngine> => {
+	switch (platform) {
+	case 'linux':
+		return new LinuxDesktopApplicationSearchEngine()
+	case 'darwin': {
+		const darwinEngine = new DarwinApplicationSearchEngine()
+		await darwinEngine.setup()
+		return darwinEngine
 	}
-
-	onEvent(type: string, data?: any) {
-		switch (type as EventType) {
-		case 'executeApplication':
-			return this.applicationSearchEngine.launchApp(data)
-		default:
-		}
-
-		return Promise.resolve()
-	}
-
-	get searchEngines() {
-		return [ this.applicationSearchEngine ]
+	default:
+		throw new Error('Unsupported platform')
 	}
 }
+
+const setup: PluginSetup = async (context: PluginContext) => {
+	const searchEngine = await createEngine()
+
+	context.registerSearchEngine(searchEngine)
+	context.registerEventHandler(EventType.EXECUTE_APPLICATION, (data) => searchEngine.launchApp(data))
+}
+
+export default setup

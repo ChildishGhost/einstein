@@ -2,7 +2,7 @@ import { existsSync as fileExists, readdirSync as readdir, statSync as fileStat 
 import { homedir } from 'os'
 import { join as pathJoin } from 'path'
 
-import { BaseSearchEngine, SearchResult, VOID_TRIGGER } from 'einstein'
+import { ISearchEngine, SearchResult } from 'einstein'
 import { fileIconToBuffer as appIconAsBuffer } from 'file-icon'
 import Fuse from 'fuse.js'
 
@@ -15,11 +15,7 @@ type Application = {
 	icon?: string
 }
 
-export default class DarwinApplicationSearchEngine extends BaseSearchEngine {
-	readonly name = 'tw.childish.einstein.plugin.desktop.darwin'
-
-	readonly triggers = [ VOID_TRIGGER ]
-
+export default class DarwinApplicationSearchEngine implements ISearchEngine {
 	private applications: Application[] = []
 
 	private fuse: Fuse<Application> = new Fuse([], {

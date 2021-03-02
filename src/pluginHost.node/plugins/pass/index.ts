@@ -1,29 +1,13 @@
-import { BasePlugin } from 'einstein'
+import { PluginContext, PluginSetup } from 'einstein'
 
 import PassSearchEngine from '@/pluginHost.node/plugins/pass/PassSearchEngine'
 
-export default class PassPlugin extends BasePlugin {
-	readonly uid = 'tw.childish.einstein.plugin.pass'
+const setup: PluginSetup = async (context: PluginContext) => {
+	const searchEngine = new PassSearchEngine()
 
-	private passSearchEngine: PassSearchEngine = null
-
-	async setup() {
-		this.passSearchEngine = new PassSearchEngine()
-	}
-
-	onEvent(type: string, data?: any) {
-		switch (type) {
-		case 'pass':
-			return this.passSearchEngine.copyPassword(data)
-		case 'pass show':
-			return this.passSearchEngine.showPasswordQR(data)
-		default:
-		}
-
-		return Promise.resolve()
-	}
-
-	get searchEngines() {
-		return [ this.passSearchEngine ]
-	}
+	context.registerSearchEngine(searchEngine, ...PassSearchEngine.triggers)
+	context.registerEventHandler('pass', (data: any) => searchEngine.copyPassword(data))
+	context.registerEventHandler('pass show', (data: any) => searchEngine.showPasswordQR(data))
 }
+
+export default setup

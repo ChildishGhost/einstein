@@ -1,51 +1,143 @@
-import { IPlugin, UID, WithPluginTagged, SearchResult, VOID_TRIGGER } from 'einstein'
+import {
+	UID,
+	WithPluginTagged,
+	SearchResult,
+	VOID_TRIGGER,
+	PluginContext as APIContext,
+	PluginDispose,
+	ISearchEngine,
+	PluginSetup,
+	PluginEventHandler,
+} from 'einstein'
 
-type TriggerPointer = { pluginUid: UID; engineName: string }
+type PluginMetadata = {
+	name: string
+	uid: UID
+	entry: string
+	setup?: PluginSetup
+}
+
+type Plugin = {
+	metadata: PluginMetadata
+	dispose?: PluginDispose
+	eventHandlers: Record<string, Set<PluginEventHandler>>
+}
+
+type PluginContext = APIContext & {
+	readonly eventHandlers: Record<string, Set<PluginEventHandler>>
+}
+
+// TODO(davy): implement
+async function searchPlugins(): Promise<PluginMetadata[]> {
+	return []
+}
+async function loadScript(path: string): Promise<PluginSetup> {
+	return module.require(path)
+}
+
+const PluginUIDSymbol = Symbol('PluginUID')
+type WithPluginUID<T> = T & {
+	[PluginUIDSymbol]: UID
+}
+const applyPluginUID = <T>(obj: T, uid: UID): WithPluginUID<T> => {
+	return Object.defineProperty(obj as unknown as WithPluginUID<T>, PluginUIDSymbol, {
+		configurable: false,
+		enumerable: false,
+		value: uid,
+	})
+}
+const hasPluginUID = <T>(obj: T): obj is WithPluginUID<T> => {
+	return Object.prototype.hasOwnProperty.call(obj, PluginUIDSymbol)
+}
 
 class PluginManager {
-	private plugins: IPlugin[]
+	private plugins: Map<UID, Plugin> = new Map()
 
-	private searchTriggers: Record<string, TriggerPointer[]>
+	private triggerMap: Map<string, Set<ISearchEngine>> = new Map([ [ VOID_TRIGGER, new Set() ] ])
 
-	constructor() {
-		this.plugins = []
-		this.searchTriggers = {
-			[VOID_TRIGGER]: [],
-		}
+	async loadPlugins() {
+		const metadatas = await searchPlugins()
+		await Promise.all(metadatas.map(this.loadPlugin))
 	}
 
-	register(plugin: IPlugin): this {
-		if (this.plugins.find(({ uid }) => uid === plugin.uid)) {
-			return this // duplicated
-		}
-		this.plugins.push(plugin)
+	async loadPlugin(metadata: PluginMetadata) {
+		const setup = metadata.setup || (await loadScript(metadata.entry))
+		const context = this.buildContext(metadata.uid)
+		const dispose = (await setup(context)) || undefined
 
-		return this
-	}
-
-	async setup() {
-		await Promise.all(this.plugins.map((p) => p.setup()))
-
-		this.plugins.forEach(({ uid, searchEngines }) => {
-			searchEngines.forEach(({ name, triggers }) => {
-				triggers.forEach((trigger) => {
-					if (!this.searchTriggers[trigger]) {
-						this.searchTriggers[trigger] = []
-					}
-					this.searchTriggers[trigger].push({
-						pluginUid: uid,
-						engineName: name,
-					})
-				})
-			})
+		this.plugins.set(metadata.uid, {
+			metadata,
+			dispose,
+			eventHandlers: context.eventHandlers,
 		})
+	}
+
+	async unloadPlugin(uid: UID) {
+		const plugin = this.plugins.get(uid)
+
+		if (plugin.dispose) {
+			await plugin.dispose()
+		}
+
+		this.plugins.delete(uid)
+	}
+
+	private buildContext(uid: UID): PluginContext {
+		const eventHandlers: Record<string, Set<PluginEventHandler>> = {}
+
+		return {
+			get eventHandlers() {
+				return eventHandlers
+			},
+
+			registerEventHandler: (type: string, handler: PluginEventHandler) => {
+				if (!eventHandlers[type]) {
+					eventHandlers[type] = new Set()
+				}
+
+				eventHandlers[type]!.add(handler)
+			},
+			registerSearchEngine: (searchEngine: ISearchEngine, ...triggers: string[]) => {
+				const engine = applyPluginUID(searchEngine, uid)
+
+				if (triggers.length === 0) {
+					this.addSearchEngineTrigger(VOID_TRIGGER, engine)
+					return
+				}
+
+				triggers.forEach((trigger) => this.addSearchEngineTrigger(trigger, engine))
+			},
+			deregisterEventHandler: (type: string, handler: PluginEventHandler) => {
+				eventHandlers[type]?.delete(handler)
+			},
+			deregisterSearchEngine: (searchEngine: ISearchEngine, ...triggers: string[]) => {
+				if (triggers.length === 0) {
+					this.removeSearchEngineTrigger(VOID_TRIGGER, searchEngine)
+					return
+				}
+
+				triggers.forEach((trigger) => this.removeSearchEngineTrigger(trigger, searchEngine))
+			},
+		}
+	}
+
+	private addSearchEngineTrigger(trigger: string, searchEngine: WithPluginUID<ISearchEngine>) {
+		if (!this.triggerMap.has(trigger)) {
+			this.triggerMap.set(trigger, new Set())
+		}
+
+		this.triggerMap.get(trigger)!.add(searchEngine)
+	}
+
+	private removeSearchEngineTrigger(trigger: string, searchEngine: ISearchEngine) {
+		this.triggerMap.get(trigger)?.delete(searchEngine)
 	}
 
 	async search(term: string) {
 		const [ trigger, ...terms ] = term.split(' ')
 
 		// Option 1: trigger' 'terms...
-		const engines = this.searchTriggers[trigger]
+		const engines = this.triggerMap.get(trigger)
 		if (engines) {
 			return {
 				trigger,
@@ -55,7 +147,7 @@ class PluginManager {
 		}
 
 		// Option 2: terms...
-		const voidEngines = this.searchTriggers[VOID_TRIGGER]
+		const voidEngines = this.triggerMap.get(VOID_TRIGGER)
 		return {
 			trigger: VOID_TRIGGER,
 			term,
@@ -63,35 +155,37 @@ class PluginManager {
 		}
 	}
 
-	getPlugin(uid: UID): IPlugin | undefined {
-		return this.plugins.find(({ uid: id }) => id === uid)
+	async notifyPlugin(uid: UID, type: string, data?: any) {
+		const plugin = this.plugins.get(uid)
+		if (!plugin) {
+			return
+		}
+
+		const handlers = plugin!.eventHandlers[type]
+		if (!handlers) {
+			return
+		}
+
+		await Promise.all(Array.from(handlers, (handler) => handler(data)))
 	}
 
-	private async performSearch(engines: TriggerPointer[], term: string, trigger: string = VOID_TRIGGER) {
+	private async performSearch(engines: Set<ISearchEngine>, term: string, trigger: string = VOID_TRIGGER) {
 		const results = await Promise.all(
-			engines.map(({ pluginUid, engineName }) => this.performSearchOnPlugin(pluginUid, engineName, term, trigger)),
+			Array.from(engines, async (engine) => {
+				if (!hasPluginUID(engine)) {
+					return []
+				}
+
+				const result = await engine.search(term, trigger)
+
+				return result.map<WithPluginTagged<SearchResult>>((orig) => ({
+					...orig,
+					pluginUid: engine[PluginUIDSymbol],
+				}))
+			}),
 		)
 
 		return results.flat()
-	}
-
-	private async performSearchOnPlugin(pluginUid: UID, engineName: string, term: string, trigger: string) {
-		const plugin = this.getPlugin(pluginUid)
-		if (!plugin) {
-			return []
-		}
-
-		const engine = plugin.searchEngines.find(({ name }) => name === engineName)
-		if (!engine) {
-			return []
-		}
-
-		const result = await engine.search(term, trigger)
-
-		return result.map<WithPluginTagged<SearchResult>>((orig) => ({
-			...orig,
-			pluginUid,
-		}))
 	}
 }
 

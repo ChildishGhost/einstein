@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 import * as os from 'os'
 
-import { BaseSearchEngine, SearchResult, VOID_TRIGGER } from 'einstein'
+import { ISearchEngine, SearchResult } from 'einstein'
 import Fuse from 'fuse.js'
 
 import { findIcon, exec, walk } from '@/pluginHost.node/utils'
@@ -21,17 +21,12 @@ type BookmarkTreeNode = {
 	type: string
 }
 
-export default class ChromiumBookmarksSearchEngine extends BaseSearchEngine {
-	name = 'tw.childish.einstein.plugin.bookmarks.chromium'
-
-	triggers = [ VOID_TRIGGER ]
-
+export default class ChromiumBookmarksSearchEngine implements ISearchEngine {
 	private fuse: Fuse<Bookmark> = null
 
 	private bookmarks: Bookmark[] = []
 
 	constructor() {
-		super()
 		this.loadBookmarks()
 		this.initFuse()
 	}

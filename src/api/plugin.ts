@@ -1,29 +1,19 @@
 import { ISearchEngine } from './searchEngine'
+import { UID } from './types'
 
-type UID = string
+type PluginEventHandler = (data?: any) => void | Promise<void>
+interface PluginContext {
+	registerEventHandler(type: string, handler: PluginEventHandler): void
+	registerSearchEngine(searchEngine: ISearchEngine, ...triggers: string[]): void
 
-interface IPlugin {
-	readonly uid: UID
-	setup(): Promise<void>
-	onEvent(type: string, data?: any): Promise<void>
-
-	readonly searchEngines: ISearchEngine[]
+	deregisterEventHandler(type: string, handler: PluginEventHandler): void
+	deregisterSearchEngine(searchEngine: ISearchEngine, ...triggers: string[]): void
 }
-
-abstract class BasePlugin implements IPlugin {
-	abstract get uid(): string
-
-	// eslint-disable-next-line no-empty-function
-	async setup() {}
-
-	// eslint-disable-next-line no-empty-function
-	async onEvent(_type: string, _data?: any) {}
-
-	abstract get searchEngines(): ISearchEngine[]
-}
+type PluginDispose = () => void | PromiseLike<void>
+type PluginSetup = (context: PluginContext) => void | PromiseLike<void> | PluginDispose | PromiseLike<PluginDispose>
 
 type WithPluginTagged<T> = T & {
 	pluginUid: UID
 }
 
-export { UID, IPlugin, BasePlugin, WithPluginTagged }
+export { PluginContext, PluginDispose, PluginEventHandler, PluginSetup, WithPluginTagged }
