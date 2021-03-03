@@ -1,29 +1,11 @@
 'use strict';
 
-const path = require('path');
 const fs = require('fs');
 const { ProgressPlugin } = require('webpack');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const ESLintPlugin = require('eslint-webpack-plugin');
 const CopyPlugin = require("copy-webpack-plugin");
-
-const rel = path.resolve.bind(null, __dirname, '..');
-
-const babelOptions = {
-	presets: [['@babel/preset-env', {
-		corejs: 3,
-		useBuiltIns: 'usage',
-	}]],
-	sourceMap: true,
-	plugins: [
-		['module-resolver', {
-			alias: {
-				'@': './src',
-				'einstein': './src/api',
-			},
-		}]
-	],
-};
+const utils = require('./utils');
 
 const condition = {
 	exclude: [
@@ -31,28 +13,19 @@ const condition = {
 		/\.(main|renderer)\.(ts|js)$/,
 	],
 	include: [
-		rel('src/api'),
-		rel('src/common'),
+		utils.rel('src/api'),
+		utils.rel('src/common'),
 		/src\/.+\.node\//,
 	],
 }
 
-module.exports = {
+module.exports = Object.assign({}, utils.defaultConfig, {
 	name: 'node',
-	cache: true,
-	mode: 'production',
 	entry: {
-		pluginHost: rel('src/pluginHost.node/index.ts'),
+		pluginHost: utils.rel('src/pluginHost.node/index.ts'),
 	},
-	resolve: {
-		alias: {
-			'@': rel('src'),
-			'einstein': rel('src/api'),
-		},
-	},
-	devtool: 'source-map',
 	output: {
-		path: rel('dist/node'),
+		path: utils.rel('dist/node'),
 		filename: '[name].js',
 		chunkFilename: '[chunkhash].js'
 	},
@@ -62,7 +35,7 @@ module.exports = {
 				test: /\.ts$/,
 				use: [{
 					loader: 'babel-loader',
-					options: babelOptions,
+					options: utils.babelOptions,
 				}, {
 					loader: 'ts-loader',
 				}],
@@ -71,7 +44,7 @@ module.exports = {
 				test: /\.js$/,
 				use: {
 					loader: 'babel-loader',
-					options: babelOptions,
+					options: utils.babelOptions,
 				},
 			},
 		],
@@ -87,16 +60,16 @@ module.exports = {
 		new CleanWebpackPlugin(),
 		new CopyPlugin({
 			patterns: [
-				rel('node_modules/file-icon/file-icon'), // file-icon native executable
+				utils.rel('node_modules/file-icon/file-icon'), // file-icon native executable
 			],
 		}),
 		{
 			apply(compiler) {
 				compiler.hooks.done.tap('fix permission', () => {
-					fs.chmodSync(rel('dist/node/file-icon'), 0o755)
+					fs.chmodSync(utils.rel('dist/node/file-icon'), 0o755)
 				});
 			},
 		},
 	],
 	target: 'node',
-};
+});

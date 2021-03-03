@@ -1,44 +1,17 @@
 'use strict';
 
-const path = require('path');
 const { ProgressPlugin } = require('webpack');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const ESLintPlugin = require('eslint-webpack-plugin');
+const utils = require('./utils');
 
-const rel = path.resolve.bind(null, __dirname, '..');
-
-const babelOptions = {
-	presets: [['@babel/preset-env', {
-		corejs: 3,
-		useBuiltIns: 'usage',
-	}]],
-	sourceMap: true,
-	plugins: [
-		['module-resolver', {
-			alias: {
-				'@': './src',
-				'einstein': './src/api',
-			},
-		}]
-	],
-};
-
-module.exports = {
+module.exports = Object.assign({}, utils.defaultConfig, {
 	name: 'main',
-	cache: true,
-	mode: 'production',
 	entry: {
-		main: rel('src/main/index.ts'),
+		main: utils.rel('src/main/index.ts'),
 	},
-	resolve: {
-		alias: {
-			'@': rel('src'),
-			'einstein': rel('src/api'),
-		},
-	},
-	devtool: 'source-map',
 	output: {
-		path: rel('dist/main'),
+		path: utils.rel('dist/main'),
 		filename: '[name].js',
 		chunkFilename: '[chunkhash].js'
 	},
@@ -49,7 +22,7 @@ module.exports = {
 				include: /src\/(main|common)/,
 				use: [{
 					loader: 'babel-loader',
-					options: babelOptions,
+					options: utils.babelOptions,
 				}, {
 					loader: 'ts-loader',
 					options: {
@@ -62,7 +35,7 @@ module.exports = {
 				include: /src\/(main|common)/,
 				use: {
 					loader: 'babel-loader',
-					options: babelOptions,
+					options: utils.babelOptions,
 				},
 			},
 		],
@@ -78,4 +51,4 @@ module.exports = {
 		new CleanWebpackPlugin(),
 	],
 	target: 'electron-main',
-};
+});
