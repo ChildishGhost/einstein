@@ -59,11 +59,9 @@ class PluginManager {
 		await Promise.all(metadatas.map((metadata) => this.loadPlugin(metadata)))
 	}
 
-	// TODO(davy): extract built-in plugins and make this function privately
-	async loadPlugin(metadata: PluginMetadata) {
+	private async loadPlugin(metadata: PluginMetadata) {
 		try {
-			// TODO(davy): extract built-in plugins and remove the hack of passing setup function directly
-			const setup = metadata.setup || (await loadScript(metadata))
+			const setup = await loadScript(metadata)
 			const context = this.buildContext(metadata.uid)
 			const dispose = (await setup(context)) || undefined
 
