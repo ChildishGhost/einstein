@@ -1,10 +1,9 @@
+import { ISearchEngine, SearchResult } from 'einstein'
 import * as fs from 'fs'
+import Fuse from 'fuse.js'
 import * as os from 'os'
 
-import { ISearchEngine, SearchResult } from 'einstein'
-import Fuse from 'fuse.js'
-
-import { exec } from '@/pluginHost.node/utils'
+import { exec } from './utils'
 
 type PreSearch = {
 	file: string
