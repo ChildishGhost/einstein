@@ -1,11 +1,10 @@
+import { ISearchEngine, SearchResult } from 'einstein'
 import * as fs from 'fs'
+import Fuse from 'fuse.js'
 import * as os from 'os'
 
-import { ISearchEngine, SearchResult } from 'einstein'
-import Fuse from 'fuse.js'
-
-import EventType from '@/pluginHost.node/plugins/desktop/EventType'
-import { findIcon, exec } from '@/pluginHost.node/utils'
+import EventType from './EventType'
+import { findIcon, exec } from './utils'
 
 /*
 file = {

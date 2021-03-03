@@ -1,0 +1,16 @@
+{
+	"name": "desktop-application",
+	"uid": "tw.childish.einstein.plugins.desktop",
+	"version": "0.0.1",
+	"main": "dist/index.js",
+	"dependencies": {
+		"file-icon": "^5.1.0"
+	},
+	"__webpack_copy": [
+		{
+			"from": "node_modules/file-icon/file-icon",
+			"to": "file-icon",
+			"perm": "755"
+		}
+	]
+}

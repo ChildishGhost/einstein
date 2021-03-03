@@ -1,9 +1,9 @@
 import { PluginContext, PluginSetup } from 'einstein'
 
-import DarwinApplicationSearchEngine from '@/pluginHost.node/plugins/desktop/DarwinApplicationSearchEngine'
-import EventType from '@/pluginHost.node/plugins/desktop/EventType'
-import IApplicationSearchEngine from '@/pluginHost.node/plugins/desktop/IApplicationSearchEngine'
-import LinuxDesktopApplicationSearchEngine from '@/pluginHost.node/plugins/desktop/LinuxDesktopApplicationSearchEngine'
+import DarwinApplicationSearchEngine from './DarwinApplicationSearchEngine'
+import EventType from './EventType'
+import IApplicationSearchEngine from './IApplicationSearchEngine'
+import LinuxDesktopApplicationSearchEngine from './LinuxDesktopApplicationSearchEngine'
 
 const { platform } = process
 

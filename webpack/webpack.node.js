@@ -1,10 +1,8 @@
 'use strict';
 
-const fs = require('fs');
 const { ProgressPlugin } = require('webpack');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const ESLintPlugin = require('eslint-webpack-plugin');
-const CopyPlugin = require("copy-webpack-plugin");
 const utils = require('./utils');
 
 const condition = {
@@ -58,18 +56,6 @@ module.exports = Object.assign({}, utils.defaultConfig, {
 			extensions: ['.js', '.ts'],
 		}),
 		new CleanWebpackPlugin(),
-		new CopyPlugin({
-			patterns: [
-				utils.rel('node_modules/file-icon/file-icon'), // file-icon native executable
-			],
-		}),
-		{
-			apply(compiler) {
-				compiler.hooks.done.tap('fix permission', () => {
-					fs.chmodSync(utils.rel('dist/node/file-icon'), 0o755)
-				});
-			},
-		},
 	],
 	target: 'node',
 });

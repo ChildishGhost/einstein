@@ -1,13 +1,13 @@
+import { ISearchEngine, SearchResult } from 'einstein'
 import { existsSync as fileExists, readdirSync as readdir, statSync as fileStat } from 'fs'
+import Fuse from 'fuse.js'
 import { homedir } from 'os'
 import { join as pathJoin } from 'path'
 
-import { ISearchEngine, SearchResult } from 'einstein'
 import { fileIconToBuffer as appIconAsBuffer } from 'file-icon'
-import Fuse from 'fuse.js'
 
-import EventType from '@/pluginHost.node/plugins/desktop/EventType'
-import { exec } from '@/pluginHost.node/utils'
+import EventType from './EventType'
+import { exec } from './utils'
 
 type Application = {
 	name: string
