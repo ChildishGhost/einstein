@@ -39,6 +39,9 @@ module.exports = Object.assign({}, utils.defaultConfig, {
 		chunkFilename: '[name]/[chunkhash].js',
     libraryTarget: 'commonjs2',
 	},
+	externals: {
+		"fuse.js": "fuse.js",
+	},
 	module: {
 		rules: [ {
 			test: /\.ts$/,
