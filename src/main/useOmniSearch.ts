@@ -26,6 +26,7 @@ const createWindow = () => {
 		show: false,
 		alwaysOnTop: true,
 		webPreferences: {
+			contextIsolation: false,
 			nodeIntegration: true,
 		},
 	})

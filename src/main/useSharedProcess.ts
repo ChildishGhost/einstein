@@ -18,6 +18,7 @@ const createSharedProcess = () => {
 	const window = new BrowserWindow({
 		show: false,
 		webPreferences: {
+			contextIsolation: false,
 			nodeIntegration: true,
 		},
 	})
