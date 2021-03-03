@@ -1,9 +1,8 @@
-import * as os from 'os'
-
 import { ISearchEngine, SearchResult } from 'einstein'
 import Fuse from 'fuse.js'
+import * as os from 'os'
 
-import { exec, findIcon, walk } from '@/pluginHost.node/utils'
+import { exec, findIcon, walk } from './utils'
 
 type PreSearch = {
 	file: string

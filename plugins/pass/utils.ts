@@ -58,7 +58,6 @@ const findIcons = (app: string) => {
 const findIcon = (app: string) => {
 	// return the largest icon we found
 	const icons = findIcons(app)
-
 	const filename = icons && icons.length >= 1 ? icons[0] : undefined
 	if (filename) {
 		return fs.readFileSync(filename).toString('base64')

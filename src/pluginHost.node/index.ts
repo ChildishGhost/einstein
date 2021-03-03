@@ -7,7 +7,6 @@ import PluginEvent from '@/common/types/PluginEvent'
 import PluginManager from '@/pluginHost.node/PluginManager'
 import BookmarksPlugin from '@/pluginHost.node/plugins/bookmarks'
 import DesktopApplicationsPlugin from '@/pluginHost.node/plugins/desktop'
-import PassPlugin from '@/pluginHost.node/plugins/pass'
 import useMessageTunnel from '@/pluginHost.node/useMessageTunnel'
 
 const SEARCH_LIMIT = 10
@@ -24,12 +23,6 @@ const pluginManager = new PluginManager()
 	const messageTunnel = await useMessageTunnel()
 
 	// TODO(davy): load as normal plugin
-	await pluginManager.loadPlugin({
-		uid: 'tw.childish.einstein.plugin.pass',
-		name: 'Pass',
-		entry: 'internal',
-		setup: PassPlugin,
-	})
 	await pluginManager.loadPlugin({
 		uid: 'tw.childish.einstein.plugin.desktop',
 		name: 'Desktop Applications',
