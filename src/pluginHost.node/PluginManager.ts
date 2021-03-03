@@ -28,7 +28,7 @@ type PluginContext = APIContext & {
 // TODO(davy): implement a secure plugin loader
 async function loadScript({ path, entry }: PluginMetadata): Promise<PluginSetup> {
 	const loadPath = path ? joinPath(path, entry) : entry
-	return __non_webpack_require__(loadPath)
+	return __non_webpack_require__(loadPath).default
 }
 
 const PluginUIDSymbol = Symbol('PluginUID')
