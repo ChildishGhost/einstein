@@ -86,11 +86,11 @@ export default class ChromiumBookmarksSearchEngine extends BaseSearchEngine {
 
 		const deDups = (array: Bookmark[]) => {
 			const newArray: Bookmark[] = []
-			const map = new Map<string, boolean>()
+			const set = new Set<string>()
 			array.forEach((e) => {
 				const s = JSON.stringify(e)
-				if (!map.get(s)) {
-					map.set(s, true)
+				if (!set.has(s)) {
+					set.add(s)
 					newArray.push(e)
 				}
 			})
