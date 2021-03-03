@@ -8,48 +8,22 @@ const { VueLoaderPlugin } = require('vue-loader');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ESLintPlugin = require('eslint-webpack-plugin');
-
-const rel = path.resolve.bind(null, __dirname, '..');
-
-const babelOptions = {
-	presets: [['@babel/preset-env', {
-		corejs: 3,
-		useBuiltIns: 'usage',
-	}]],
-	sourceMap: true,
-	plugins: [
-		['module-resolver', {
-			alias: {
-				'@': './src',
-				'einstein': './src/api',
-			},
-		}]
-	],
-};
+const utils = require('./utils');
 
 const backendOnlyPath = [
-	rel('src/main'),
-	rel('src/sharedProcess'),
+	utils.rel('src/main'),
+	utils.rel('src/sharedProcess'),
 	/\.main\.ts$/,
 ];
 
-module.exports = {
+module.exports = Object.assign({}, utils.defaultConfig, {
 	name: 'renderer',
-	cache: true,
-	mode: 'production',
 	entry: {
-		omniSearch: rel('src/omniSearch/index.ts'),
-		sharedProcess: rel('src/sharedProcess/index.ts'),
+		omniSearch: utils.rel('src/omniSearch/index.ts'),
+		sharedProcess: utils.rel('src/sharedProcess/index.ts'),
 	},
-	resolve: {
-		alias: {
-			'@': rel('src'),
-			'einstein': rel('src/api'),
-		},
-	},
-	devtool: 'source-map',
 	output: {
-		path: rel('dist/renderer'),
+		path: utils.rel('dist/renderer'),
 		filename: '[name].[contenthash].js',
 		chunkFilename: '[name].[chunkhash].js'
 	},
@@ -76,7 +50,7 @@ module.exports = {
 				exclude: /node_modules|src\/main/,
 				use: [{
 					loader: 'babel-loader',
-					options: babelOptions,
+					options: utils.babelOptions,
 				}, {
 					loader: 'ts-loader',
 					options: {
@@ -88,7 +62,7 @@ module.exports = {
 				exclude: /node_modules|src\/main/,
 				use: {
 					loader: 'babel-loader',
-					options: babelOptions,
+					options: utils.babelOptions,
 				},
 			}, {
 				test: /\.css$/,
@@ -168,4 +142,4 @@ module.exports = {
 		extensions: ['.js', '.ts', '.vue'],
 	},
 	target: 'electron-renderer',
-};
+});
