@@ -6,8 +6,8 @@ interface PluginContext {
 	registerEventHandler(type: string, handler: PluginEventHandler): void
 	registerSearchEngine(searchEngine: ISearchEngine, ...triggers: string[]): void
 
-	unregisterEventHandler(type: string, handler: PluginEventHandler): void
-	unregisterSearchEngine(searchEngine: ISearchEngine, ...triggers: string[]): void
+	deregisterEventHandler(type: string, handler: PluginEventHandler): void
+	deregisterSearchEngine(searchEngine: ISearchEngine, ...triggers: string[]): void
 }
 type PluginDispose = () => void | PromiseLike<void>
 type PluginSetup = (context: PluginContext) => void | PromiseLike<void> | PluginDispose | PromiseLike<PluginDispose>

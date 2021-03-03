@@ -112,10 +112,10 @@ class PluginManager {
 
 				triggers.forEach((trigger) => this.addSearchEngineTrigger(trigger, engine))
 			},
-			unregisterEventHandler: (type: string, handler: PluginEventHandler) => {
+			deregisterEventHandler: (type: string, handler: PluginEventHandler) => {
 				eventHandlers[type]?.delete(handler)
 			},
-			unregisterSearchEngine: (searchEngine: ISearchEngine, ...triggers: string[]) => {
+			deregisterSearchEngine: (searchEngine: ISearchEngine, ...triggers: string[]) => {
 				if (triggers.length === 0) {
 					this.removeSearchEngineTrigger(VOID_TRIGGER, searchEngine)
 					return
