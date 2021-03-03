@@ -21,8 +21,10 @@ const registerMessageTunnelPair = <T = any>(
 }
 
 const createApp = async () => {
-	const { exitProcess: closePluginHost, messageTunnel: pluginHostTunnel } = await usePluginHost()
 	const { window: sharedProcessWindow } = await useSharedProcess()
+	console.log('SharedProcess is ready.')
+
+	const { exitProcess: closePluginHost, messageTunnel: pluginHostTunnel } = await usePluginHost()
 
 	const pluginIsReady = new Promise<void>((resolve) => {
 		pluginHostTunnel.register('plugin:initialized', () => {
@@ -30,8 +32,10 @@ const createApp = async () => {
 		})
 	})
 	await pluginIsReady
+	console.log('Plugin is ready.')
 
 	const { window: omniSearchWindow, messageTunnel: omniSearchTunnel } = await useOmniSearch()
+	console.log('OmniSearch is ready.')
 
 	registerMessageTunnelPair(omniSearchTunnel, pluginHostTunnel, 'search', 'plugin:performSearch')
 	registerMessageTunnelPair(pluginHostTunnel, omniSearchTunnel, 'plugin:performSearch:reply', 'searchResult')
