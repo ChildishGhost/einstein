@@ -42,6 +42,7 @@ const pluginManager = new PluginManager()
 		entry: 'internal',
 		setup: BookmarksPlugin,
 	})
+	await pluginManager.loadPlugins()
 
 	messageTunnel.register('plugin:performSearch', async ({ term: rawTerm }) => {
 		const { term, result } = await pluginManager.search(rawTerm.trim())

@@ -1,3 +1,5 @@
+import { join as joinPath } from 'path'
+
 import {
 	UID,
 	WithPluginTagged,
@@ -10,12 +12,8 @@ import {
 	PluginEventHandler,
 } from 'einstein'
 
-type PluginMetadata = {
-	name: string
-	uid: UID
-	entry: string
-	setup?: PluginSetup
-}
+import { PluginMetadata } from '@/pluginHost.node/PluginMetadata'
+import PluginSearcher from '@/pluginHost.node/PluginSearcher'
 
 type Plugin = {
 	metadata: PluginMetadata
@@ -27,12 +25,10 @@ type PluginContext = APIContext & {
 	readonly eventHandlers: Record<string, Set<PluginEventHandler>>
 }
 
-// TODO(davy): implement
-async function searchPlugins(): Promise<PluginMetadata[]> {
-	return []
-}
-async function loadScript(path: string): Promise<PluginSetup> {
-	return module.require(path)
+// TODO(davy): implement a secure plugin loader
+async function loadScript({ path, entry }: PluginMetadata): Promise<PluginSetup> {
+	const loadPath = path ? joinPath(path, entry) : entry
+	return __non_webpack_require__(loadPath).default
 }
 
 const PluginUIDSymbol = Symbol('PluginUID')
@@ -55,21 +51,30 @@ class PluginManager {
 
 	private triggerMap: Map<string, Set<ISearchEngine>> = new Map([ [ VOID_TRIGGER, new Set() ] ])
 
+	private pluginSearcher = new PluginSearcher()
+
 	async loadPlugins() {
-		const metadatas = await searchPlugins()
-		await Promise.all(metadatas.map(this.loadPlugin))
+		const metadatas = await this.pluginSearcher.scanPlugins()
+
+		await Promise.all(metadatas.map((metadata) => this.loadPlugin(metadata)))
 	}
 
+	// TODO(davy): extract built-in plugins and make this function privately
 	async loadPlugin(metadata: PluginMetadata) {
-		const setup = metadata.setup || (await loadScript(metadata.entry))
-		const context = this.buildContext(metadata.uid)
-		const dispose = (await setup(context)) || undefined
+		try {
+			// TODO(davy): extract built-in plugins and remove the hack of passing setup function directly
+			const setup = metadata.setup || (await loadScript(metadata))
+			const context = this.buildContext(metadata.uid)
+			const dispose = (await setup(context)) || undefined
 
-		this.plugins.set(metadata.uid, {
-			metadata,
-			dispose,
-			eventHandlers: context.eventHandlers,
-		})
+			this.plugins.set(metadata.uid, {
+				metadata,
+				dispose,
+				eventHandlers: context.eventHandlers,
+			})
+		} catch (e) {
+			console.log(e.message)
+		}
 	}
 
 	async unloadPlugin(uid: UID) {
