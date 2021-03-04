@@ -13,7 +13,7 @@ import {
 } from 'einstein'
 
 import { PluginMetadata } from '@/pluginHost.node/PluginMetadata'
-import PluginSearcher from '@/pluginHost.node/PluginSearcher'
+import PluginScanner from '@/pluginHost.node/PluginScanner'
 
 type Plugin = {
 	metadata: PluginMetadata
@@ -51,10 +51,10 @@ class PluginManager {
 
 	private triggerMap: Map<string, Set<ISearchEngine>> = new Map([ [ VOID_TRIGGER, new Set() ] ])
 
-	private pluginSearcher = new PluginSearcher()
+	private pluginScanner = new PluginScanner()
 
 	async loadPlugins() {
-		const metadataList = await this.pluginSearcher.scanPlugins()
+		const metadataList = await this.pluginScanner.scan()
 
 		await Promise.all(metadataList.map((metadata) => this.loadPlugin(metadata)))
 	}
