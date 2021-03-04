@@ -54,9 +54,9 @@ class PluginManager {
 	private pluginSearcher = new PluginSearcher()
 
 	async loadPlugins() {
-		const metadatas = await this.pluginSearcher.scanPlugins()
+		const metadataList = await this.pluginSearcher.scanPlugins()
 
-		await Promise.all(metadatas.map((metadata) => this.loadPlugin(metadata)))
+		await Promise.all(metadataList.map((metadata) => this.loadPlugin(metadata)))
 	}
 
 	private async loadPlugin(metadata: PluginMetadata) {
