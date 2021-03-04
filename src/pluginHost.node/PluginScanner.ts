@@ -5,8 +5,8 @@ import { join as joinPath } from 'path'
 import Environment from '@/pluginHost.node/Environment'
 import { PluginMetadata } from '@/pluginHost.node/PluginMetadata'
 
-export default class PluginSearcher {
-	async scanPlugins() {
+export default class PluginScanner {
+	async scan() {
 		return (await Promise.all(this.scanDirs.map((dir) => this.scanPluginsInDir(dir)))).flat()
 	}
 
@@ -26,7 +26,7 @@ export default class PluginSearcher {
 				dirents
 					.filter((dirent) => dirent.isDirectory())
 					.map((dirent) => joinPath(dir, dirent.name))
-					.map((path) => this.scanPlugin(path)),
+					.map((path) => this.readPluginMetadata(path)),
 			)
 		} catch (e) {
 			console.log(`Unable to readdir: ${dir}, reason: ${e.message}`)
@@ -34,7 +34,7 @@ export default class PluginSearcher {
 		}
 	}
 
-	private async scanPlugin(path: string): Promise<PluginMetadata | null> {
+	private async readPluginMetadata(path: string): Promise<PluginMetadata | null> {
 		console.log(`Scanned plugin path: ${path}`)
 		try {
 			const { name, uid, main: mainScript, module: moduleScript } = await this.readManifest(path)
