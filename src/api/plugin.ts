@@ -1,12 +1,12 @@
 import { ISearchEngine } from './searchEngine'
-import { UID } from './types'
+import { EventType, UID } from './types'
 
 type PluginEventHandler = (data?: any) => void | Promise<void>
 interface PluginContext {
-	registerEventHandler(type: string, handler: PluginEventHandler): void
+	registerEventHandler(type: EventType, handler: PluginEventHandler): void
 	registerSearchEngine(searchEngine: ISearchEngine, ...triggers: string[]): void
 
-	deregisterEventHandler(type: string, handler: PluginEventHandler): void
+	deregisterEventHandler(type: EventType, handler: PluginEventHandler): void
 	deregisterSearchEngine(searchEngine: ISearchEngine, ...triggers: string[]): void
 }
 type PluginDispose = () => void | PromiseLike<void>
