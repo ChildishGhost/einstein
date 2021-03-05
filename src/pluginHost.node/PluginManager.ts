@@ -10,6 +10,7 @@ import {
 	ISearchEngine,
 	PluginSetup,
 	PluginEventHandler,
+	EventType,
 } from 'einstein'
 
 import { PluginMetadata } from '@/pluginHost.node/PluginMetadata'
@@ -93,7 +94,7 @@ class PluginManager {
 				return eventHandlers
 			},
 
-			registerEventHandler: (type: string, handler: PluginEventHandler) => {
+			registerEventHandler: (type: EventType, handler: PluginEventHandler) => {
 				if (!eventHandlers[type]) {
 					eventHandlers[type] = new Set()
 				}
@@ -110,7 +111,7 @@ class PluginManager {
 
 				triggers.forEach((trigger) => this.addSearchEngineTrigger(trigger, engine))
 			},
-			deregisterEventHandler: (type: string, handler: PluginEventHandler) => {
+			deregisterEventHandler: (type: EventType, handler: PluginEventHandler) => {
 				eventHandlers[type]?.delete(handler)
 			},
 			deregisterSearchEngine: (searchEngine: ISearchEngine, ...triggers: string[]) => {
