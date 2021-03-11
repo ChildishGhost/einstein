@@ -26,6 +26,7 @@ const createWindow = () => {
 		show: false,
 		alwaysOnTop: true,
 		webPreferences: {
+			// TODO(davy): enable isolation
 			contextIsolation: false,
 			nodeIntegration: true,
 		},

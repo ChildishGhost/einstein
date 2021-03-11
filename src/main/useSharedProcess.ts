@@ -18,6 +18,7 @@ const createSharedProcess = () => {
 	const window = new BrowserWindow({
 		show: false,
 		webPreferences: {
+			// TODO(davy): enable isolation
 			contextIsolation: false,
 			nodeIntegration: true,
 		},
