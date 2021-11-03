@@ -1,0 +1,22 @@
+name: Build
+
+on: [push, pull_request, workflow_dispatch]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 2
+
+      - name: Change diff
+        run: git --no-pager show -m "$GITHUB_SHA" --color
+
+      - name: Build
+        run: |
+          npm --version
+          npm install
+          npm run lint
+          npm run build
