@@ -4,7 +4,8 @@ import * as os from 'os'
 
 const exec = (command: string) => {
 	const cmd = cpSpawn(command, {
-		env: process.env,
+		// unset ELECTRON_RUN_AS_NODE so that the child process can use node/electron based applications
+		env: Object.fromEntries(Object.entries(process.env).filter(([ k, _ ]) => k !== 'ELECTRON_RUN_AS_NODE')),
 		detached: true,
 		shell: true,
 		stdio: [ 'ignore', 'inherit', 'inherit' ],
