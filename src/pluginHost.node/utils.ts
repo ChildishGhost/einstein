@@ -2,10 +2,13 @@ import { spawn as cpSpawn } from 'child_process'
 import * as fs from 'fs'
 import * as os from 'os'
 
+import { KEEP_ENV } from '@/pluginHost.node/constants'
+
 const exec = (command: string) => {
 	const cmd = cpSpawn(command, {
-		// unset ELECTRON_RUN_AS_NODE so that the child process can use node/electron based applications
-		env: Object.fromEntries(Object.entries(process.env).filter(([ k, _ ]) => k !== 'ELECTRON_RUN_AS_NODE')),
+		// only keep the environment variables we allow
+		// this will also unset ELECTRON_RUN_AS_NODE so that the child process can use node/electron based applications
+		env: Object.fromEntries(Object.entries(process.env).filter(([ k, _ ]) => KEEP_ENV.has(k))),
 		detached: true,
 		shell: true,
 		stdio: [ 'ignore', 'inherit', 'inherit' ],
