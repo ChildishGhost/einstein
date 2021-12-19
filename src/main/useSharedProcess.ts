@@ -1,8 +1,8 @@
 import { BrowserWindow, ipcMain, MessageChannelMain as ElectionMessageChannel } from 'electron'
 
+import Environment from './Environment'
 import { MessageTunnel, MessagePortMainProtocol } from '@/common/message/MessagePortMainProtocol.main'
 
-import Environment from './Environment'
 
 const prepareMessageProtocol = () =>
 	new Promise<MessagePortMainProtocol>((resolve) => {
