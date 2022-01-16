@@ -21,6 +21,6 @@ jobs:
       - name: Build
         run: |
           npm --version
-          npm install
+          npm ci 
           npm run lint
           npm run build
