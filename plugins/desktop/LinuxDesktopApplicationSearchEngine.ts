@@ -184,7 +184,7 @@ export default class LinuxDesktopApplicationSearchEngine implements ISearchEngin
 							file: filename,
 							name: isAction ? `${file[DESKTOP_ENTRY].Name}: ${file[group].Name}` : file[DESKTOP_ENTRY].Name,
 							exec: file[group].Exec,
-							icon: `data:image/png;base64,${findIcon(file[DESKTOP_ENTRY].Icon)}`,
+							icon: findIcon(file[DESKTOP_ENTRY].Icon),
 							keywords: file[group].Keywords,
 							comment: file[group].Comment,
 							categories: file[group].Categories,

@@ -37,3 +37,9 @@ export const KEEP_ENV = new Set([
 	'XUSERFILESEARCHPATH',
 	'_',
 ])
+
+export const ICON_EXT = new Set([
+	'.png',
+	'.xpm',
+	'.svg',
+])
