@@ -177,7 +177,6 @@ export default class LinuxDesktopApplicationSearchEngine extends BaseSearchEngin
 			}
 		})
 		console.log(`collected ${Object.keys(this.desktopFiles).length} files`)
-		console.log(this.desktopFiles)
 	}
 
 	private initFuse() {
@@ -191,7 +190,7 @@ export default class LinuxDesktopApplicationSearchEngine extends BaseSearchEngin
 							file: filename,
 							name: isAction ? `${file[DESKTOP_ENTRY].Name}: ${file[group].Name}` : file[DESKTOP_ENTRY].Name,
 							exec: file[group].Exec,
-							icon: findIcon(file[DESKTOP_ENTRY].Icon),
+							icon: `data:image/png;base64,${findIcon(file[DESKTOP_ENTRY].Icon)}`,
 							keywords: file[group].Keywords,
 							comment: file[group].Comment,
 							categories: file[group].Categories,
@@ -205,9 +204,6 @@ export default class LinuxDesktopApplicationSearchEngine extends BaseSearchEngin
 			},
 			[],
 		)
-
-		console.log('preSearch:')
-		console.log(preSearch)
 
 		this.fuse = new Fuse(preSearch, {
 			keys: [ 'file', 'name', 'exec', 'keyword', 'comment', 'categories', 'genericName' ],
