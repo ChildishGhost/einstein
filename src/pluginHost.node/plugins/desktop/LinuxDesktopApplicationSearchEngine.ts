@@ -20,8 +20,6 @@ file = {
 */
 type LinuxDesktopFile = {
 	[K in string]: Record<string, string>
-} & {
-	content?: string
 }
 
 type LinuxDesktopApplicationPreSearch = {
@@ -140,7 +138,6 @@ export default class LinuxDesktopApplicationSearchEngine extends BaseSearchEngin
 			this.desktopFiles[file] = { content: undefined }
 
 			const content = fs.readFileSync(file, { encoding: 'utf8' })
-			this.desktopFiles[file].content = content
 
 			let currentGroup = ''
 			content.split('\n').forEach((line: string) => {
