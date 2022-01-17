@@ -12,13 +12,13 @@ See build instructions below.
 
 ### Requirements
 
-- [Node.js](https://nodejs.org/) >= `15.6.0`
-- [npm](https://www.npmjs.com/) >= `7.5.0`
+- [Node.js](https://nodejs.org/) >= `16.13.0`
+- [npm](https://www.npmjs.com/) >= `8.0.0`
 
 One can install `node` and `npm` via `nvm`.
 
 ```bash
-nvm install 15.6.0
+nvm install 16.13.0
 ```
 
 ### Build and Run Einstein
