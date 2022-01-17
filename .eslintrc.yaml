@@ -40,10 +40,21 @@ rules:
         - builtin
         - external
         - internal
+      pathGroups:
+        - pattern: einstein
+          group: external
       newlines-between: always
       alphabetize:
         order: asc
         caseInsensitive: true
+  # Force to use 'einstein' as api imports
+  no-restricted-imports:
+    - error
+    - paths:
+        - name: '@/api'
+          message: Please import from 'einstein' instead.
+      patterns:
+        - '@/api/*'
 
   array-bracket-spacing:
     - error
@@ -89,4 +100,5 @@ settings:
         - .js
         - .vue
       map:
-        - [ '@', './src' ]
+        - ['@', './src']
+        - ['einstein', './src/api']

@@ -6,7 +6,7 @@
 		"build": "npm run build:webpack && npm run build:electron",
 		"build:webpack": "webpack",
 		"build:electron": ".bin/build-electron.sh",
-		"clean": "rm -rf node_modules && rm -rf dist/{electron,main,node,renderer}",
+		"clean": "rm -rf node_modules && rm -rf dist/{electron,main,node,plugins,renderer}",
 		"lint": "eslint src/ --ext .ts,.js,.vue",
 		"lint:fix": "npm run lint -- --fix",
 		"format": "prettier -w src/ && eslint --ext .ts,.js,.vue --fix src/",
@@ -24,7 +24,7 @@
 		"babel-loader": "^8.2.2",
 		"babel-plugin-module-resolver": "^4.1.0",
 		"clean-webpack-plugin": "^4.0.0",
-		"copy-webpack-plugin": "^7.0.0",
+		"create-file-webpack": "^1.0.2",
 		"css-loader": "^5.0.1",
 		"electron": "^17.0.0-beta.4",
 		"electron-debug": "^3.2.0",
@@ -55,7 +55,6 @@
 	},
 	"dependencies": {
 		"core-js": "^3.8.3",
-		"file-icon": "^5.1.0",
 		"fuse.js": "^6.4.6",
 		"source-map-support": "^0.5.21",
 		"vue": "^3.2.27"

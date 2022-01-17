@@ -1,11 +1,10 @@
+import { ISearchEngine, SearchResult } from 'einstein'
 import * as fs from 'fs'
+import Fuse from 'fuse.js'
 import * as os from 'os'
 
-import Fuse from 'fuse.js'
-
-import { BaseSearchEngine, SearchResult, VOID_TRIGGER } from '@/api/searchEngine'
-import EventType from '@/pluginHost.node/plugins/desktop/EventType'
-import { findIcon, exec } from '@/pluginHost.node/utils'
+import EventType from './EventType'
+import { findIcon, exec } from './utils'
 
 /*
 file = {
@@ -47,19 +46,14 @@ const DESKTOP_ACTION = '[Desktop Action'
 // eslint-disable-next-line max-len
 const isLaunchable = (groupName: string) => groupName === DESKTOP_ENTRY || groupName.startsWith(DESKTOP_ACTION)
 
-export default class LinuxDesktopApplicationSearchEngine extends BaseSearchEngine {
+export default class LinuxDesktopApplicationSearchEngine implements ISearchEngine {
 	private desktopFiles: Record<string, LinuxDesktopFile> = {}
 
 	private fuse: Fuse<LinuxDesktopApplicationPreSearch> = null
 
-	name = 'tw.childish.einstein.plugin.desktop.linux'
-
-	triggers = [ VOID_TRIGGER ]
-
 	TERMINAL_EMULATOR: string = 'urxvtc -e'
 
 	constructor() {
-		super()
 		this.loadDesktopFiles()
 		this.sanitizeExecCommand()
 		this.inferTerminalEmulator()

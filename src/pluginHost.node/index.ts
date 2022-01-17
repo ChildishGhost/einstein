@@ -5,17 +5,11 @@ import Fuse from 'fuse.js'
 import PerformSearchReply from '@/common/types/PerformSearchReply'
 import PluginEvent from '@/common/types/PluginEvent'
 import PluginManager from '@/pluginHost.node/PluginManager'
-import BookmarksPlugin from '@/pluginHost.node/plugins/bookmarks'
-import DesktopApplicationsPlugin from '@/pluginHost.node/plugins/desktop'
-import PassPlugin from '@/pluginHost.node/plugins/pass'
 import useMessageTunnel from '@/pluginHost.node/useMessageTunnel'
 
 const SEARCH_LIMIT = 10
 
 const pluginManager = new PluginManager()
-	.register(new DesktopApplicationsPlugin())
-	.register(new PassPlugin())
-	.register(new BookmarksPlugin())
 
 ;(async () => {
 	process.on('message', ({ type }) => {
@@ -26,7 +20,7 @@ const pluginManager = new PluginManager()
 
 	const messageTunnel = await useMessageTunnel()
 
-	await pluginManager.setup()
+	await pluginManager.loadPlugins()
 
 	messageTunnel.register('plugin:performSearch', async ({ term: rawTerm }) => {
 		const { term, result } = await pluginManager.search(rawTerm.trim())
@@ -49,13 +43,8 @@ const pluginManager = new PluginManager()
 		})
 	})
 
-	messageTunnel.register<PluginEvent>('plugin:event', async ({ pluginUid, type, data }) => {
-		const plugin = pluginManager.getPlugin(pluginUid)
-		if (!plugin) {
-			return
-		}
-
-		await plugin.onEvent(type, data)
+	messageTunnel.register<PluginEvent>('plugin:event', ({ pluginUid, type, data }) => {
+		return pluginManager.notifyPlugin(pluginUid, type, data)
 	})
 
 	messageTunnel.sendMessage('plugin:initialized')

@@ -1,9 +1,8 @@
+import { ISearchEngine, SearchResult } from 'einstein'
+import Fuse from 'fuse.js'
 import * as os from 'os'
 
-import Fuse from 'fuse.js'
-
-import { BaseSearchEngine, SearchResult } from '@/api/searchEngine'
-import { exec, findIcon, walk } from '@/pluginHost.node/utils'
+import { exec, findIcon, walk } from './utils'
 
 type PreSearch = {
 	file: string
@@ -16,16 +15,14 @@ type PassInput = { file: string }
  *
  * @see https://www.passwordstore.org/
  */
-export default class PassSearchEngine extends BaseSearchEngine {
+export default class PassSearchEngine implements ISearchEngine {
+	static triggers = Object.freeze([ 'pass' ])
+
+	static subCommand = Object.freeze([ 'show' ])
+
 	private passFiles: string[]
 
 	private fuse: Fuse<PreSearch> = null
-
-	name = 'tw.childish.einstein.plugin.pass.linux'
-
-	triggers = [ 'pass' ]
-
-	private subCommand = [ 'show' ]
 
 	help = [
 		{
@@ -45,15 +42,14 @@ export default class PassSearchEngine extends BaseSearchEngine {
 	]
 
 	constructor() {
-		super()
 		this.loadPassStore()
 		this.initFuse()
 	}
 
 	async search(term: string, trigger?: string): Promise<SearchResult[]> {
-		if (trigger === `${this.triggers[0]}`) {
+		if (trigger === `${PassSearchEngine.triggers[0]}`) {
 			const [ subCommand, ...remaining ] = term.split(' ')
-			if (subCommand === `${this.subCommand[0]}`) {
+			if (subCommand === `${PassSearchEngine.subCommand[0]}`) {
 				return this.searchAndShow(remaining.join(' '))
 			}
 			return this.searchOnTerm(term)
@@ -82,7 +78,7 @@ export default class PassSearchEngine extends BaseSearchEngine {
 			title: item.name,
 			description: item.file,
 			icon: findIcon('dialog-password'),
-			completion: `${this.triggers[0]} show ${item.name}`,
+			completion: `${PassSearchEngine.triggers[0]} show ${item.name}`,
 			event: {
 				type: 'pass show',
 				data: {
@@ -101,7 +97,7 @@ export default class PassSearchEngine extends BaseSearchEngine {
 			title: item.name,
 			description: item.file,
 			icon: findIcon('dialog-password'),
-			completion: `${this.triggers[0]} ${item.name}`,
+			completion: `${PassSearchEngine.triggers[0]} ${item.name}`,
 			event: {
 				type: 'pass',
 				data: {
