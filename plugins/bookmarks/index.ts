@@ -1,6 +1,6 @@
 import { PluginContext, PluginSetup } from 'einstein'
 
-import ChromiumBookmarksSearchEngine from '@/pluginHost.node/plugins/bookmarks/BookmarksSearchEngine'
+import ChromiumBookmarksSearchEngine from './BookmarksSearchEngine'
 
 const setup: PluginSetup = async (context: PluginContext) => {
 	const chromiumBookmarksSearchEngine = new ChromiumBookmarksSearchEngine()

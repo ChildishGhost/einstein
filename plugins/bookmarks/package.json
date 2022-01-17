@@ -1,0 +1,6 @@
+{
+	"name": "bookmarks",
+	"uid": "tw.childish.einstein.plugins.bookmarks.chromium",
+	"version": "0.0.1",
+	"main": "dist/index.js"
+}

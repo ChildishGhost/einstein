@@ -1,10 +1,9 @@
+import { ISearchEngine, SearchResult } from 'einstein'
 import * as fs from 'fs'
+import Fuse from 'fuse.js'
 import * as os from 'os'
 
-import { ISearchEngine, SearchResult } from 'einstein'
-import Fuse from 'fuse.js'
-
-import { findIcon, exec, walk } from '@/pluginHost.node/utils'
+import { findIcon, exec, walk } from './utils'
 
 type Bookmark = {
 	name: string
