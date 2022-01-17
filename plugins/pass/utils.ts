@@ -2,7 +2,7 @@ import { spawn as cpSpawn } from 'child_process'
 import * as fs from 'fs'
 import * as os from 'os'
 
-import { KEEP_ENV } from './constants'
+import { KEEP_ENV, ICON_EXT } from './constants'
 
 const exec = (command: string) => {
 	const cmd = cpSpawn(command, {
@@ -40,7 +40,7 @@ const loadIcons = (): string[] => {
 	const paths = [ `${os.homedir()}/.icons`, '/usr/share/icons', '/usr/share/pixmaps ' ]
 	const icons: string[] = []
 	paths.forEach((path) => {
-		icons.push(...walk(path, []).filter((f: string) => f.endsWith('.png') || f.endsWith('.xpm') || f.endsWith('.svg')))
+		icons.push(...walk(path, []).filter((f: string) => Array.from(ICON_EXT).some((ext) => f.endsWith(ext))))
 	})
 	return icons
 }
@@ -60,7 +60,9 @@ const findIcon = (app: string) => {
 	const icons = findIcons(app)
 	const filename = icons && icons.length >= 1 ? icons[0] : undefined
 	if (filename) {
-		return fs.readFileSync(filename).toString('base64')
+		const ext = filename.split('.').pop()
+		const base64 = fs.readFileSync(filename).toString('base64')
+		return `data:image/${ext};base64,${base64}`
 	}
 	return undefined
 }
