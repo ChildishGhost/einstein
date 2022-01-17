@@ -43,10 +43,6 @@ const pluginManager = new PluginManager()
 				? fuse.search(term, { limit: SEARCH_LIMIT }).map(({ item }) => item)
 				: result.slice(0, SEARCH_LIMIT)
 
-		console.log(`Fuzzing on: ${term}`)
-		console.log(result)
-		console.log(rankedResult)
-
 		messageTunnel.sendMessage<PerformSearchReply>('plugin:performSearch:reply', {
 			term: rawTerm,
 			result: rankedResult,
