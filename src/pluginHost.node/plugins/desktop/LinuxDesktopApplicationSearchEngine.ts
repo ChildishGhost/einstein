@@ -260,6 +260,8 @@ export default class LinuxDesktopApplicationSearchEngine extends BaseSearchEngin
 			this.TERMINAL_EMULATOR = 'uxterm -e'
 		} else if (availableTerminalEmulators.includes('xterm')) {
 			this.TERMINAL_EMULATOR = 'xterm -e'
+		} else {
+			console.log('no terminal emulator found. please install one of the following: rxvt-unicode, gnome-terminal, xterm')
 		}
 	}
 }
