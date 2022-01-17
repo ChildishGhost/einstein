@@ -1,3 +1,4 @@
+/* eslint-disable import/prefer-default-export */
 declare module 'file-icon' {
 	type Options = {
 		size?: number
@@ -5,10 +6,10 @@ declare module 'file-icon' {
 
 	type Identifier = string | number
 
-	function buffer(identifier: Identifier, options?: Options): Promise<Buffer>
-	function buffer(identifier: Identifier[], options?: Options): Promise<Buffer[]>
-	function file(identifier: Identifier, options?: Options): Promise<void>
-	function file(identifier: Identifier[], options?: Options): Promise<void>
+	function fileIconToBuffer(identifier: Identifier, options?: Options): Promise<Buffer>
+	function fileIconToBuffer(identifier: Identifier[], options?: Options): Promise<Buffer[]>
 
-	export { buffer, file }
+	export {
+		fileIconToBuffer,
+	}
 }

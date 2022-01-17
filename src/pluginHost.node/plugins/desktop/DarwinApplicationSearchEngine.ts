@@ -2,7 +2,7 @@ import { existsSync as fileExists, readdirSync as readdir, statSync as fileStat 
 import { homedir } from 'os'
 import { join as pathJoin } from 'path'
 
-import { buffer as appIconAsBuffer } from 'file-icon'
+import { fileIconToBuffer as appIconAsBuffer } from 'file-icon'
 import Fuse from 'fuse.js'
 
 import { BaseSearchEngine, SearchResult, VOID_TRIGGER } from '@/api/searchEngine'
