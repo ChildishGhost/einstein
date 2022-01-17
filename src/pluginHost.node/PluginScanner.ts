@@ -35,7 +35,6 @@ export default class PluginScanner {
 	}
 
 	private async readPluginMetadata(path: string): Promise<PluginMetadata | null> {
-		console.log(`Scanned plugin path: ${path}`)
 		try {
 			const { name, uid, main: mainScript, module: moduleScript } = await this.readManifest(path)
 			const entry = mainScript || moduleScript

@@ -26,12 +26,11 @@ const createApp = async () => {
 
 	const { exitProcess: closePluginHost, messageTunnel: pluginHostTunnel } = await usePluginHost()
 
-	const pluginIsReady = new Promise<void>((resolve) => {
+	await new Promise<void>((resolve) => {
 		pluginHostTunnel.register('plugin:initialized', () => {
 			resolve()
 		})
 	})
-	await pluginIsReady
 	console.log('Plugin is ready.')
 
 	const { window: omniSearchWindow, messageTunnel: omniSearchTunnel } = await useOmniSearch()

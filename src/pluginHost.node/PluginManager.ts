@@ -78,6 +78,9 @@ class PluginManager {
 
 	async unloadPlugin(uid: UID) {
 		const plugin = this.plugins.get(uid)
+		if (!plugin) {
+			return
+		}
 
 		if (plugin.dispose) {
 			await plugin.dispose()
@@ -165,7 +168,7 @@ class PluginManager {
 			return
 		}
 
-		const handlers = plugin!.eventHandlers[type]
+		const handlers = plugin.eventHandlers[type]
 		if (!handlers) {
 			return
 		}

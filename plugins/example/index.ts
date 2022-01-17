@@ -24,7 +24,6 @@ const searchEngine = {
 }
 
 const searchEngine2 = {
-	triggers: [ VOID_TRIGGER ],
 	async search(_term: string, _trigger?: string) {
 		return [
 			{
@@ -38,5 +37,5 @@ const searchEngine2 = {
 
 export default ({ registerSearchEngine }: PluginContext) => {
 	registerSearchEngine(searchEngine, ...searchEngine.triggers)
-	registerSearchEngine(searchEngine2, ...searchEngine2.triggers)
+	registerSearchEngine(searchEngine2)
 }
