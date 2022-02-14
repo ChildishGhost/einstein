@@ -15,9 +15,7 @@ extends:
   - plugin:@typescript-eslint/eslint-recommended
   - plugin:vue/vue3-essential
   - prettier
-  - prettier/@typescript-eslint
   - prettier/prettier
-  - prettier/vue
 
 parser: vue-eslint-parser
 parserOptions:
