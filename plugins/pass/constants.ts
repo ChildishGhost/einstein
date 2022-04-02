@@ -4,6 +4,7 @@
 export const KEEP_ENV = new Set([
 	'COLORFGBG',
 	'COLORTERM',
+	'DBUS_SESSION_BUS_ADDRESS',
 	'DISPLAY',
 	'EDITOR',
 	'GTK_IM_MODULE',
