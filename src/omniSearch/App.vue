@@ -49,6 +49,12 @@ export default defineComponent({
 			searchBoxRef.value.focus()
 		})
 
+		withMessageTunnel.then((msg) => {
+			msg.register('beforeShow', () => {
+				calculateDesiredSize()
+			})
+		})
+
 		const moveCursor = (offset: number) => {
 			const count = searchResult.value.length
 			selectedItemIndex.value = (selectedItemIndex.value + offset + count) % count
