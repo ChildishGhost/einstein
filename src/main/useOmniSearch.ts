@@ -58,6 +58,7 @@ export default async () => {
 		}
 
 		window.center()
+		messageTunnel.sendMessage('beforeShow')
 		window.show()
 		window.focus()
 	})
