@@ -1,6 +1,5 @@
-import { ISearchEngine, SearchResult } from 'einstein'
+import { IEnvironment, ISearchEngine, SearchResult } from 'einstein'
 import Fuse from 'fuse.js'
-import * as os from 'os'
 
 import { exec, findIcon, walk } from './utils'
 
@@ -24,6 +23,8 @@ export default class PassSearchEngine implements ISearchEngine {
 
 	private fuse: Fuse<PreSearch> = null
 
+	private readonly env: IEnvironment
+
 	help = [
 		{
 			id: 'pass trigger help',
@@ -41,7 +42,8 @@ export default class PassSearchEngine implements ISearchEngine {
 		},
 	]
 
-	constructor() {
+	constructor(env: IEnvironment) {
+		this.env = env
 		this.loadPassStore()
 		this.initFuse()
 	}
@@ -62,7 +64,7 @@ export default class PassSearchEngine implements ISearchEngine {
 	}
 
 	async showPasswordQR({ file }: PassInput) {
-		if (os.platform() === 'darwin') {
+		if (this.env.platform === 'macos') {
 			exec(`pass show ${file} | head -n1 | qrencode -s 10 -o - | open -fa Preview.app`)
 		} else {
 			exec(`pass show -q ${file}`)
@@ -108,7 +110,7 @@ export default class PassSearchEngine implements ISearchEngine {
 	}
 
 	private loadPassStore() {
-		const passStoreDir = `${os.homedir()}/.password-store`
+		const passStoreDir = `${this.env.homedir}/.password-store`
 
 		// collect all available .gpg files and remove passstore directory path
 		this.passFiles = walk(passStoreDir, [])

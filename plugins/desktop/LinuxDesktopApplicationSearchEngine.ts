@@ -1,7 +1,6 @@
-import { ISearchEngine, SearchResult } from 'einstein'
+import { IEnvironment, ISearchEngine, SearchResult } from 'einstein'
 import * as fs from 'fs'
 import Fuse from 'fuse.js'
-import * as os from 'os'
 
 import EventType from './EventType'
 import { findIcon, exec } from './utils'
@@ -51,9 +50,12 @@ export default class LinuxDesktopApplicationSearchEngine implements ISearchEngin
 
 	private fuse: Fuse<LinuxDesktopApplicationPreSearch> = null
 
+	private readonly homedir: string
+
 	TERMINAL_EMULATOR: string = 'urxvtc -e'
 
-	constructor() {
+	constructor({ homedir }: IEnvironment) {
+		this.homedir = homedir
 		this.loadDesktopFiles()
 		this.sanitizeExecCommand()
 		this.inferTerminalEmulator()
@@ -98,7 +100,7 @@ export default class LinuxDesktopApplicationSearchEngine implements ISearchEngin
 		const lookupDirs = [
 			'/usr/share/applications/',
 			'/usr/local/share/applications/',
-			`${os.homedir()}/.local/share/applications/`,
+			`${this.homedir}/.local/share/applications/`,
 		]
 
 		// collect all available .desktop files

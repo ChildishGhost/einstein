@@ -1,7 +1,6 @@
-import { ISearchEngine, SearchResult } from 'einstein'
+import { IEnvironment, ISearchEngine, SearchResult } from 'einstein'
 import { existsSync as fileExists, readdirSync as readdir, statSync as fileStat } from 'fs'
 import Fuse from 'fuse.js'
-import { homedir } from 'os'
 import { join as pathJoin } from 'path'
 
 import { fileIconToBuffer as appIconAsBuffer } from 'file-icon'
@@ -24,6 +23,12 @@ export default class DarwinApplicationSearchEngine implements ISearchEngine {
 		threshold: 0.4,
 		keys: [ 'name' ],
 	})
+
+	private readonly homedir: string
+
+	constructor({ homedir }: IEnvironment) {
+		this.homedir = homedir
+	}
 
 	async setup() {
 		await this.loadApplications()
@@ -49,7 +54,7 @@ export default class DarwinApplicationSearchEngine implements ISearchEngine {
 	}
 
 	private async loadApplications() {
-		const searchPath = [ '/Applications', `${homedir}/Applications` ]
+		const searchPath = [ '/Applications', `${this.homedir}/Applications` ]
 
 		this.applications = searchPath.reduce((acc, path) => {
 			if (!fileExists(path)) {

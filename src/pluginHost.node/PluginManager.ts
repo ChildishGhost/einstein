@@ -11,6 +11,7 @@ import {
 	PluginSetup,
 	PluginEventHandler,
 	EventType,
+	AppContext,
 } from 'einstein'
 
 import { PluginMetadata } from '@/pluginHost.node/PluginMetadata'
@@ -54,6 +55,11 @@ class PluginManager {
 
 	private pluginScanner = new PluginScanner()
 
+	// eslint-disable-next-line no-useless-constructor
+	constructor(private readonly app: AppContext) {
+		//
+	}
+
 	async loadPlugins() {
 		const metadataList = await this.pluginScanner.scan()
 
@@ -93,6 +99,8 @@ class PluginManager {
 		const eventHandlers: Record<string, Set<PluginEventHandler>> = {}
 
 		return {
+			app: this.app,
+
 			get eventHandlers() {
 				return eventHandlers
 			},
