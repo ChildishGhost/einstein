@@ -1,7 +1,6 @@
-import { ISearchEngine, SearchResult } from 'einstein'
+import { IEnvironment, ISearchEngine, SearchResult } from 'einstein'
 import * as fs from 'fs'
 import Fuse from 'fuse.js'
-import * as os from 'os'
 
 import { findIcon, exec, walk } from './utils'
 
@@ -25,7 +24,10 @@ export default class ChromiumBookmarksSearchEngine implements ISearchEngine {
 
 	private bookmarks: Bookmark[] = []
 
-	constructor() {
+	private readonly api: { environment: IEnvironment }
+
+	constructor(api: { environment: IEnvironment }) {
+		this.api = api
 		this.loadBookmarks()
 		this.initFuse()
 	}
@@ -38,7 +40,7 @@ export default class ChromiumBookmarksSearchEngine implements ISearchEngine {
 			icon: findIcon('www'),
 			completion: item.name,
 			event: {
-				type: os.platform() === 'linux' ? 'linux' : 'unknown',
+				type: this.api.environment.platform === 'linux' ? 'linux' : 'unknown',
 				data: {
 					name: item.name,
 					url: item.url,
@@ -58,9 +60,9 @@ export default class ChromiumBookmarksSearchEngine implements ISearchEngine {
 
 		// TODO(xatier): add darwin support
 		// find ~/.config/{browser} -name Bookmarks
-		if (os.platform() === 'linux') {
+		if (this.api.environment.platform === 'linux') {
 			supportedBrowsers.forEach((browser) => {
-				bookmarkFiles.push(...walk(`${os.homedir()}/.config/${browser}`, []).filter((f) => f.endsWith('/Bookmarks')))
+				bookmarkFiles.push(...walk(`${this.api.environment.homedir}/.config/${browser}`, []).filter((f) => f.endsWith('/Bookmarks')))
 			})
 		}
 

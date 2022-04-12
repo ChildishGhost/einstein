@@ -1,4 +1,4 @@
-import { homedir } from 'os'
+import { homedir, platform } from 'os'
 import { dirname, join as joinPath } from 'path'
 
 import { memoize } from '@/common/decorator'
@@ -7,6 +7,7 @@ import { memoize } from '@/common/decorator'
  * All application-related environment configs will be placed here.
  */
 export interface IEnvironment {
+	platform: 'linux' | 'macos' | 'other'
 	appRoot: string
 	userHome: string
 	builtinPluginsPath: string
@@ -14,6 +15,18 @@ export interface IEnvironment {
 }
 
 class Environment implements IEnvironment {
+	@memoize
+	get platform() {
+		switch (platform()) {
+		case 'linux':
+			return 'linux'
+		case 'darwin':
+			return 'macos'
+		default:
+			return 'other'
+		}
+	}
+
 	@memoize
 	get appRoot() {
 		return dirname(__dirname)

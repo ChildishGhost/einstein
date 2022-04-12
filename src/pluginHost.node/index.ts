@@ -5,11 +5,13 @@ import Fuse from 'fuse.js'
 import PerformSearchReply from '@/common/types/PerformSearchReply'
 import PluginEvent from '@/common/types/PluginEvent'
 import PluginManager from '@/pluginHost.node/PluginManager'
+import useApp from '@/pluginHost.node/useApp'
 import useMessageTunnel from '@/pluginHost.node/useMessageTunnel'
 
 const SEARCH_LIMIT = 10
 
-const pluginManager = new PluginManager()
+const app = useApp()
+const pluginManager = new PluginManager(app)
 
 ;(async () => {
 	process.on('message', ({ type }) => {

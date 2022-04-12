@@ -1,18 +1,16 @@
-import { PluginContext, PluginSetup } from 'einstein'
+import { IEnvironment, PluginContext, PluginSetup } from 'einstein'
 
 import DarwinApplicationSearchEngine from './DarwinApplicationSearchEngine'
 import EventType from './EventType'
 import IApplicationSearchEngine from './IApplicationSearchEngine'
 import LinuxDesktopApplicationSearchEngine from './LinuxDesktopApplicationSearchEngine'
 
-const { platform } = process
-
-const createEngine = async (): Promise<IApplicationSearchEngine> => {
-	switch (platform) {
+const createEngine = async (env: IEnvironment): Promise<IApplicationSearchEngine> => {
+	switch (env.platform) {
 	case 'linux':
-		return new LinuxDesktopApplicationSearchEngine()
-	case 'darwin': {
-		const darwinEngine = new DarwinApplicationSearchEngine()
+		return new LinuxDesktopApplicationSearchEngine(env)
+	case 'macos': {
+		const darwinEngine = new DarwinApplicationSearchEngine(env)
 		await darwinEngine.setup()
 		return darwinEngine
 	}
@@ -22,7 +20,7 @@ const createEngine = async (): Promise<IApplicationSearchEngine> => {
 }
 
 const setup: PluginSetup = async (context: PluginContext) => {
-	const searchEngine = await createEngine()
+	const searchEngine = await createEngine(context.app.environment)
 
 	context.registerSearchEngine(searchEngine)
 	context.registerEventHandler(EventType.EXECUTE_APPLICATION, (data) => searchEngine.launchApp(data))
