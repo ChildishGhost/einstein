@@ -1,6 +1,7 @@
 'use strict';
 
-const { ProgressPlugin } = require('webpack');
+const { mkdirSync, cpSync } = require('fs');
+const { DefinePlugin, ProgressPlugin } = require('webpack');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const ESLintPlugin = require('eslint-webpack-plugin');
 const utils = require('./utils');
@@ -55,7 +56,29 @@ module.exports = Object.assign({}, utils.defaultConfig, {
 		new ESLintPlugin({
 			extensions: ['.js', '.ts'],
 		}),
+		new DefinePlugin({
+			VM2_LIB_PATH: JSON.stringify('node_modules/vm2/lib/'),
+		}),
+		{
+			// copy vm2 assets
+			apply(compiler) {
+				compiler.hooks.done.tap('copy vm2 assets', () => {
+					mkdirSync(utils.rel('dist/node/node_modules/'), { recursive: true })
+					cpSync(utils.rel('node_modules/vm2'), utils.rel('dist/node/node_modules/vm2'), { recursive: true })
+				})
+			}
+		},
 		new CleanWebpackPlugin(),
 	],
 	target: 'node',
+	ignoreWarnings: [
+		{
+			module: /vm2\/lib\/compiler\.js/,
+			message: /Can't resolve 'coffee-script'/,
+		},
+		{
+			module: /vm2\/lib\/resolver-compat\.js/,
+			message: /Critical dependency: the request of a dependency is an expression/,
+		},
+	],
 });
