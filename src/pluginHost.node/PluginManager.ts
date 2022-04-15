@@ -13,6 +13,7 @@ import {
 	EventType,
 	AppContext,
 } from 'einstein'
+import { NodeVM } from 'vm2'
 
 import { PluginMetadata } from '@/pluginHost.node/PluginMetadata'
 import PluginScanner from '@/pluginHost.node/PluginScanner'
@@ -27,10 +28,26 @@ type PluginContext = APIContext & {
 	readonly eventHandlers: Record<string, Set<PluginEventHandler>>
 }
 
-// TODO(davy): implement a secure plugin loader
 async function loadScript({ path, entry }: PluginMetadata): Promise<PluginSetup> {
 	const loadPath = path ? joinPath(path, entry) : entry
-	return __non_webpack_require__(loadPath).default
+	const vm = new NodeVM({
+		sandbox: {},
+		compiler: 'javascript',
+		require: {
+			external: true,
+			context: 'sandbox',
+			// TODO(davy): remove dangerous node.js API
+			builtin: [ '*' ],
+			// eslint-disable-next-line camelcase
+			customRequire: __non_webpack_require__,
+			mock: {
+				// eslint-disable-next-line global-require
+				'fuse.js': require('fuse.js')
+			},
+		},
+	})
+
+	return vm.runFile(loadPath).default
 }
 
 const PluginUIDSymbol = Symbol('PluginUID')
