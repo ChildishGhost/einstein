@@ -20,6 +20,10 @@ const allowList = [
 	'QTDIR', 'KDEDIR',
 	'XDG_SESSION_COOKIE',
 	'XMODIFIERS', 'GTK_IM_MODULE', 'QT_IM_MODULE', 'QT_IM_SWITCHER',
+	// Windows
+	'APPDATA', 'LOCALAPPDATA',
+	'ProgramData', 'ProgramFiles',
+	'SystemDrive', 'SystemRoot',
 ]
 
 export const permittedEnv = Object.fromEntries(

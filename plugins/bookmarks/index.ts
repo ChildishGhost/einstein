@@ -8,7 +8,7 @@ const setup: PluginSetup = async (context: PluginContext) => {
 	})
 
 	context.registerSearchEngine(chromiumBookmarksSearchEngine)
-	context.registerEventHandler('linux', (data: any) => chromiumBookmarksSearchEngine.openBookmark(data))
+	context.registerEventHandler('openUrl', (data: any) => chromiumBookmarksSearchEngine.openBookmark(data))
 }
 
 export default setup

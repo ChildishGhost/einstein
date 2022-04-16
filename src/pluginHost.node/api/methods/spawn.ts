@@ -1,17 +1,23 @@
-import { spawn as nodeSpawn } from 'node:child_process'
+import { spawn as nodeSpawn, SpawnOptionsWithStdioTuple, StdioNull } from 'node:child_process'
 
 import { SpawnOptions, spawnFn } from 'einstein'
 
 import { permittedEnv } from '@/pluginHost.node/sandbox/env'
 
-export const spawn: spawnFn = (command: string, options?: SpawnOptions) => {
-	nodeSpawn(command, {
-		cwd: options?.cwd,
+export const spawn: spawnFn = (command: string, spawnOptions?: SpawnOptions) => {
+	const options: SpawnOptionsWithStdioTuple<StdioNull, StdioNull, StdioNull> = {
+		cwd: spawnOptions?.cwd,
 		env: {
-			...(options?.env ?? permittedEnv),
+			...(spawnOptions?.env ?? permittedEnv),
 		},
 		detached: true,
 		shell: true,
 		stdio: [ 'ignore', 'inherit', 'inherit' ],
-	}).unref()
+	}
+
+	if (spawnOptions?.argv) {
+		nodeSpawn(command, spawnOptions.argv, options).unref()
+	} else {
+		nodeSpawn(command, options).unref()
+	}
 }
