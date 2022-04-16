@@ -1,8 +1,8 @@
-import { IEnvironment, ISearchEngine, SearchResult } from 'einstein'
+import { IEnvironment, ISearchEngine, SearchResult, spawn } from 'einstein'
 import * as fs from 'fs'
 import Fuse from 'fuse.js'
 
-import { findIcon, exec, walk } from './utils'
+import { findIcon, walk } from './utils'
 
 type Bookmark = {
 	name: string
@@ -50,7 +50,7 @@ export default class ChromiumBookmarksSearchEngine implements ISearchEngine {
 	}
 
 	async openBookmark({ url }: Bookmark) {
-		exec(`xdg-open ${url}`)
+		spawn(`xdg-open ${url}`)
 	}
 
 	private loadBookmarks() {

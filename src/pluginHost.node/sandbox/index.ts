@@ -1,5 +1,7 @@
 import { NodeVM } from 'vm2'
 
+import { permittedEnv } from './env'
+
 type CreateVMOptions = {
 	injectModules?: { [key: string]: any }
 	injectGlobals?: { [key: string]: any }
@@ -23,4 +25,5 @@ export const createVM = (options: CreateVMOptions = {}) => new NodeVM({
 			...(options.injectModules || {}),
 		},
 	},
+	env: { ...permittedEnv },
 })
