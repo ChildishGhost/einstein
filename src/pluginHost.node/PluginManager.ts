@@ -31,7 +31,14 @@ type PluginContext = APIContext & {
 
 async function loadScript({ path, entry }: PluginMetadata): Promise<PluginSetup> {
 	const loadPath = path ? joinPath(path, entry) : entry
-	const vm = createVM()
+	const vm = createVM({
+		injectModules: {
+			einstein: {
+				// eslint-disable-next-line global-require
+				version: require('../../package.json').version,
+			}
+		}
+	})
 
 	return vm.runFile(loadPath).default
 }

@@ -1,4 +1,4 @@
-import { PluginContext, VOID_TRIGGER } from 'einstein'
+import { PluginContext, version, VOID_TRIGGER } from 'einstein'
 
 const searchEngine = {
 	triggers: [ VOID_TRIGGER, 'foo' ],
@@ -30,6 +30,11 @@ const searchEngine2 = {
 				title: 'foobar',
 				description: 'type foo to use foo engine',
 				id: '1',
+			},
+			{
+				title: 'einstein-version',
+				description: version,
+				id: '2',
 			},
 		]
 	},

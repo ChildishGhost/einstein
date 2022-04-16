@@ -1,6 +1,13 @@
-import { NodeVM, NodeVMOptions } from 'vm2'
+import { NodeVM } from 'vm2'
 
-const defaultVMOptions: Partial<NodeVMOptions> = {
+type CreateVMOptions = {
+	injectModules?: { [key: string]: any }
+	injectGlobals?: { [key: string]: any }
+}
+
+// eslint-disable-next-line import/prefer-default-export
+export const createVM = (options: CreateVMOptions = {}) => new NodeVM({
+	sandbox: options.injectGlobals || {},
 	compiler: 'javascript',
 	require: {
 		external: true,
@@ -11,13 +18,9 @@ const defaultVMOptions: Partial<NodeVMOptions> = {
 		customRequire: __non_webpack_require__,
 		mock: {
 			// eslint-disable-next-line global-require
-			'fuse.js': require('fuse.js')
+			'fuse.js': require('fuse.js'),
+
+			...(options.injectModules || {}),
 		},
 	},
-}
-
-// eslint-disable-next-line import/prefer-default-export
-export const createVM = (options?: { sandbox?: any }) => new NodeVM({
-	...defaultVMOptions,
-	...options,
 })
