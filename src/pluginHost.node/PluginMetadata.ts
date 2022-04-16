@@ -1,8 +1,5 @@
-import { UID } from 'einstein'
+import { PluginMetadata as BasePluginMetadata } from 'einstein'
 
-export type PluginMetadata = {
-	name: string
-	uid: UID
+export type PluginMetadata = BasePluginMetadata & {
 	entry: string
-	path: string
 }
