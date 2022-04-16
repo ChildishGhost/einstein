@@ -3,6 +3,12 @@ import { ISearchEngine } from './searchEngine'
 import { EventType, UID } from './types'
 
 type PluginEventHandler = (data?: any) => void | Promise<void>
+type PluginMetadata = {
+	name: string
+	uid: UID
+	path: string
+}
+
 interface PluginContext {
 	registerEventHandler(type: EventType, handler: PluginEventHandler): void
 	registerSearchEngine(searchEngine: ISearchEngine, ...triggers: string[]): void
@@ -11,6 +17,7 @@ interface PluginContext {
 	deregisterSearchEngine(searchEngine: ISearchEngine, ...triggers: string[]): void
 
 	readonly app: AppContext
+	readonly metadata: PluginMetadata
 }
 type PluginDispose = () => void | PromiseLike<void>
 type PluginSetup = (context: PluginContext) => void | PromiseLike<void> | PluginDispose | PromiseLike<PluginDispose>
@@ -19,4 +26,11 @@ type WithPluginTagged<T> = T & {
 	pluginUid: UID
 }
 
-export { PluginContext, PluginDispose, PluginEventHandler, PluginSetup, WithPluginTagged }
+export {
+	PluginContext,
+	PluginDispose,
+	PluginEventHandler,
+	PluginSetup,
+	PluginMetadata,
+	WithPluginTagged
+}

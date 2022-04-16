@@ -79,7 +79,7 @@ class PluginManager {
 	private async loadPlugin(metadata: PluginMetadata) {
 		try {
 			const setup = await loadScript(metadata)
-			const context = this.buildContext(metadata.uid)
+			const context = this.buildContext(metadata)
 			const dispose = (await setup(context)) || undefined
 
 			this.plugins.set(metadata.uid, {
@@ -105,11 +105,12 @@ class PluginManager {
 		this.plugins.delete(uid)
 	}
 
-	private buildContext(uid: UID): PluginContext {
+	private buildContext(metadata: PluginMetadata): PluginContext {
 		const eventHandlers: Record<string, Set<PluginEventHandler>> = {}
 
 		return {
 			app: this.app,
+			metadata,
 
 			get eventHandlers() {
 				return eventHandlers
@@ -123,7 +124,7 @@ class PluginManager {
 				eventHandlers[type]!.add(handler)
 			},
 			registerSearchEngine: (searchEngine: ISearchEngine, ...triggers: string[]) => {
-				const engine = applyPluginUID(searchEngine, uid)
+				const engine = applyPluginUID(searchEngine, metadata.uid)
 
 				if (triggers.length === 0) {
 					this.addSearchEngineTrigger(VOID_TRIGGER, engine)
