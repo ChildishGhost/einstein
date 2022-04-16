@@ -13,10 +13,11 @@ import {
 	EventType,
 	AppContext,
 } from 'einstein'
-import { NodeVM } from 'vm2'
 
 import { PluginMetadata } from '@/pluginHost.node/PluginMetadata'
 import PluginScanner from '@/pluginHost.node/PluginScanner'
+
+import { createVM } from './sandbox'
 
 type Plugin = {
 	metadata: PluginMetadata
@@ -30,22 +31,7 @@ type PluginContext = APIContext & {
 
 async function loadScript({ path, entry }: PluginMetadata): Promise<PluginSetup> {
 	const loadPath = path ? joinPath(path, entry) : entry
-	const vm = new NodeVM({
-		sandbox: {},
-		compiler: 'javascript',
-		require: {
-			external: true,
-			context: 'sandbox',
-			// TODO(davy): remove dangerous node.js API
-			builtin: [ '*' ],
-			// eslint-disable-next-line camelcase
-			customRequire: __non_webpack_require__,
-			mock: {
-				// eslint-disable-next-line global-require
-				'fuse.js': require('fuse.js')
-			},
-		},
-	})
+	const vm = createVM()
 
 	return vm.runFile(loadPath).default
 }
