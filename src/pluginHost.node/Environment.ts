@@ -7,7 +7,7 @@ import { memoize } from '@/common/decorator'
  * All application-related environment configs will be placed here.
  */
 export interface IEnvironment {
-	platform: 'linux' | 'macos' | 'other'
+	platform: 'linux' | 'macos' | 'windows' | 'other'
 	appRoot: string
 	userHome: string
 	builtinPluginsPath: string
@@ -22,6 +22,8 @@ class Environment implements IEnvironment {
 			return 'linux'
 		case 'darwin':
 			return 'macos'
+		case 'win32':
+			return 'windows'
 		default:
 			return 'other'
 		}

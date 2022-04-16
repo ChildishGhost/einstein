@@ -1,6 +1,7 @@
 import { IEnvironment, ISearchEngine, SearchResult, spawn } from 'einstein'
 import * as fs from 'fs'
 import Fuse from 'fuse.js'
+import { join as joinPath, sep as PATH_SEPARATOR } from 'path'
 
 import { findIcon, walk } from './utils'
 
@@ -40,7 +41,7 @@ export default class ChromiumBookmarksSearchEngine implements ISearchEngine {
 			icon: findIcon('www'),
 			completion: item.name,
 			event: {
-				type: this.api.environment.platform === 'linux' ? 'linux' : 'unknown',
+				type: 'openUrl',
 				data: {
 					name: item.name,
 					url: item.url,
@@ -49,21 +50,59 @@ export default class ChromiumBookmarksSearchEngine implements ISearchEngine {
 		}))
 	}
 
+	// TODO(davy): support macos
 	async openBookmark({ url }: Bookmark) {
-		spawn(`xdg-open ${url}`)
+		switch (this.api.environment.platform) {
+		case 'linux':
+			spawn(`xdg-open ${url}`)
+			break
+		case 'windows': {
+			const encodedCommand = Buffer.from([
+				'Start',
+				`"${url}"`,
+			].join(' '), 'utf16le').toString('base64')
+			const powershellArgs = [
+				'-NoProfile',
+				'-NonInteractive',
+				'-WindowStyle', 'Hidden',
+				'–ExecutionPolicy', 'Bypass',
+				'-EncodedCommand',
+				encodedCommand,
+			]
+
+			spawn('powershell', {
+				argv: powershellArgs,
+			})
+			break
+		}
+		default:
+			break
+		}
 	}
 
 	private loadBookmarks() {
 		console.log('loading bookmarks')
-		const supportedBrowsers = [ 'microsoft-edge-dev', 'chromium', 'google-chrome' ]
 		const bookmarkFiles: string[] = []
 
 		// TODO(xatier): add darwin support
 		// find ~/.config/{browser} -name Bookmarks
-		if (this.api.environment.platform === 'linux') {
+		switch (this.api.environment.platform) {
+		case 'linux': {
+			const supportedBrowsers = [ 'microsoft-edge-dev', 'chromium', 'google-chrome' ]
 			supportedBrowsers.forEach((browser) => {
 				bookmarkFiles.push(...walk(`${this.api.environment.homedir}/.config/${browser}`, []).filter((f) => f.endsWith('/Bookmarks')))
 			})
+			break
+		}
+		case 'windows': {
+			const supportedBrowserPaths = [ String.raw`Microsoft\Edge`, String.raw`Microsoft\Edge Dev`, String.raw`Google\Chrome` ]
+			supportedBrowserPaths.forEach((path) => {
+				bookmarkFiles.push(...walk(joinPath(this.api.environment.homedir, 'AppData', 'Local', path, 'User Data'), []).filter((f) => f.endsWith(`${PATH_SEPARATOR}Bookmarks`)))
+			})
+			break
+		}
+		default:
+			break
 		}
 
 		this.bookmarks = this.processBookmarkFiles(bookmarkFiles)

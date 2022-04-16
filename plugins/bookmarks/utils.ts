@@ -1,5 +1,6 @@
 import * as fs from 'fs'
 import * as os from 'os'
+import { join as joinPath } from 'path'
 
 import { ICON_EXT } from './constants'
 
@@ -11,7 +12,7 @@ const walk = (path: string, acc: string[]) => {
 			acc.push(
 				...fs
 					.readdirSync(path)
-					.map((file) => walk(`${path}/${file}`, []))
+					.map((file) => walk(joinPath(path, file), []))
 					.flat(),
 			)
 		} else {
