@@ -65,6 +65,7 @@ rules:
       pattern:
         vue: always
   import/newline-after-import: off # prevent collision with semi-style: first
+  import/prefer-default-export: off
   indent:
     - warn
     - tab
@@ -100,3 +101,8 @@ settings:
       map:
         - ['@', './src']
         - ['einstein', './src/api']
+
+overrides:
+  - files: ['*.vue']
+    rules:
+      import/prefer-default-export: warn

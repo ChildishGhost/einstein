@@ -1,4 +1,4 @@
-import { IEnvironment, ISearchEngine, SearchResult } from 'einstein'
+import { IEnvironment, ISearchEngine, SearchResult, spawn } from 'einstein'
 import { existsSync as fileExists, readdirSync as readdir, statSync as fileStat } from 'fs'
 import Fuse from 'fuse.js'
 import { join as pathJoin } from 'path'
@@ -6,7 +6,6 @@ import { join as pathJoin } from 'path'
 import { fileIconToBuffer as appIconAsBuffer } from 'file-icon'
 
 import EventType from './EventType'
-import { exec } from './utils'
 
 type Application = {
 	name: string
@@ -50,7 +49,7 @@ export default class DarwinApplicationSearchEngine implements ISearchEngine {
 	}
 
 	async launchApp(path: string) {
-		exec(`open ${path}`)
+		spawn(`open ${path}`)
 	}
 
 	private async loadApplications() {

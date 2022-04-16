@@ -1,9 +1,9 @@
-import { IEnvironment, ISearchEngine, SearchResult } from 'einstein'
+import { IEnvironment, ISearchEngine, SearchResult, spawn } from 'einstein'
 import * as fs from 'fs'
 import Fuse from 'fuse.js'
 
 import EventType from './EventType'
-import { findIcon, exec } from './utils'
+import { findIcon } from './utils'
 
 /*
 file = {
@@ -88,7 +88,7 @@ export default class LinuxDesktopApplicationSearchEngine implements ISearchEngin
 		console.log(this.desktopFiles[file][group].Exec)
 
 		// use TERMINAL_EMULATOR to launch app if Terminal is set to true
-		exec(
+		spawn(
 			this.desktopFiles[file][group].Terminal === 'true'
 				? `${this.TERMINAL_EMULATOR} '${this.desktopFiles[file][group].Exec}'`
 				: this.desktopFiles[file][group].Exec,

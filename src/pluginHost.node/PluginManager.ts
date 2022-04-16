@@ -17,6 +17,7 @@ import {
 import { PluginMetadata } from '@/pluginHost.node/PluginMetadata'
 import PluginScanner from '@/pluginHost.node/PluginScanner'
 
+import { generateAPI } from './api'
 import { createVM } from './sandbox'
 
 type Plugin = {
@@ -33,10 +34,7 @@ async function loadScript({ path, entry }: PluginMetadata): Promise<PluginSetup>
 	const loadPath = path ? joinPath(path, entry) : entry
 	const vm = createVM({
 		injectModules: {
-			einstein: {
-				// eslint-disable-next-line global-require
-				version: require('../../package.json').version,
-			}
+			einstein: generateAPI(),
 		}
 	})
 

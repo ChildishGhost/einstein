@@ -1,7 +1,7 @@
-import { IEnvironment, ISearchEngine, SearchResult } from 'einstein'
+import { IEnvironment, ISearchEngine, SearchResult, spawn } from 'einstein'
 import Fuse from 'fuse.js'
 
-import { exec, findIcon, walk } from './utils'
+import { findIcon, walk } from './utils'
 
 type PreSearch = {
 	file: string
@@ -60,14 +60,14 @@ export default class PassSearchEngine implements ISearchEngine {
 	}
 
 	async copyPassword({ file }: PassInput) {
-		exec(`pass -c ${file}`)
+		spawn(`pass -c ${file}`)
 	}
 
 	async showPasswordQR({ file }: PassInput) {
 		if (this.env.platform === 'macos') {
-			exec(`pass show ${file} | head -n1 | qrencode -s 10 -o - | open -fa Preview.app`)
+			spawn(`pass show ${file} | head -n1 | qrencode -s 10 -o - | open -fa Preview.app`)
 		} else {
-			exec(`pass show -q ${file}`)
+			spawn(`pass show -q ${file}`)
 		}
 	}
 
