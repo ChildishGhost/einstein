@@ -1,5 +1,7 @@
+import { readFile, writeFile } from 'fs/promises'
 import { join as joinPath } from 'path'
 
+import * as CommentJSON from 'comment-json'
 import {
 	UID,
 	WithPluginTagged,
@@ -18,6 +20,7 @@ import { PluginMetadata } from '@/pluginHost.node/PluginMetadata'
 import PluginScanner from '@/pluginHost.node/PluginScanner'
 
 import { generateAPI } from './api'
+import Environment from './Environment'
 import { createVM } from './sandbox'
 
 type Plugin = {
@@ -105,6 +108,7 @@ class PluginManager {
 
 	private buildContext(metadata: PluginMetadata): PluginContext {
 		const eventHandlers: Record<string, Set<PluginEventHandler>> = {}
+		const configPath = joinPath(Environment.userConfigPath, `${metadata.uid}.config.json`)
 
 		return {
 			app: this.app,
@@ -141,6 +145,18 @@ class PluginManager {
 				}
 
 				triggers.forEach((trigger) => this.removeSearchEngineTrigger(trigger, searchEngine))
+			},
+			loadConfig: async () => {
+				try {
+					const data = await readFile(configPath, { encoding: 'utf-8' })
+
+					return CommentJSON.parse(data)
+				} catch (e) {
+					return {}
+				}
+			},
+			saveConfig: async (config: any) => {
+				await writeFile(configPath, CommentJSON.stringify(config, null, 2), { encoding: 'utf-8' })
 			},
 		}
 	}
