@@ -1,4 +1,4 @@
-import { IEnvironment, ISearchEngine, SearchResult, spawn } from 'einstein'
+import { ISearchEngine, PluginContext, SearchResult, spawn } from 'einstein'
 import * as fs from 'fs'
 import Fuse from 'fuse.js'
 import { join as joinPath, sep as PATH_SEPARATOR } from 'path'
@@ -25,10 +25,7 @@ export default class ChromiumBookmarksSearchEngine implements ISearchEngine {
 
 	private bookmarks: Bookmark[] = []
 
-	private readonly api: { environment: IEnvironment }
-
-	constructor(api: { environment: IEnvironment }) {
-		this.api = api
+	constructor(private readonly context: PluginContext) {
 		this.loadBookmarks()
 		this.initFuse()
 	}
@@ -38,7 +35,7 @@ export default class ChromiumBookmarksSearchEngine implements ISearchEngine {
 			id: item.url,
 			title: item.name,
 			description: item.name,
-			icon: findIcon('www'),
+			icon: this.context.app.environment.platform === 'linux' ? findIcon('www') : `plugin://${this.context.metadata.uid}/link.svg`,
 			completion: item.name,
 			event: {
 				type: 'openUrl',
@@ -52,7 +49,7 @@ export default class ChromiumBookmarksSearchEngine implements ISearchEngine {
 
 	// TODO(davy): support macos
 	async openBookmark({ url }: Bookmark) {
-		switch (this.api.environment.platform) {
+		switch (this.context.app.environment.platform) {
 		case 'linux':
 			spawn(`xdg-open ${url}`)
 			break
@@ -86,18 +83,18 @@ export default class ChromiumBookmarksSearchEngine implements ISearchEngine {
 
 		// TODO(xatier): add darwin support
 		// find ~/.config/{browser} -name Bookmarks
-		switch (this.api.environment.platform) {
+		switch (this.context.app.environment.platform) {
 		case 'linux': {
 			const supportedBrowsers = [ 'microsoft-edge-dev', 'chromium', 'google-chrome' ]
 			supportedBrowsers.forEach((browser) => {
-				bookmarkFiles.push(...walk(`${this.api.environment.homedir}/.config/${browser}`, []).filter((f) => f.endsWith('/Bookmarks')))
+				bookmarkFiles.push(...walk(`${this.context.app.environment.homedir}/.config/${browser}`, []).filter((f) => f.endsWith('/Bookmarks')))
 			})
 			break
 		}
 		case 'windows': {
 			const supportedBrowserPaths = [ String.raw`Microsoft\Edge`, String.raw`Microsoft\Edge Dev`, String.raw`Google\Chrome` ]
 			supportedBrowserPaths.forEach((path) => {
-				bookmarkFiles.push(...walk(joinPath(this.api.environment.homedir, 'AppData', 'Local', path, 'User Data'), []).filter((f) => f.endsWith(`${PATH_SEPARATOR}Bookmarks`)))
+				bookmarkFiles.push(...walk(joinPath(this.context.app.environment.homedir, 'AppData', 'Local', path, 'User Data'), []).filter((f) => f.endsWith(`${PATH_SEPARATOR}Bookmarks`)))
 			})
 			break
 		}

@@ -227,6 +227,14 @@ class PluginManager {
 
 		return results.flat()
 	}
+
+	getPlugin(uid: UID)	{
+		if (!this.plugins.has(uid)) {
+			return null
+		}
+
+		return { ...this.plugins.get(uid).metadata }
+	}
 }
 
 export default PluginManager

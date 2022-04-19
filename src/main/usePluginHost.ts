@@ -1,4 +1,5 @@
 import { fork, ChildProcess } from 'child_process'
+import { protocol } from 'electron'
 import { Readable, Writable } from 'stream'
 import { StringDecoder } from 'string_decoder'
 
@@ -137,9 +138,46 @@ const createProcess = () => {
 	}
 }
 
+const registerPluginProtocol = (message: MessageTunnel) => {
+	const cache = new Map<string, string>()
+
+	protocol.registerFileProtocol('plugin', (request, callback) => {
+		const { hostname: uid, pathname: path } = new URL(request.url)
+
+		if (cache.has(`${uid}/${path}`)) {
+			callback({ path: cache.get(`${uid}/${path}`) })
+			return
+		}
+
+		const handler = ({ uid: responseUid, path: responsePath, filePath }: {
+			uid: string
+			path: string
+			filePath?: string
+		}) => {
+			if (responseUid !== uid || responsePath !== path) {
+				return
+			}
+
+			message.unregister('plugin:filePath', handler)
+
+			if (filePath) {
+				cache.set(`${uid}/${path}`, filePath)
+				callback({ path: filePath })
+			} else {
+				callback({ statusCode: 404 })
+			}
+		}
+
+		message.register('plugin:filePath', handler)
+		message.sendMessage('plugin:filePath', { uid, path })
+	})
+}
+
 export default async () => {
 	const { process, exitProcess } = createProcess()
 	const messageTunnel = new MessageTunnel(await prepareMessageProtocol(process))
+
+	registerPluginProtocol(messageTunnel)
 
 	return {
 		process,
