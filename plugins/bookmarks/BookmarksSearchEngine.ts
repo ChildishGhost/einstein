@@ -1,9 +1,9 @@
 import { ISearchEngine, PluginContext, SearchResult, spawn } from 'einstein'
 import * as fs from 'fs'
 import Fuse from 'fuse.js'
-import { join as joinPath, sep as PATH_SEPARATOR } from 'path'
+import { join as joinPath } from 'path'
 
-import { findIcon, walk } from './utils'
+import { findIcon, findBookmarks } from './utils'
 
 type Bookmark = {
 	name: string
@@ -87,14 +87,14 @@ export default class ChromiumBookmarksSearchEngine implements ISearchEngine {
 		case 'linux': {
 			const supportedBrowsers = [ 'microsoft-edge-dev', 'chromium', 'google-chrome' ]
 			supportedBrowsers.forEach((browser) => {
-				bookmarkFiles.push(...walk(`${this.context.app.environment.homedir}/.config/${browser}`, []).filter((f) => f.endsWith('/Bookmarks')))
+				bookmarkFiles.push(...findBookmarks(joinPath(this.context.app.environment.homedir, '.config', browser)))
 			})
 			break
 		}
 		case 'windows': {
 			const supportedBrowserPaths = [ String.raw`Microsoft\Edge`, String.raw`Microsoft\Edge Dev`, String.raw`Google\Chrome` ]
 			supportedBrowserPaths.forEach((path) => {
-				bookmarkFiles.push(...walk(joinPath(this.context.app.environment.homedir, 'AppData', 'Local', path, 'User Data'), []).filter((f) => f.endsWith(`${PATH_SEPARATOR}Bookmarks`)))
+				bookmarkFiles.push(...findBookmarks(joinPath(this.context.app.environment.homedir, 'AppData', 'Local', path, 'User Data')))
 			})
 			break
 		}
