@@ -24,13 +24,13 @@ const createApp = async () => {
 	const { window: sharedProcessWindow } = await useSharedProcess()
 	console.log('SharedProcess is ready.')
 
-	const { exitProcess: closePluginHost, messageTunnel: pluginHostTunnel } = await usePluginHost()
+	const {
+		exitProcess: closePluginHost,
+		messageTunnel: pluginHostTunnel,
+		isReady: waitForPluginHost,
+	} = await usePluginHost()
 
-	await new Promise<void>((resolve) => {
-		pluginHostTunnel.register('plugin:initialized', () => {
-			resolve()
-		})
-	})
+	await waitForPluginHost
 	console.log('Plugin is ready.')
 
 	const { window: omniSearchWindow, messageTunnel: omniSearchTunnel } = await useOmniSearch()
