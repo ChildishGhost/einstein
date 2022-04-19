@@ -1,5 +1,8 @@
 import 'source-map-support/register'
 
+import { join as joinPath } from 'path'
+
+import { UID } from 'einstein'
 import Fuse from 'fuse.js'
 
 import PerformSearchReply from '@/common/types/PerformSearchReply'
@@ -23,6 +26,18 @@ const pluginManager = new PluginManager(app)
 	const messageTunnel = await useMessageTunnel()
 
 	await pluginManager.loadPlugins()
+
+	messageTunnel.register('plugin:filePath', ({ uid, path }: { uid: UID; path: string}) => {
+		const plugin = pluginManager.getPlugin(uid)
+
+		if (!plugin) {
+			messageTunnel.sendMessage('plugin:filePath', { uid, path })
+			return
+		}
+
+		const filePath = joinPath(`${plugin.path}`, path)
+		messageTunnel.sendMessage('plugin:filePath', { uid, path, filePath })
+	})
 
 	messageTunnel.register('plugin:performSearch', async ({ term: rawTerm }) => {
 		const { term, result } = await pluginManager.search(rawTerm.trim())
