@@ -183,5 +183,10 @@ export default async () => {
 		process,
 		exitProcess,
 		messageTunnel,
+		isReady: new Promise<true>((resolve) => {
+			messageTunnel.register('plugin:initialized', () => {
+				resolve(true)
+			})
+		}),
 	}
 }
