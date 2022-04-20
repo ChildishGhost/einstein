@@ -2,7 +2,6 @@ import { ISearchEngine, PluginContext, SearchResult } from 'einstein'
 import Fuse from 'fuse.js'
 
 import { Bookmark } from './types'
-import { findIcon } from './utils'
 
 export default abstract class BookmarksSearchEngine implements ISearchEngine {
 	private fuse: Fuse<Bookmark> = null
@@ -36,7 +35,7 @@ export default abstract class BookmarksSearchEngine implements ISearchEngine {
 			id: JSON.stringify(item),
 			title: item.name,
 			description: item.url,
-			icon: this.context.app.environment.platform === 'linux' ? findIcon('www') : `plugin://${this.context.metadata.uid}/link.svg`,
+			icon: `plugin://${this.context.metadata.uid}/link.svg`,
 			completion: item.name,
 			event: {
 				type: 'openUrl',
