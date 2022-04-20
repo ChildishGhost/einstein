@@ -11,7 +11,13 @@
 			@search:go="execute"
 		/>
 	</div>
-	<ResultList v-if="searchTerm !== ''" v-model="selectedItemIndex" :results="searchResult" @click="execute" />
+	<ResultList
+		v-if="searchTerm !== ''"
+		v-model="selectedItemIndex"
+		:results="searchResult"
+		@click="execute"
+		@quickAction="executeQuickAction"
+	/>
 </template>
 
 <script lang="ts">
@@ -98,6 +104,16 @@ export default defineComponent({
 			closeWindow()
 		}
 
+		const executeQuickAction = (event: any) => {
+			withMessageTunnel.then((msg) => {
+				msg.sendMessage<PluginEvent>('plugin:event', {
+					...toRaw(event),
+				})
+			})
+
+			closeWindow()
+		}
+
 		return {
 			closeWindow,
 			searchTerm,
@@ -107,6 +123,7 @@ export default defineComponent({
 			completeInput,
 			selectedItemIndex,
 			execute,
+			executeQuickAction,
 		}
 	},
 })

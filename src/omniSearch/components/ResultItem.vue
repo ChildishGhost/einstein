@@ -13,6 +13,19 @@
 				</div>
 			</main>
 		</div>
+		<div :class="style.quickActions" v-if="hovered && (result.quickActions?.length ?? 0)">
+			<div
+				v-for="(action, idx) in result.quickActions"
+				:key="idx"
+				:class="style.quickAction"
+				@click.stop="$emit('quickAction', action.event)"
+			>
+				<span v-if="action.icon" :class="style.icon">
+					<img :src="action.icon" />
+				</span>
+				{{ action.title }}
+			</div>
+		</div>
 	</div>
 </template>
 
@@ -30,7 +43,7 @@ export default defineComponent({
 			default: false,
 		},
 	},
-	emits: [ 'hover', 'click' ],
+	emits: [ 'hover', 'click', 'quickAction' ],
 	setup: () => ({
 		style: useCssModule(),
 	}),
@@ -91,5 +104,30 @@ export default defineComponent({
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
+}
+
+.quickActions {
+	display: flex;
+	padding: 4px 8px;
+}
+
+.quickAction {
+	display: inline-flex;
+	border-radius: 8px;
+	border: 1px solid #eee;
+	color: #eee;
+	font-size: 12px;
+	padding: 4px 8px;
+	margin: 0 4px;
+	align-items: center;
+	cursor: pointer;
+
+	.icon {
+		display: inline-flex;
+		width: 12px;
+		height: 12px;
+		margin-block: 0px;
+		margin-inline-end: 4px;
+	}
 }
 </style>

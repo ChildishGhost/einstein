@@ -6,6 +6,7 @@
 		:hovered="idx === hoveredIndex"
 		@hover="hoverItem(idx)"
 		@click="clickItem(idx)"
+		@quickAction="$emit('quickAction', { ...$event, pluginUid: result.pluginUid })"
 	/>
 </template>
 
@@ -30,7 +31,7 @@ export default defineComponent({
 			default: -1,
 		},
 	},
-	emits: [ 'update:modelValue', 'click' ],
+	emits: [ 'update:modelValue', 'click', 'quickAction' ],
 	setup(props, { emit }) {
 		const { modelValue } = toRefs(props)
 		const hoveredIndex = ref(props.modelValue)
