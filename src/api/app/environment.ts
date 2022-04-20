@@ -1,4 +1,6 @@
+export type EnvironmentPlatform = 'linux' | 'macos' | 'windows' | 'other'
+
 export interface IEnvironment {
-	readonly platform: 'linux' | 'macos' | 'windows' | 'other'
+	readonly platform: EnvironmentPlatform
 	readonly homedir: string
 }
