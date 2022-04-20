@@ -3,12 +3,8 @@ import * as fs from 'fs'
 import Fuse from 'fuse.js'
 import { join as joinPath } from 'path'
 
+import { Bookmark } from './types'
 import { findIcon, findBookmarks } from './utils'
-
-type Bookmark = {
-	name: string
-	url: string
-}
 
 // fields we are interested in
 // See BookmarkTreeNode in the below reference
@@ -20,7 +16,7 @@ type BookmarkTreeNode = {
 	type: string
 }
 
-export default class ChromiumBookmarksSearchEngine implements ISearchEngine {
+export default abstract class BookmarksSearchEngine implements ISearchEngine {
 	private fuse: Fuse<Bookmark> = null
 
 	private bookmarks: Bookmark[] = []
@@ -98,9 +94,16 @@ export default class ChromiumBookmarksSearchEngine implements ISearchEngine {
 			})
 			break
 		}
-		default:
+		case 'macos': {
+			const supportedBrowserPaths = [ joinPath('Google', 'Chrome'), 'Microsoft Edge', 'Microsoft Edge Beta' ]
+			supportedBrowserPaths.forEach((path) => {
+				bookmarkFiles.push(...findBookmarks(joinPath(this.context.app.environment.homedir, 'Library', 'Application Support', path)))
+			})
 			break
 		}
+		default:
+			break
+	  }
 
 		this.bookmarks = this.processBookmarkFiles(bookmarkFiles)
 
