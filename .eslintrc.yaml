@@ -104,5 +104,7 @@ settings:
 
 overrides:
   - files: ['*.vue']
+    env:
+      vue/setup-compiler-macros: true
     rules:
       import/prefer-default-export: warn

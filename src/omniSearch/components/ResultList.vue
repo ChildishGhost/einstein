@@ -4,62 +4,47 @@
 		:key="idx"
 		:result="result"
 		:hovered="idx === hoveredIndex"
-		@hover="hoverItem(idx)"
-		@click="clickItem(idx)"
+		@hover="hoverItem(idx as number)"
+		@click="clickItem(idx as number)"
 		@quickAction="$emit('quickAction', { ...$event, pluginUid: result.pluginUid })"
 	/>
 </template>
 
-<script lang="ts">
-import { SearchResult } from 'einstein'
-import { defineComponent, PropType, ref, toRefs, watch } from 'vue'
+<script setup lang="ts">
+import { SearchResult, WithPluginTagged } from 'einstein'
+import { ref, toRefs, watch } from 'vue'
 
 import ResultItem from '@/omniSearch/components/ResultItem.vue'
 
-export default defineComponent({
-	components: {
-		ResultItem,
-	},
-	props: {
-		results: {
-			type: Array,
-			default: () => [] as PropType<SearchResult[]>,
-		},
-		modelValue: {
-			type: Number,
-			required: false,
-			default: -1,
-		},
-	},
-	emits: [ 'update:modelValue', 'click', 'quickAction' ],
-	setup(props, { emit }) {
-		const { modelValue } = toRefs(props)
-		const hoveredIndex = ref(props.modelValue)
+const props = withDefaults(defineProps<{
+	results: WithPluginTagged<SearchResult>[]
+	modelValue: number
+}>(), {
+	results: () => [] as WithPluginTagged<SearchResult>[],
+	modelValue: -1,
+})
 
-		const hoverItem = (idx: number) => {
-			if (idx === hoveredIndex.value) {
-				return
-			}
-			hoveredIndex.value = idx
-			emit('update:modelValue', idx)
-		}
+const emit = defineEmits([ 'update:modelValue', 'click', 'quickAction' ])
 
-		const clickItem = (idx: number) => {
-			if (idx !== hoveredIndex.value) {
-				hoverItem(idx)
-			}
-			emit('click')
-		}
+const { modelValue } = toRefs(props)
+const hoveredIndex = ref(props.modelValue)
 
-		watch(modelValue, (val) => {
-			hoveredIndex.value = val
-		})
+const hoverItem = (idx: number) => {
+	if (idx === hoveredIndex.value) {
+		return
+	}
+	hoveredIndex.value = idx
+	emit('update:modelValue', idx)
+}
 
-		return {
-			clickItem,
-			hoverItem,
-			hoveredIndex,
-		}
-	},
+const clickItem = (idx: number) => {
+	if (idx !== hoveredIndex.value) {
+		hoverItem(idx)
+	}
+	emit('click')
+}
+
+watch(modelValue, (val) => {
+	hoveredIndex.value = val
 })
 </script>

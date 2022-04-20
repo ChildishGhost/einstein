@@ -29,25 +29,20 @@
 	</div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import { SearchResult } from 'einstein'
-import { defineComponent, PropType, useCssModule } from 'vue'
+import { useCssModule } from 'vue'
 
-export default defineComponent({
-	props: {
-		result: {
-			type: Object as PropType<SearchResult>,
-		},
-		hovered: {
-			type: Boolean,
-			default: false,
-		},
-	},
-	emits: [ 'hover', 'click', 'quickAction' ],
-	setup: () => ({
-		style: useCssModule(),
-	}),
+withDefaults(defineProps<{
+	result: SearchResult
+	hovered: boolean
+}>(), {
+	hovered: false,
 })
+
+defineEmits([ 'hover', 'click', 'quickAction' ])
+
+const style = useCssModule()
 </script>
 
 <style lang="scss" module>

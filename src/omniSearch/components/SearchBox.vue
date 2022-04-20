@@ -11,47 +11,42 @@
 	/>
 </template>
 
-<script lang="ts">
-import { defineComponent, ref, toRefs, useCssModule, watch } from 'vue'
+<script setup lang="ts">
+import { ref, toRefs, useCssModule, watch } from 'vue'
 
 import useSearch from '@/omniSearch/composables/useSearch'
 
-export default defineComponent({
-	props: {
-		modelValue: {
-			type: String,
-			default: '',
-		},
-	},
-	emits: [
-		'update:modelValue',
-		'update:result',
-		'search:cancel',
-		'search:completion',
-		'search:next',
-		'search:previous',
-		'search:go',
-	],
-	setup(props, { emit }) {
-		const { modelValue } = toRefs(props)
-		const { term, result } = useSearch()
-		const inputRef = ref(null)
+const props = withDefaults(defineProps<{
+	modelValue: string
+}>(), {
+	modelValue: ''
+})
 
-		watch(modelValue, (val) => {
-			term.value = val
-		})
-		watch(term, (val) => emit('update:modelValue', val))
-		watch(result, (val) => {
-			emit('update:result', val)
-		})
+const emit = defineEmits([
+	'update:modelValue',
+	'update:result',
+	'search:cancel',
+	'search:completion',
+	'search:next',
+	'search:previous',
+	'search:go',
+])
 
-		return {
-			style: useCssModule(),
-			term,
-			inputRef,
-			focus: () => inputRef.value.focus(),
-		}
-	},
+const style = useCssModule()
+const { modelValue } = toRefs(props)
+const { term, result } = useSearch()
+const inputRef = ref(null)
+
+watch(modelValue, (val) => {
+	term.value = val
+})
+watch(term, (val) => emit('update:modelValue', val))
+watch(result, (val) => {
+	emit('update:result', val)
+})
+
+defineExpose({
+	focus: () => inputRef.value.focus()
 })
 </script>
 
