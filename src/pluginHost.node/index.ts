@@ -39,7 +39,7 @@ const pluginManager = new PluginManager(app)
 		messageTunnel.sendMessage('plugin:filePath', { uid, path, filePath })
 	})
 
-	messageTunnel.register('plugin:performSearch', async ({ term: rawTerm }) => {
+	messageTunnel.register<{ term: string }>('plugin:performSearch', async ({ term: rawTerm }) => {
 		const { term, result } = await pluginManager.search(rawTerm.trim())
 
 		const fuse = new Fuse(result, {

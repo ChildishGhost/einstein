@@ -19,9 +19,9 @@ export default class PassSearchEngine implements ISearchEngine {
 
 	static subCommand = Object.freeze([ 'show' ])
 
-	private passFiles: string[]
+	private passFiles: string[] = []
 
-	private fuse: Fuse<PreSearch> = null
+	private fuse?: Fuse<PreSearch>
 
 	private readonly env: IEnvironment
 
@@ -75,7 +75,7 @@ export default class PassSearchEngine implements ISearchEngine {
 		if (term.length === 0) {
 			return [ this.help[1] ]
 		}
-		return this.fuse.search(term).map<SearchResult<PassInput>>(({ item }) => ({
+		return this.fuse?.search(term).map<SearchResult<PassInput>>(({ item }) => ({
 			id: item.file,
 			title: item.name,
 			description: item.file,
@@ -87,14 +87,14 @@ export default class PassSearchEngine implements ISearchEngine {
 					file: item.file,
 				},
 			},
-		}))
+		})) ?? []
 	}
 
 	private searchOnTerm(term: string) {
 		if (term.length === 0) {
 			return this.help
 		}
-		return this.fuse.search(term).map<SearchResult<PassInput>>(({ item }) => ({
+		return this.fuse?.search(term).map<SearchResult<PassInput>>(({ item }) => ({
 			id: item.file,
 			title: item.name,
 			description: item.file,
@@ -106,7 +106,7 @@ export default class PassSearchEngine implements ISearchEngine {
 					file: item.file,
 				},
 			},
-		}))
+		})) ?? []
 	}
 
 	private loadPassStore() {

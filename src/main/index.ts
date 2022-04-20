@@ -15,9 +15,9 @@ const registerMessageTunnelPair = <T = any>(
 	channelName: string,
 	toChannel: string = channelName,
 ) => {
-	listen.register<T>(channelName, (data: T) => {
+	listen.register<T>(channelName, ((data?: T) => {
 		to.sendMessage(toChannel, data)
-	})
+	}) as any)
 }
 
 const createApp = async () => {

@@ -10,7 +10,7 @@ const createMemoizer = (target: any, key: string, descriptor: PropertyDescriptor
 	const fn: Function = descriptor.get
 
 	// eslint-disable-next-line no-param-reassign, func-names
-	descriptor.get = function () {
+	descriptor.get = function (this: Record<string, any>) {
 		if (!Object.prototype.hasOwnProperty.call(this, memoizeKey)) {
 			Object.defineProperty(this, memoizeKey, {
 				configurable: true,

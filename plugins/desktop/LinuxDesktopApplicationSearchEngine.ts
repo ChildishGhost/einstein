@@ -48,7 +48,7 @@ const isLaunchable = (groupName: string) => groupName === DESKTOP_ENTRY || group
 export default class LinuxDesktopApplicationSearchEngine implements ISearchEngine {
 	private desktopFiles: Record<string, LinuxDesktopFile> = {}
 
-	private fuse: Fuse<LinuxDesktopApplicationPreSearch> = null
+	private fuse?: Fuse<LinuxDesktopApplicationPreSearch>
 
 	private readonly homedir: string
 
@@ -64,7 +64,7 @@ export default class LinuxDesktopApplicationSearchEngine implements ISearchEngin
 
 	async search(term: string, _trigger?: string): Promise<SearchResult[]> {
 		// transform search results into SearchResult
-		const result = this.fuse.search(term).map<SearchResult<LinuxDesktopApplicationIdentifier>>(({ item }) => ({
+		const result = this.fuse?.search(term).map<SearchResult<LinuxDesktopApplicationIdentifier>>(({ item }) => ({
 			id: item.file,
 			title: item.name,
 			description: item.exec,
@@ -78,7 +78,7 @@ export default class LinuxDesktopApplicationSearchEngine implements ISearchEngin
 					action: item.action,
 				},
 			},
-		}))
+		})) ?? []
 
 		return result
 	}
@@ -131,7 +131,7 @@ export default class LinuxDesktopApplicationSearchEngine implements ISearchEngin
 		//
 		// Key=Value
 		desktopFiles.forEach((file: string) => {
-			this.desktopFiles[file] = { content: undefined }
+			this.desktopFiles[file] = {}
 
 			const content = fs.readFileSync(file, { encoding: 'utf8' })
 
@@ -198,7 +198,7 @@ export default class LinuxDesktopApplicationSearchEngine implements ISearchEngin
 				})
 				return acc
 			},
-			[],
+			[] as LinuxDesktopApplicationPreSearch[],
 		)
 
 		this.fuse = new Fuse(preSearch, {

@@ -9,10 +9,13 @@ import { Bookmark } from './types'
 // See BookmarkTreeNode in the below reference
 // https://developer.chrome.com/docs/extensions/reference/bookmarks/#type-BookmarkTreeNode
 type ChromiumBookmarkTreeNode = {
-	children?: ChromiumBookmarkTreeNode[]
+	type: 'url'
 	name: string
 	url: string
-	type: 'folder' | 'url'
+} | {
+	type: 'folder'
+	name: string
+	children: ChromiumBookmarkTreeNode[]
 }
 
 // glob: dataDir/*/Bookmarks
@@ -49,9 +52,9 @@ const processBookmarkFiles = async (paths: string[]) => {
 		const j = JSON.parse(await readFile(bookmark, { encoding: 'utf8' }))
 
 		// recursively parse json.roots for all children objects
-		return Object.values(j.roots)
+		return Object.values<ChromiumBookmarkTreeNode>(j.roots)
 			.filter((v) => typeof v === 'object')
-			.flatMap((v: ChromiumBookmarkTreeNode) => traversal(v, []))
+			.flatMap((v) => traversal(v, []))
 	}
 
 	const bookmarkEntries = (await Promise.allSettled(paths.map(processBookmarkFile)))

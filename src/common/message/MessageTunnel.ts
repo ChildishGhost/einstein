@@ -12,7 +12,9 @@ export function isMessage(obj: any): obj is Message {
 	return typeof obj === 'object' && typeof obj.channel === 'string' && obj.channel.length
 }
 
-export type ChannelHandler<T = any> = (data?: T) => Promise<void> | void
+export type ChannelHandler<T = any> = T extends void ?
+	() => Promise<void> | void :
+	(data: T) => Promise<void> | void
 
 export interface IMessageTunnel {
 	register(channel: string, handler: ChannelHandler): void

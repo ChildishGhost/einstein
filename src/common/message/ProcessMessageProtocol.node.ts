@@ -28,7 +28,7 @@ export class ProcessMessageProtocol implements Protocol<Message> {
 	}
 
 	async send(data: Message): Promise<void> {
-		process.send({
+		process.send?.({
 			type: 'messageTunnel:packet',
 			token: this.remoteToken,
 			// HACK(davy): remove all native types from the message

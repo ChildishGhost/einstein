@@ -51,7 +51,7 @@ const handleProcessError = (err: Error) => {
 	})
 }
 
-const handleProcessExit = (isExpected: boolean, code: number, signal: string) => {
+const handleProcessExit = (isExpected: boolean, code: number | null, signal: string | null) => {
 	withLogger((console) => {
 		if (!isExpected || code !== 0) {
 			console.log(errorFormat, `Process exited unexpectedly (${code}), signal: ${signal}`)

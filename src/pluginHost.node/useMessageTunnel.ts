@@ -52,7 +52,7 @@ const createProtocol = (): Promise<ProcessMessageProtocol> => {
 		process.on('message', messageHandler)
 	})
 
-	process.send({ type: 'pluginHost:registerMessageTunnel', nonce, token })
+	process.send!({ type: 'pluginHost:registerMessageTunnel', nonce, token })
 
 	return promise
 }

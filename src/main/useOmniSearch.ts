@@ -22,7 +22,7 @@ const createWindow = () => {
 		height: 300,
 		useContentSize: true,
 		frame: false,
-		type: platform === 'linux' ? 'toolbar' : null,
+		type: platform === 'linux' ? 'toolbar' : undefined,
 		show: false,
 		alwaysOnTop: true,
 		webPreferences: {

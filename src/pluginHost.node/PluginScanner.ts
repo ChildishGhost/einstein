@@ -29,7 +29,9 @@ export default class PluginScanner {
 					.map((path) => this.readPluginMetadata(path)),
 			)
 		} catch (e) {
-			console.log(`Unable to readdir: ${dir}, reason: ${e.message}`)
+			if (e instanceof Error) {
+				console.log(`Unable to readdir: ${dir}, reason: ${e.message}`)
+			}
 			return []
 		}
 	}
@@ -58,7 +60,9 @@ export default class PluginScanner {
 			console.log(`Plugin metadata: ${JSON.stringify(metadata)}`)
 			return metadata
 		} catch (e) {
-			console.log(e.message)
+			if (e instanceof Error) {
+				console.log(e.message)
+			}
 			return null
 		}
 	}

@@ -3,7 +3,7 @@ import { inject, onMounted, reactive, toRaw, watch } from 'vue'
 import { MessageTunnel } from '@/common/message/MessageTunnel'
 
 export default ($app: Element) => {
-	const withMessageTunnel = inject<Promise<MessageTunnel>>('$msg')
+	const withMessageTunnel = inject<Promise<MessageTunnel>>('$msg')!
 	const desiredSize = reactive({})
 
 	const calculateDesiredSize = () => {

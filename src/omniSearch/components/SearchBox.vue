@@ -35,7 +35,7 @@ const emit = defineEmits([
 const style = useCssModule()
 const { modelValue } = toRefs(props)
 const { term, result } = useSearch()
-const inputRef = ref(null)
+const inputRef = ref<HTMLInputElement>()
 
 watch(modelValue, (val) => {
 	term.value = val
@@ -46,7 +46,7 @@ watch(result, (val) => {
 })
 
 defineExpose({
-	focus: () => inputRef.value.focus()
+	focus: () => inputRef.value?.focus()
 })
 </script>
 

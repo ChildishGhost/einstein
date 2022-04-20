@@ -4,7 +4,7 @@ import Fuse from 'fuse.js'
 import { Bookmark } from './types'
 
 export default abstract class BookmarksSearchEngine implements ISearchEngine {
-	private fuse: Fuse<Bookmark> = null
+	private fuse?: Fuse<Bookmark>
 
 	private isReady: Promise<void>
 
@@ -31,7 +31,7 @@ export default abstract class BookmarksSearchEngine implements ISearchEngine {
 	async search(term: string, _trigger?: string): Promise<SearchResult[]> {
 		await this.isReady
 
-		return this.fuse.search(term).map<SearchResult<Bookmark>>(({ item }) => ({
+		return this.fuse?.search(term).map<SearchResult<Bookmark>>(({ item }) => ({
 			id: JSON.stringify(item),
 			title: item.name,
 			description: item.url,
@@ -44,6 +44,6 @@ export default abstract class BookmarksSearchEngine implements ISearchEngine {
 					url: item.url,
 				},
 			},
-		}))
+		})) ?? []
 	}
 }

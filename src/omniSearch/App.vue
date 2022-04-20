@@ -30,8 +30,8 @@ import ResultList from '@/omniSearch/components/ResultList.vue'
 import SearchBox from '@/omniSearch/components/SearchBox.vue'
 import useWindowControl from '@/omniSearch/composables/useWindowControl'
 
-const { calculateDesiredSize, closeWindow: realCloseWindow } = useWindowControl(inject('$app'))
-const withMessageTunnel = inject<Promise<MessageTunnel>>('$msg')
+const { calculateDesiredSize, closeWindow: realCloseWindow } = useWindowControl(inject('$app')!)
+const withMessageTunnel = inject<Promise<MessageTunnel>>('$msg')!
 const searchTerm = ref('')
 const searchResult = ref<WithPluginTagged<SearchResult>[]>([])
 const searchBoxRef = ref<InstanceType<typeof SearchBox>>()
@@ -90,7 +90,7 @@ const execute = () => {
 
 	withMessageTunnel.then((msg) => {
 		msg.sendMessage<PluginEvent>('plugin:event', {
-			...toRaw(suggestion.event),
+			...toRaw(suggestion.event)!,
 			pluginUid: suggestion.pluginUid,
 		})
 	})

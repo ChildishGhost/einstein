@@ -72,7 +72,8 @@ class PluginManager {
 	}
 
 	async loadPlugins() {
-		const metadataList = await this.pluginScanner.scan()
+		const metadataList = (await this.pluginScanner.scan())
+			.filter((m): m is PluginMetadata => !!m)
 
 		await Promise.all(metadataList.map((metadata) => this.loadPlugin(metadata)))
 	}
@@ -89,7 +90,9 @@ class PluginManager {
 				eventHandlers: context.eventHandlers,
 			})
 		} catch (e) {
-			console.log(e.message)
+			if (e instanceof Error) {
+				console.log(e.message)
+			}
 		}
 	}
 
@@ -150,7 +153,7 @@ class PluginManager {
 				try {
 					const data = await readFile(configPath, { encoding: 'utf-8' })
 
-					return CommentJSON.parse(data)
+					return CommentJSON.parse(data) as any
 				} catch (e) {
 					return {}
 				}
@@ -187,7 +190,7 @@ class PluginManager {
 		}
 
 		// Option 2: terms...
-		const voidEngines = this.triggerMap.get(VOID_TRIGGER)
+		const voidEngines = this.triggerMap.get(VOID_TRIGGER)!
 		return {
 			trigger: VOID_TRIGGER,
 			term,
@@ -233,7 +236,7 @@ class PluginManager {
 			return null
 		}
 
-		return { ...this.plugins.get(uid).metadata }
+		return { ...this.plugins.get(uid)!.metadata }
 	}
 }
 

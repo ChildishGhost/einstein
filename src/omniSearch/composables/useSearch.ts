@@ -6,7 +6,7 @@ import PerformSearch from '@/common/types/PerformSearch'
 import PerformSearchReply from '@/common/types/PerformSearchReply'
 
 export default () => {
-	const withMessageTunnel = inject<Promise<MessageTunnel>>('$msg')
+	const withMessageTunnel = inject<Promise<MessageTunnel>>('$msg')!
 	const term = ref('')
 	const result = ref<SearchResult[]>([])
 	const resultHandler = (data: PerformSearchReply) => {
