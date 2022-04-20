@@ -4,21 +4,6 @@ import { join as joinPath } from 'path'
 
 import { ICON_EXT } from './constants'
 
-const findBookmarks = (path: string) => {
-	if (!fs.existsSync(path) || !fs.statSync(path).isDirectory()) {
-		return []
-	}
-
-	const probeProfiles = fs
-		.readdirSync(path, { withFileTypes: true })
-		.filter(dirent => dirent.isDirectory())
-		.map(({ name }) => joinPath(path, name))
-
-	return probeProfiles
-		.map(p => joinPath(p, 'Bookmarks'))
-		.filter(p => fs.existsSync(p) && fs.statSync(p).isFile())
-}
-
 const walk = (path: string, acc: string[]) => {
 	// walk directory recursively
 	if (fs.existsSync(path)) {
@@ -70,4 +55,4 @@ const findIcon = (app: string) => {
 }
 
 /* eslint-disable-next-line import/prefer-default-export */
-export { findIcon, findBookmarks }
+export { findIcon }
