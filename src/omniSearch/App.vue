@@ -1,5 +1,5 @@
 <template>
-	<div>
+	<div :class="style.flex">
 		<SearchBox
 			ref="searchBoxRef"
 			v-model="searchTerm"
@@ -22,7 +22,7 @@
 
 <script setup lang="ts">
 import { WithPluginTagged, SearchResult } from 'einstein'
-import { inject, nextTick, onMounted, ref, toRaw, watch } from 'vue'
+import { inject, nextTick, onMounted, ref, toRaw, useCssModule, watch } from 'vue'
 
 import { MessageTunnel } from '@/common/message/MessageTunnel'
 import PluginEvent from '@/common/types/PluginEvent'
@@ -30,6 +30,7 @@ import ResultList from '@/omniSearch/components/ResultList.vue'
 import SearchBox from '@/omniSearch/components/SearchBox.vue'
 import useWindowControl from '@/omniSearch/composables/useWindowControl'
 
+const style = useCssModule()
 const { calculateDesiredSize, closeWindow: realCloseWindow } = useWindowControl(inject('$app')!)
 const withMessageTunnel = inject<Promise<MessageTunnel>>('$msg')!
 const searchTerm = ref('')
@@ -108,3 +109,10 @@ const executeQuickAction = (event: any) => {
 	closeWindow()
 }
 </script>
+
+<style lang="scss" module>
+.flex {
+	display: flex;
+	flex-direction: column;
+}
+</style>
