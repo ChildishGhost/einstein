@@ -15,7 +15,7 @@
 		"watch": "webpack --watch"
 	},
 	"devDependencies": {
-		"@babel/core": "^7.17.8",
+		"@babel/core": "^7.17.10",
 		"@babel/preset-env": "^7.16.11",
 		"@types/node": "^16.11.19",
 		"@typescript-eslint/eslint-plugin": "^5.18.0",
