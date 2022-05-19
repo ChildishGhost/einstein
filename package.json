@@ -54,7 +54,7 @@
 		"webpack-merge": "^5.8.0"
 	},
 	"dependencies": {
-		"core-js": "^3.22.4",
+		"core-js": "^3.22.5",
 		"fuse.js": "^6.5.3",
 		"source-map-support": "^0.5.21",
 		"vue": "^3.2.33"
