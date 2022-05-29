@@ -2,18 +2,41 @@ import { PluginContext, SearchResult, VOID_TRIGGER } from 'einstein'
 
 import { exec, findIcon } from './utils'
 
-const ENGINES = [
-	// trigger, url, description
-
+// trigger, url, description
+type engine = [string, string, string]
+const ENGINES: engine[] = [
 	// VOID_TRIGGER is used for the default search engine
-  [ VOID_TRIGGER, 'https://duckduckgo.com/?q=%s','DuckDuckGo' ],
+	[ VOID_TRIGGER, 'https://duckduckgo.com/?q=%s','DuckDuckGo' ],
 
 	// default search engines
-  [ 'g', 'https://www.google.com/search?hl=zh-TW&lr=lang_en%7Clang_zh-TW%7Clang_ja&q=%s', 'Google(en)' ],
-  [ 'github', 'https://github.com/search?q=%s&ref=opensearch', 'GitHub' ],
-  [ 'tw', 'https://itaigi.tw/k/%s', 'itaigi.tw' ],
-  [ 'q', 'https://www.qwant.com/?r=US&sr=en&l=en_gb&h=0&s=0&a=1&b=1&vt=1&hc=0&smartNews=1&theme=0&i=1&q=%s', 'Qwant' ],
+	[ 'g', 'https://www.google.com/search?hl=zh-TW&lr=lang_en%7Clang_zh-TW%7Clang_ja&q=%s', 'Google(en)' ],
+	[ 'github', 'https://github.com/search?q=%s&ref=opensearch', 'GitHub' ],
+	[ 'tw', 'https://itaigi.tw/k/%s', 'itaigi.tw' ],
+	[ 'q', 'https://www.qwant.com/?r=US&sr=en&l=en_gb&h=0&s=0&a=1&b=1&vt=1&hc=0&smartNews=1&theme=0&i=1&q=%s', 'Qwant' ],
 ]
+
+const openSearch = (e:engine, term: string) => {
+	const url = e[1].replace('%s', term)
+	return {
+		id: e[0],
+		title: `Open Search on ${e[2]}`,
+		description: url,
+		icon: findIcon('www'),
+		event: {
+			type: 'open-url',
+			data: url,
+		},
+	}
+}
+
+const hintSearch = (e:engine) => {
+	return {
+		id: e[0],
+		title: `${e[0]}: search on ${e[2]}`,
+		icon: findIcon('www'),
+		completion: `${e[0]} `,
+	}
+}
 
 const searchEngine = {
 	triggers: Object.freeze(ENGINES.map(e => e[0])),
@@ -21,28 +44,25 @@ const searchEngine = {
 	async search(term: string, trigger?: string): Promise<SearchResult[]> {
 		const result: SearchResult[] = []
 		if (term.length > 0) {
-			// populate the result array with search engine urls
-			ENGINES.filter(e => e[0] === trigger).forEach(e => {
-				const url = e[1].replace('%s', term)
-				result.push({
-					id: e[0],
-					title: `Open Search on ${e[2]}`,
-					description: url,
-					icon: findIcon('www'),
-					event: {
-						type: 'open-url',
-						data: url,
-					},
-				})
+			ENGINES.forEach(e => {
+				// populate the result array with the matched search engine trigger
+				// in case of default search engine, also add hint for other available triggers
+				if (e[0] === trigger) {
+					result.push(openSearch(e, term))
+				}
+				if (trigger === VOID_TRIGGER && e[0].includes(term)) {
+					result.push(hintSearch(e))
+				}
 			})
 		} else {
-			// otherwise, return available search engine triggers
-			ENGINES.filter(e => e[0].includes(trigger)).forEach(e => {
-				result.push({
-					id: e[0],
-					title: `${e[0]}: search on ${e[2]}`,
-					icon: findIcon('www'),
-				})
+			// otherwise, return hint for available triggers
+			// and add default search engine w/ search term = (incomplete) trigger
+			ENGINES.forEach(e => {
+				if (e[0].includes(trigger)) {
+					result.push(hintSearch(e))
+				} else if (e[0] === VOID_TRIGGER) {
+					result.push(openSearch(e, trigger))
+				}
 			})
 		}
 		return result
