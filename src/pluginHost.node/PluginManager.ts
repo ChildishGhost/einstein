@@ -1,5 +1,7 @@
+import { readFile, writeFile } from 'fs/promises'
 import { join as joinPath } from 'path'
 
+import * as CommentJSON from 'comment-json'
 import {
 	UID,
 	WithPluginTagged,
@@ -17,6 +19,10 @@ import {
 import { PluginMetadata } from '@/pluginHost.node/PluginMetadata'
 import PluginScanner from '@/pluginHost.node/PluginScanner'
 
+import { generateAPI } from './api'
+import Environment from './Environment'
+import { createVM } from './sandbox'
+
 type Plugin = {
 	metadata: PluginMetadata
 	dispose?: PluginDispose
@@ -27,10 +33,15 @@ type PluginContext = APIContext & {
 	readonly eventHandlers: Record<string, Set<PluginEventHandler>>
 }
 
-// TODO(davy): implement a secure plugin loader
 async function loadScript({ path, entry }: PluginMetadata): Promise<PluginSetup> {
 	const loadPath = path ? joinPath(path, entry) : entry
-	return __non_webpack_require__(loadPath).default
+	const vm = createVM({
+		injectModules: {
+			einstein: generateAPI(),
+		}
+	})
+
+	return vm.runFile(loadPath).default
 }
 
 const PluginUIDSymbol = Symbol('PluginUID')
@@ -69,7 +80,7 @@ class PluginManager {
 	private async loadPlugin(metadata: PluginMetadata) {
 		try {
 			const setup = await loadScript(metadata)
-			const context = this.buildContext(metadata.uid)
+			const context = this.buildContext(metadata)
 			const dispose = (await setup(context)) || undefined
 
 			this.plugins.set(metadata.uid, {
@@ -95,11 +106,13 @@ class PluginManager {
 		this.plugins.delete(uid)
 	}
 
-	private buildContext(uid: UID): PluginContext {
+	private buildContext(metadata: PluginMetadata): PluginContext {
 		const eventHandlers: Record<string, Set<PluginEventHandler>> = {}
+		const configPath = joinPath(Environment.userConfigPath, `${metadata.uid}.config.json`)
 
 		return {
 			app: this.app,
+			metadata,
 
 			get eventHandlers() {
 				return eventHandlers
@@ -113,7 +126,7 @@ class PluginManager {
 				eventHandlers[type]!.add(handler)
 			},
 			registerSearchEngine: (searchEngine: ISearchEngine, ...triggers: string[]) => {
-				const engine = applyPluginUID(searchEngine, uid)
+				const engine = applyPluginUID(searchEngine, metadata.uid)
 
 				if (triggers.length === 0) {
 					this.addSearchEngineTrigger(VOID_TRIGGER, engine)
@@ -132,6 +145,18 @@ class PluginManager {
 				}
 
 				triggers.forEach((trigger) => this.removeSearchEngineTrigger(trigger, searchEngine))
+			},
+			loadConfig: async () => {
+				try {
+					const data = await readFile(configPath, { encoding: 'utf-8' })
+
+					return CommentJSON.parse(data)
+				} catch (e) {
+					return {}
+				}
+			},
+			saveConfig: async (config: any) => {
+				await writeFile(configPath, CommentJSON.stringify(config, null, 2), { encoding: 'utf-8' })
 			},
 		}
 	}
@@ -201,6 +226,14 @@ class PluginManager {
 		)
 
 		return results.flat()
+	}
+
+	getPlugin(uid: UID)	{
+		if (!this.plugins.has(uid)) {
+			return null
+		}
+
+		return { ...this.plugins.get(uid).metadata }
 	}
 }
 

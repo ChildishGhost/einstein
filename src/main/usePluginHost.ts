@@ -1,4 +1,5 @@
 import { fork, ChildProcess } from 'child_process'
+import { protocol } from 'electron'
 import { Readable, Writable } from 'stream'
 import { StringDecoder } from 'string_decoder'
 
@@ -12,34 +13,6 @@ const withLogger = (fn: (logger: Console) => void) => {
 	fn(console)
 	console.groupEnd()
 	/* eslint-enable no-console */
-}
-
-// prettier-ignore
-const inheritedEnvAllowList = [
-	'BLOCKSIZE',
-	'COLORFGBG', 'COLORTERM',
-	'CHARSET', 'LANG', 'LANGUAGE',
-	'LC_ALL', 'LC_COLLATE', 'LC_CTYPE',
-	'LC_MESSAGES', 'LC_MONETARY', 'LC_NUMERIC', 'LC_TIME',
-	'LINES COLUMNS',
-	'LSCOLORS',
-	'SSH_AUTH_SOCK',
-	'TZ',
-	'DISPLAY', 'XAUTHORIZATION', 'XAUTHORITY',
-	'EDITOR', 'VISUAL',
-	'HOME', 'MAIL', 'PATH',
-	// Linux
-	'DBUS_SESSION_BUS_ADDRESS',
-	'XAPPLRESDIR', 'XFILESEARCHPATH', 'XUSERFILESEARCHPATH',
-	'QTDIR', 'KDEDIR',
-	'XDG_SESSION_COOKIE',
-	'XMODIFIERS', 'GTK_IM_MODULE', 'QT_IM_MODULE', 'QT_IM_SWITCHER',
-]
-const permittedEnv = Object.fromEntries(
-	Object.entries(process.env).filter(([ name ]) => inheritedEnvAllowList.includes(name)),
-)
-const env = {
-	...permittedEnv,
 }
 
 const handleProcessOutputStream = (stream: Readable, formatString: string = '%s') => {
@@ -141,7 +114,6 @@ const prepareMessageProtocol = (childProcess: ChildProcess) => {
 const createProcess = () => {
 	let exiting = false
 	const process = fork(Environment.pluginHostEntryPath, {
-		env,
 		silent: true,
 		serialization: 'advanced',
 	} as any) // I don't know why 'serialization' is not in the definition...
@@ -166,13 +138,55 @@ const createProcess = () => {
 	}
 }
 
+const registerPluginProtocol = (message: MessageTunnel) => {
+	const cache = new Map<string, string>()
+
+	protocol.registerFileProtocol('plugin', (request, callback) => {
+		const { hostname: uid, pathname: path } = new URL(request.url)
+
+		if (cache.has(`${uid}/${path}`)) {
+			callback({ path: cache.get(`${uid}/${path}`) })
+			return
+		}
+
+		const handler = ({ uid: responseUid, path: responsePath, filePath }: {
+			uid: string
+			path: string
+			filePath?: string
+		}) => {
+			if (responseUid !== uid || responsePath !== path) {
+				return
+			}
+
+			message.unregister('plugin:filePath', handler)
+
+			if (filePath) {
+				cache.set(`${uid}/${path}`, filePath)
+				callback({ path: filePath })
+			} else {
+				callback({ statusCode: 404 })
+			}
+		}
+
+		message.register('plugin:filePath', handler)
+		message.sendMessage('plugin:filePath', { uid, path })
+	})
+}
+
 export default async () => {
 	const { process, exitProcess } = createProcess()
 	const messageTunnel = new MessageTunnel(await prepareMessageProtocol(process))
+
+	registerPluginProtocol(messageTunnel)
 
 	return {
 		process,
 		exitProcess,
 		messageTunnel,
+		isReady: new Promise<true>((resolve) => {
+			messageTunnel.register('plugin:initialized', () => {
+				resolve(true)
+			})
+		}),
 	}
 }

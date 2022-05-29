@@ -31,7 +31,8 @@ export class ProcessMessageProtocol implements Protocol<Message> {
 		process.send({
 			type: 'messageTunnel:packet',
 			token: this.remoteToken,
-			data,
+			// HACK(davy): remove all native types from the message
+			data: JSON.parse(JSON.stringify(data)),
 		})
 	}
 

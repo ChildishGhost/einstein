@@ -59,6 +59,7 @@ module.exports = Object.assign({}, utils.defaultConfig, {
     libraryTarget: 'commonjs2',
 	},
 	externals: {
+		einstein: 'einstein',
 		"fuse.js": "fuse.js",
 	},
 	module: {

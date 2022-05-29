@@ -1,4 +1,4 @@
-import { PluginContext, VOID_TRIGGER } from 'einstein'
+import { PluginContext, version, VOID_TRIGGER } from 'einstein'
 
 const searchEngine = {
 	triggers: [ VOID_TRIGGER, 'foo' ],
@@ -31,11 +31,26 @@ const searchEngine2 = {
 				description: 'type foo to use foo engine',
 				id: '1',
 			},
+			{
+				title: 'einstein-version',
+				description: version,
+				id: '2',
+			},
 		]
 	},
 }
 
-export default ({ registerSearchEngine }: PluginContext) => {
+export default async ({ registerSearchEngine, loadConfig, saveConfig }: PluginContext<{
+	latestVersion: string
+	counter: number
+}>) => {
+	const config = await loadConfig()
+
 	registerSearchEngine(searchEngine, ...searchEngine.triggers)
 	registerSearchEngine(searchEngine2)
+
+	config.counter = (config.counter ?? 0) + 1
+	config.latestVersion = version
+
+	await saveConfig(config)
 }
