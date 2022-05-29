@@ -7,6 +7,8 @@
 		@keydown.tab.exact.prevent="$emit('search:completion')"
 		@keydown.up.exact.prevent="$emit('search:previous')"
 		@keydown.down.exact.prevent="$emit('search:next')"
+		@keydown.ctrl.p.exact.prevent="$emit('search:previous')"
+		@keydown.ctrl.n.exact.prevent="$emit('search:next')"
 		@keydown.enter.exact.prevent="$emit('search:go')"
 	/>
 </template>
