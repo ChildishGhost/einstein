@@ -2,5 +2,12 @@
 	"name": "search",
 	"uid": "tw.childish.einstein.plugins.search",
 	"version": "0.0.1",
-	"main": "dist/index.js"
+	"main": "dist/index.js",
+	"__webpack_copy": [
+		{
+			"from": "assets/search.png",
+			"to": "search.png",
+			"perm": "644"
+		}
+	]
 }
