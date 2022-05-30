@@ -1,7 +1,6 @@
-import { PluginContext, PluginSetup } from 'einstein'
+import { PluginContext, PluginSetup, openUrl } from 'einstein'
 
 import { ChromiumBookmarksSearchEngine } from './ChromiumBookmarksSearchEngine'
-import { openUrl } from './openUrl'
 
 const setup: PluginSetup = async (context: PluginContext) => {
 	const chromiumBookmarksSearchEngine = new ChromiumBookmarksSearchEngine(context)
@@ -9,7 +8,7 @@ const setup: PluginSetup = async (context: PluginContext) => {
 
 	context.registerSearchEngine(chromiumBookmarksSearchEngine)
 	context.registerEventHandler('openUrl', ({ url }: { url: string }) => {
-		openUrl(context.app.environment.platform, url)
+		openUrl(url)
 	})
 }
 
