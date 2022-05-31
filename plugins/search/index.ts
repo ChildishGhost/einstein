@@ -1,4 +1,4 @@
-import { PluginContext, SearchResult, VOID_TRIGGER, spawn } from 'einstein'
+import { PluginContext, SearchResult, VOID_TRIGGER, openUrl } from 'einstein'
 
 // trigger, url, description
 type engine = [string, string, string]
@@ -74,6 +74,6 @@ export default (context: PluginContext) => {
 	searchEngine.context = context
 	context.registerSearchEngine(searchEngine, ...searchEngine.triggers)
 	context.registerEventHandler('open-url', (data: any) => {
-		spawn(`xdg-open '${data}'`)
+		openUrl(data)
 	})
 }
