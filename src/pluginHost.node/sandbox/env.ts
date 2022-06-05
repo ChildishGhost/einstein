@@ -44,8 +44,5 @@ export const permittedEnv = (() => {
 
 	delete originalEnv.ELECTRON_RUN_AS_NODE
 
-	return Object.fromEntries(
-		Object.entries(originalEnv)
-			.filter(([ name ]) => allowList.includes(name))
-	)
+	return Object.fromEntries(Object.entries(originalEnv).filter(([ name ]) => allowList.includes(name)))
 })()

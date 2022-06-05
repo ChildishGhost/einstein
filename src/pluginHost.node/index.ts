@@ -27,7 +27,7 @@ const pluginManager = new PluginManager(app)
 
 	await pluginManager.loadPlugins()
 
-	messageTunnel.register('plugin:filePath', ({ uid, path }: { uid: UID; path: string}) => {
+	messageTunnel.register('plugin:filePath', ({ uid, path }: { uid: UID; path: string }) => {
 		const plugin = pluginManager.getPlugin(uid)
 
 		if (!plugin) {

@@ -9,7 +9,5 @@ declare module 'file-icon' {
 	function fileIconToBuffer(identifier: Identifier, options?: Options): Promise<Buffer>
 	function fileIconToBuffer(identifier: Identifier[], options?: Options): Promise<Buffer[]>
 
-	export {
-		fileIconToBuffer,
-	}
+	export { fileIconToBuffer }
 }

@@ -19,6 +19,7 @@ jobs:
         run: git --no-pager show -m "$GITHUB_SHA" --color
 
       - name: Build
+        shell: bash
         run: |
           npm --version
           npm ci

@@ -40,7 +40,11 @@ const searchEngine2 = {
 	},
 }
 
-export default async ({ registerSearchEngine, loadConfig, saveConfig }: PluginContext<{
+export default async ({
+	registerSearchEngine,
+	loadConfig,
+	saveConfig,
+}: PluginContext<{
 	latestVersion: string
 	counter: number
 }>) => {

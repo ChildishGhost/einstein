@@ -257,7 +257,9 @@ export default class LinuxDesktopApplicationSearchEngine implements ISearchEngin
 		} else if (availableTerminalEmulators.includes('xterm')) {
 			this.TERMINAL_EMULATOR = 'xterm -e'
 		} else {
-			console.log('no terminal emulator found. please install one of the following: rxvt-unicode, gnome-terminal, xterm')
+			console.log(
+				'no terminal emulator found. please install one of the following: rxvt-unicode, gnome-terminal, xterm',
+			)
 		}
 	}
 }

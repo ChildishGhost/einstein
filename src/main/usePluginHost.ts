@@ -149,7 +149,11 @@ const registerPluginProtocol = (message: MessageTunnel) => {
 			return
 		}
 
-		const handler = ({ uid: responseUid, path: responsePath, filePath }: {
+		const handler = ({
+			uid: responseUid,
+			path: responsePath,
+			filePath,
+		}: {
 			uid: string
 			path: string
 			filePath?: string

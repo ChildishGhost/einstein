@@ -22,12 +22,10 @@ const findBookmarksFiles = async (dataDir: string) => {
 	}
 
 	const probeProfiles = readdirSync(dataDir, { withFileTypes: true })
-		.filter(dirent => dirent.isDirectory())
+		.filter((dirent) => dirent.isDirectory())
 		.map(({ name }) => joinPath(dataDir, name))
 
-	return probeProfiles
-		.map(p => joinPath(p, 'Bookmarks'))
-		.filter(p => existsSync(p) && statSync(p).isFile())
+	return probeProfiles.map((p) => joinPath(p, 'Bookmarks')).filter((p) => existsSync(p) && statSync(p).isFile())
 }
 
 const processBookmarkFiles = async (paths: string[]) => {
@@ -85,18 +83,18 @@ export class ChromiumBookmarksSearchEngine extends BookmarksSearchEngine {
 	protected get dataDirs() {
 		switch (this.context.app.environment.platform) {
 		case 'linux': {
-			return [ 'microsoft-edge-dev', 'chromium', 'google-chrome' ].map(path =>
-				joinPath(this.context.app.environment.homedir, '.config', path)
+			return [ 'microsoft-edge-dev', 'chromium', 'google-chrome' ].map((path) =>
+				joinPath(this.context.app.environment.homedir, '.config', path),
 			)
 		}
 		case 'windows': {
-			return [ String.raw`Microsoft\Edge`, String.raw`Microsoft\Edge Dev`, String.raw`Google\Chrome` ].map(path =>
-				joinPath(this.context.app.environment.homedir, 'AppData', 'Local', path, 'User Data')
+			return [ String.raw`Microsoft\Edge`, String.raw`Microsoft\Edge Dev`, String.raw`Google\Chrome` ].map((path) =>
+				joinPath(this.context.app.environment.homedir, 'AppData', 'Local', path, 'User Data'),
 			)
 		}
 		case 'macos': {
-			return [ joinPath('Google', 'Chrome'), 'Microsoft Edge', 'Microsoft Edge Beta' ].map(path =>
-				joinPath(this.context.app.environment.homedir, 'Library', 'Application Support', path)
+			return [ joinPath('Google', 'Chrome'), 'Microsoft Edge', 'Microsoft Edge Beta' ].map((path) =>
+				joinPath(this.context.app.environment.homedir, 'Library', 'Application Support', path),
 			)
 		}
 		default:
