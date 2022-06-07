@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Usage: ./dump.sh
+# Usage: ./dump.sh > ~/.config/einstein/config/tw.childish.einstein.plugins.search.config.json
 # paste the output into plugins/saerch/index.ts
 
 # This script dumps user defined search engines in Chromium.
@@ -17,6 +17,8 @@ COPY=$(mktemp)
 
 cp "$CHROMIUM_WEB_DATA" "$COPY"
 
+echo "{"
+echo "  \"engines\": ["
 sqlite3 "$COPY" <<COMMANDS |
 .echo off
 select keyword, url, short_name from keywords;
@@ -29,5 +31,7 @@ s#{inputEncoding}#UTF-8#g
 s#&?[^{}?&]\+={[^}]\+}##g
 s#{[^}]\+}##g
 ' |
-    awk -v FS='|' -v q="'" '{ print "[ "q$1q", "q$2q", "q$3q" ],"}'
+    awk -v FS='|' -v q='"' '{ print "    { \"trigger\": "q$1q", \"url\": "q$2q", \"description\": "q$3q" },"}'
 rm "$COPY"
+echo "  ]"
+echo "}"

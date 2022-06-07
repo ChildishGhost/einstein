@@ -1,23 +1,33 @@
 import { PluginContext, SearchResult, VOID_TRIGGER, openUrl } from 'einstein'
 
-// trigger, url, description
-type engine = [string, string, string]
+type engine = {
+	trigger: string,
+	url: string,
+	description: string,
+}
+
+// type for user configs
+type Configs = {
+	engines: engine[],
+}
+
+// note: ENGINES are configurable with user config
 const ENGINES: engine[] = [
 	// VOID_TRIGGER is used for the default search engine
-	[ VOID_TRIGGER, 'https://duckduckgo.com/?q=%s','DuckDuckGo' ],
+	{ trigger: VOID_TRIGGER, url: 'https://duckduckgo.com/?q=%s', description: 'DuckDuckGo' },
 
 	// default search engines
-	[ 'g', 'https://www.google.com/search?hl=zh-TW&lr=lang_en%7Clang_zh-TW%7Clang_ja&q=%s', 'Google(en)' ],
-	[ 'github', 'https://github.com/search?q=%s&ref=opensearch', 'GitHub' ],
-	[ 'tw', 'https://itaigi.tw/k/%s', 'itaigi.tw' ],
-	[ 'q', 'https://www.qwant.com/?r=US&sr=en&l=en_gb&h=0&s=0&a=1&b=1&vt=1&hc=0&smartNews=1&theme=0&i=1&q=%s', 'Qwant' ],
+	{ trigger: 'g', url: 'https://www.google.com/search?hl=zh-TW&lr=lang_en%7Clang_zh-TW%7Clang_ja&q=%s', description: 'Google(en)' },
+	{ trigger: 'github', url: 'https://github.com/search?q=%s&ref=opensearch', description: 'GitHub' },
+	{ trigger: 'tw', url: 'https://itaigi.tw/k/%s', description: 'itaigi.tw' },
+	{ trigger: 'q', url: 'https://www.qwant.com/?r=US&sr=en&l=en_gb&h=0&s=0&a=1&b=1&vt=1&hc=0&smartNews=1&theme=0&i=1&q=%s', description: 'Qwant' },
 ]
 
-const openSearch = (e:engine, term: string, icon: string): SearchResult => {
-	const url = e[1].replace('%s', term)
+const openSearch = (e: engine, term: string, icon: string): SearchResult => {
+	const url = e.url.replace('%s', term)
 	return {
-		id: e[0],
-		title: `Open Search on ${e[2]}`,
+		id: e.trigger,
+		title: `Open Search on ${e.description}`,
 		description: url,
 		icon,
 		event: {
@@ -29,39 +39,50 @@ const openSearch = (e:engine, term: string, icon: string): SearchResult => {
 
 const hintSearch = (e:engine, icon: string): SearchResult => {
 	return {
-		id: e[0],
-		title: `${e[0]}: search on ${e[2]}`,
+		id: e.trigger,
+		title: `${e.trigger}: search on ${e.description}`,
 		icon,
-		completion: `${e[0]} `,
+		completion: `${e.trigger} `,
 	}
 }
 
 const searchEngine = {
-	triggers: Object.freeze(ENGINES.map(e => e[0])),
-	context: undefined as PluginContext,
+	context: undefined as PluginContext<Configs>,
+
+	triggers: Object.freeze(ENGINES.map((e) => e.trigger)),
+	engines: ENGINES as engine[],
+
+	async loadEnginesFromConfig() {
+		const config = await this.context.loadConfig()
+
+		if (config.engines ?? false) {
+			this.engines = config.engines as engine[]
+			this.triggers = Object.freeze(this.engines.map((e: engine) => e.trigger))
+		}
+	},
 
 	async search(term: string, trigger?: string): Promise<SearchResult[]> {
 		const result: SearchResult[] = []
 
 		const icon = `plugin://${this.context.metadata.uid}/search.png`
 		if (term.length > 0) {
-			ENGINES.forEach(e => {
+			this.engines.forEach((e: engine) => {
 				// populate the result array with the matched search engine trigger
 				// in case of default search engine, also add hint for other available triggers
-				if (e[0] === trigger) {
+				if (e.trigger === trigger) {
 					result.push(openSearch(e, term, icon))
 				}
-				if (trigger === VOID_TRIGGER && e[0].includes(term)) {
+				if (trigger === VOID_TRIGGER && e.trigger.includes(term)) {
 					result.push(hintSearch(e, icon))
 				}
 			})
 		} else {
 			// otherwise, return hint for available triggers
 			// and add default search engine w/ search term = (incomplete) trigger
-			ENGINES.forEach(e => {
-				if (e[0].includes(trigger)) {
+			this.engines.forEach((e: engine) => {
+				if (e.trigger.includes(trigger)) {
 					result.push(hintSearch(e, icon))
-				} else if (e[0] === VOID_TRIGGER) {
+				} else if (e.trigger === VOID_TRIGGER) {
 					result.push(openSearch(e, trigger, icon))
 				}
 			})
@@ -70,8 +91,9 @@ const searchEngine = {
 	},
 }
 
-export default (context: PluginContext) => {
+export default async (context: PluginContext<Configs>) => {
 	searchEngine.context = context
+	await searchEngine.loadEnginesFromConfig()
 	context.registerSearchEngine(searchEngine, ...searchEngine.triggers)
 	context.registerEventHandler('open-url', (data: any) => {
 		openUrl(data)

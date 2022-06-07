@@ -123,7 +123,6 @@ export default class PassSearchEngine implements ISearchEngine {
 		const preSearch: PreSearch[] = this.passFiles.map((f) => {
 			return { file: f, name: f.split('/').reverse()[0] }
 		})
-		console.log(preSearch)
 
 		this.fuse = new Fuse(preSearch, {
 			keys: [ 'name', 'file' ],
