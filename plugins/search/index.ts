@@ -1,14 +1,14 @@
 import { PluginContext, SearchResult, VOID_TRIGGER, openUrl } from 'einstein'
 
 type engine = {
-	trigger: string,
-	url: string,
-	description: string,
+	trigger: string
+	url: string
+	description: string
 }
 
 // type for user configs
 type Configs = {
-	engines: engine[],
+	engines: engine[]
 }
 
 // note: ENGINES are configurable with user config
@@ -17,10 +17,18 @@ const ENGINES: engine[] = [
 	{ trigger: VOID_TRIGGER, url: 'https://duckduckgo.com/?q=%s', description: 'DuckDuckGo' },
 
 	// default search engines
-	{ trigger: 'g', url: 'https://www.google.com/search?hl=zh-TW&lr=lang_en%7Clang_zh-TW%7Clang_ja&q=%s', description: 'Google(en)' },
+	{
+		trigger: 'g',
+		url: 'https://www.google.com/search?hl=zh-TW&lr=lang_en%7Clang_zh-TW%7Clang_ja&q=%s',
+		description: 'Google(en)',
+	},
 	{ trigger: 'github', url: 'https://github.com/search?q=%s&ref=opensearch', description: 'GitHub' },
 	{ trigger: 'tw', url: 'https://itaigi.tw/k/%s', description: 'itaigi.tw' },
-	{ trigger: 'q', url: 'https://www.qwant.com/?r=US&sr=en&l=en_gb&h=0&s=0&a=1&b=1&vt=1&hc=0&smartNews=1&theme=0&i=1&q=%s', description: 'Qwant' },
+	{
+		trigger: 'q',
+		url: 'https://www.qwant.com/?r=US&sr=en&l=en_gb&h=0&s=0&a=1&b=1&vt=1&hc=0&smartNews=1&theme=0&i=1&q=%s',
+		description: 'Qwant',
+	},
 ]
 
 const openSearch = (e: engine, term: string, icon: string): SearchResult => {
@@ -37,7 +45,7 @@ const openSearch = (e: engine, term: string, icon: string): SearchResult => {
 	}
 }
 
-const hintSearch = (e:engine, icon: string): SearchResult => {
+const hintSearch = (e: engine, icon: string): SearchResult => {
 	return {
 		id: e.trigger,
 		title: `${e.trigger}: search on ${e.description}`,

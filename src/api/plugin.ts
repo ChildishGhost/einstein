@@ -24,17 +24,12 @@ interface PluginContext<PluginConfig extends ConfigDefinition = {}> {
 	readonly metadata: PluginMetadata
 }
 type PluginDispose = () => void | PromiseLike<void>
-type PluginSetup = <PluginConfig extends ConfigDefinition = {}>(context: PluginContext<PluginConfig>) => void | PromiseLike<void> | PluginDispose | PromiseLike<PluginDispose>
+type PluginSetup = <PluginConfig extends ConfigDefinition = {}>(
+	context: PluginContext<PluginConfig>,
+) => void | PromiseLike<void> | PluginDispose | PromiseLike<PluginDispose>
 
 type WithPluginTagged<T> = T & {
 	pluginUid: UID
 }
 
-export {
-	PluginContext,
-	PluginDispose,
-	PluginEventHandler,
-	PluginSetup,
-	PluginMetadata,
-	WithPluginTagged
-}
+export { PluginContext, PluginDispose, PluginEventHandler, PluginSetup, PluginMetadata, WithPluginTagged }

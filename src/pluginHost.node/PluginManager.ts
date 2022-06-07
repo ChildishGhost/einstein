@@ -38,7 +38,7 @@ async function loadScript({ path, entry }: PluginMetadata): Promise<PluginSetup>
 	const vm = createVM({
 		injectModules: {
 			einstein: generateAPI(),
-		}
+		},
 	})
 
 	return vm.runFile(loadPath).default
@@ -228,7 +228,7 @@ class PluginManager {
 		return results.flat()
 	}
 
-	getPlugin(uid: UID)	{
+	getPlugin(uid: UID) {
 		if (!this.plugins.has(uid)) {
 			return null
 		}

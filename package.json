@@ -8,9 +8,9 @@
 		"build:webpack": "webpack",
 		"build:electron": ".bin/build-electron.sh",
 		"clean": "rm -rf node_modules && rm -rf dist/{electron,main,node,plugins,renderer}",
-		"lint": "eslint src/ --ext .ts,.js,.vue",
+		"lint": "eslint --ext .ts,.js,.vue src/ plugins/",
 		"lint:fix": "npm run lint -- --fix",
-		"format": "prettier -w src/ && eslint --ext .ts,.js,.vue --fix src/",
+		"format": "prettier -w src/ plugins/ && eslint --ext .ts,.js,.vue --fix src/ plugins/",
 		"run": "npm run build:webpack && electron .",
 		"run:without-build": "electron .",
 		"watch": "webpack --watch"
