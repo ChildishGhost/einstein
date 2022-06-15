@@ -21,7 +21,7 @@
 		"@types/node": "^16.11.19",
 		"@typescript-eslint/eslint-plugin": "^5.27.0",
 		"@typescript-eslint/parser": "^5.27.0",
-		"@vue/compiler-sfc": "^3.2.27",
+		"@vue/compiler-sfc": "^3.2.37",
 		"babel-loader": "^8.2.5",
 		"babel-plugin-module-resolver": "^4.1.0",
 		"clean-webpack-plugin": "^4.0.0",
