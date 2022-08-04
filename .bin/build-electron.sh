@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -euxo pipefail
 
+node --version
 DIR=$(dirname $(cd -P "$(dirname "$BASH_SOURCE")"; pwd))"/"
 ELECTRON_DIR=$(node ${DIR}.bin/download-electron.js)
 ELECTRON_PLATFORM=$(printf "${ELECTRON_PLATFORM:-$(uname -s)}" | tr "[A-Z]" "[a-z]")
