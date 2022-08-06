@@ -45,12 +45,7 @@ function isInstalled() {
 function extractFile(zipPath) {
 	fs.mkdirSync(targetPath, { recursive: true })
 
-	return new Promise((resolve, reject) => {
-		extract(zipPath, { dir: targetPath }, (err) => {
-			if (err) return reject(err)
-			resolve()
-		})
-	})
+	return extract(zipPath, { dir: targetPath })
 }
 
 function getPlatformPath() {
