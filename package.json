@@ -33,7 +33,7 @@
 		"eslint-config-airbnb-base": "^15.0.0",
 		"eslint-config-prettier": "^8.5.0",
 		"eslint-import-resolver-alias": "^1.1.2",
-		"eslint-import-resolver-typescript": "^3.3.0",
+		"eslint-import-resolver-typescript": "^3.4.0",
 		"eslint-plugin-import": "^2.26.0",
 		"eslint-plugin-tsdoc": "^0.2.16",
 		"eslint-plugin-vue": "^9.3.0",
