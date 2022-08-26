@@ -56,7 +56,7 @@
 		"webpack-merge": "^5.8.0"
 	},
 	"dependencies": {
-		"comment-json": "^4.2.2",
+		"comment-json": "^4.2.3",
 		"core-js": "^3.24.1",
 		"fuse.js": "^6.6.2",
 		"source-map-support": "^0.5.21",
