@@ -22,7 +22,7 @@
 		"@typescript-eslint/eslint-plugin": "^5.42.0",
 		"@typescript-eslint/parser": "^5.42.0",
 		"@vue/compiler-sfc": "^3.2.41",
-		"babel-loader": "^8.2.5",
+		"babel-loader": "^9.1.0",
 		"babel-plugin-module-resolver": "^4.1.0",
 		"clean-webpack-plugin": "^4.0.0",
 		"create-file-webpack": "^1.0.2",
