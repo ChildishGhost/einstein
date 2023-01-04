@@ -57,7 +57,7 @@
 	},
 	"dependencies": {
 		"comment-json": "^4.2.3",
-		"core-js": "^3.25.5",
+		"core-js": "^3.27.1",
 		"fuse.js": "^6.6.2",
 		"source-map-support": "^0.5.21",
 		"vm2": "^3.9.11",
