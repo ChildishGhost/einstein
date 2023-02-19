@@ -1,8 +1,8 @@
 diff --git a/node_modules/vm2/lib/nodevm.js b/node_modules/vm2/lib/nodevm.js
-index b1236ee..661585e 100644
+index a55a0e2..19986be 100644
 --- a/node_modules/vm2/lib/nodevm.js
 +++ b/node_modules/vm2/lib/nodevm.js
-@@ -235,8 +235,8 @@ class NodeVM extends VM {
+@@ -236,8 +236,8 @@ class NodeVM extends VM {
  		objectDefineProperty(this, '_resolver', {__proto__: null, value: resolver});
  
  		if (!cacheSandboxScript) {
@@ -14,7 +14,7 @@ index b1236ee..661585e 100644
  
  		const closure = this._runScript(cacheSandboxScript);
 diff --git a/node_modules/vm2/lib/resolver-compat.js b/node_modules/vm2/lib/resolver-compat.js
-index 06cd7e2..c943391 100644
+index c903118..d9efc26 100644
 --- a/node_modules/vm2/lib/resolver-compat.js
 +++ b/node_modules/vm2/lib/resolver-compat.js
 @@ -185,7 +185,7 @@ let cacheEventsScript;
