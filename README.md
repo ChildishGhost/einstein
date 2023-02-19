@@ -78,7 +78,6 @@ See [LICENSE](/LICENSE) file
 
 - [albert](https://github.com/albertlauncher/albert) (not a open source software)
 - [Alfred](https://www.alfredapp.com/) (proprietary macOS only app)
-- [core-js](https://github.com/zloirock/core-js) (MIT License)
 - [Electron](https://www.electronjs.org/) (MIT License)
 - [Fuse.js](https://fusejs.io/) (Apache License)
 - [Vue.js](https://vuejs.org/) (MIT License)

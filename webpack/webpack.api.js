@@ -17,10 +17,6 @@ const createPackage = () => ({
 });
 
 const babelOptions = {
-	presets: [['@babel/preset-env', {
-		corejs: 3,
-		useBuiltIns: 'usage',
-	}]],
 	sourceMap: true,
 	plugins: [
 		['module-resolver', {
