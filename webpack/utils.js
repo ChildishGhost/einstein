@@ -5,10 +5,6 @@ const rel = path.resolve.bind(null, __dirname, '..');
 module.exports = {
 	rel,
 	babelOptions: {
-		presets: [['@babel/preset-env', {
-			corejs: 3,
-			useBuiltIns: 'usage',
-		}]],
 		sourceMap: true,
 		plugins: [
 			['module-resolver', {
