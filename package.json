@@ -40,7 +40,7 @@
 		"html-webpack-plugin": "^5.5.0",
 		"mini-css-extract-plugin": "^2.7.2",
 		"patch-package": "^6.5.1",
-		"prettier": "^2.8.3",
+		"prettier": "^2.8.4",
 		"prettier-eslint": "^15.0.1",
 		"sass": "^1.57.1",
 		"sass-loader": "^13.2.0",
