@@ -1,8 +1,9 @@
 import { PluginContext, PluginSetup, openUrl } from 'einstein'
 
 import { ChromiumBookmarksSearchEngine } from './ChromiumBookmarksSearchEngine'
+import { Configs } from './types'
 
-const setup: PluginSetup = async (context: PluginContext) => {
+const setup: PluginSetup = async (context: PluginContext<Configs>) => {
 	const chromiumBookmarksSearchEngine = new ChromiumBookmarksSearchEngine(context)
 	await chromiumBookmarksSearchEngine.waitReady()
 

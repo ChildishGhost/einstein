@@ -1,7 +1,7 @@
 import { ISearchEngine, PluginContext, SearchResult } from 'einstein'
 import Fuse from 'fuse.js'
 
-import { Bookmark } from './types'
+import { Bookmark, Configs } from './types'
 
 export default abstract class BookmarksSearchEngine implements ISearchEngine {
 	private fuse: Fuse<Bookmark> = null
@@ -11,7 +11,7 @@ export default abstract class BookmarksSearchEngine implements ISearchEngine {
 	protected abstract loadBookmarks(): Bookmark[] | PromiseLike<Bookmark[]>
 
 	// eslint-disable-next-line no-useless-constructor
-	constructor(protected readonly context: PluginContext) {
+	constructor(protected readonly context: PluginContext<Configs>) {
 		this.isReady = (async () => {
 			const bookmarks = await this.loadBookmarks()
 
