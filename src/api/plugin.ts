@@ -24,7 +24,7 @@ interface PluginContext<PluginConfig extends ConfigDefinition = {}> {
 	readonly metadata: PluginMetadata
 }
 type PluginDispose = () => void | PromiseLike<void>
-type PluginSetup = <PluginConfig extends ConfigDefinition = {}>(
+type PluginSetup<PluginConfig extends ConfigDefinition = {}> = (
 	context: PluginContext<PluginConfig>,
 ) => void | PromiseLike<void> | PluginDispose | PromiseLike<PluginDispose>
 

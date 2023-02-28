@@ -74,7 +74,37 @@ const processBookmarkFiles = async (paths: string[]) => {
 }
 
 export class ChromiumBookmarksSearchEngine extends BookmarksSearchEngine {
+	browsers: string[]
+
+	private async configureBrowsers() {
+		// default browsers
+		switch (this.context.app.environment.platform) {
+		case 'linux': {
+			this.browsers = [ 'microsoft-edge-dev', 'chromium', 'google-chrome' ]
+			break
+		}
+		case 'windows': {
+			this.browsers = [ String.raw`Microsoft\Edge`, String.raw`Microsoft\Edge Dev`, String.raw`Google\Chrome` ]
+			break
+		}
+		case 'macos': {
+			this.browsers = [ joinPath('Google', 'Chrome'), 'Microsoft Edge', 'Microsoft Edge Beta' ]
+			break
+		}
+		default:
+			this.browsers = []
+		}
+
+		// load browsers from config
+		const config = await this.context.loadConfig()
+		if (config.browsers ?? false) {
+			this.browsers = config.browsers
+		}
+	}
+
 	protected override async loadBookmarks() {
+		await this.configureBrowsers()
+		console.log(`load bookmarks from ${this.browsers}`)
 		const bookmarksFiles = (await Promise.all(this.dataDirs.map(findBookmarksFiles))).flat()
 
 		return processBookmarkFiles(bookmarksFiles)
@@ -83,17 +113,15 @@ export class ChromiumBookmarksSearchEngine extends BookmarksSearchEngine {
 	protected get dataDirs() {
 		switch (this.context.app.environment.platform) {
 		case 'linux': {
-			return [ 'microsoft-edge-dev', 'chromium', 'google-chrome' ].map((path) =>
-				joinPath(this.context.app.environment.homedir, '.config', path),
-			)
+			return this.browsers.map((path) => joinPath(this.context.app.environment.homedir, '.config', path))
 		}
 		case 'windows': {
-			return [ String.raw`Microsoft\Edge`, String.raw`Microsoft\Edge Dev`, String.raw`Google\Chrome` ].map((path) =>
+			return this.browsers.map((path) =>
 				joinPath(this.context.app.environment.homedir, 'AppData', 'Local', path, 'User Data'),
 			)
 		}
 		case 'macos': {
-			return [ joinPath('Google', 'Chrome'), 'Microsoft Edge', 'Microsoft Edge Beta' ].map((path) =>
+			return this.browsers.map((path) =>
 				joinPath(this.context.app.environment.homedir, 'Library', 'Application Support', path),
 			)
 		}
