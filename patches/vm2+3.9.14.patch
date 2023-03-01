@@ -14,7 +14,7 @@ index a55a0e2..19986be 100644
  
  		const closure = this._runScript(cacheSandboxScript);
 diff --git a/node_modules/vm2/lib/resolver-compat.js b/node_modules/vm2/lib/resolver-compat.js
-index c903118..d9efc26 100644
+index 0ef30ee..ba58bc2 100644
 --- a/node_modules/vm2/lib/resolver-compat.js
 +++ b/node_modules/vm2/lib/resolver-compat.js
 @@ -185,7 +185,7 @@ let cacheEventsScript;
