@@ -1,0 +1,47 @@
+diff --git a/node_modules/vm2/lib/nodevm.js b/node_modules/vm2/lib/nodevm.js
+index a55a0e2..19986be 100644
+--- a/node_modules/vm2/lib/nodevm.js
++++ b/node_modules/vm2/lib/nodevm.js
+@@ -236,8 +236,8 @@ class NodeVM extends VM {
+ 		objectDefineProperty(this, '_resolver', {__proto__: null, value: resolver});
+ 
+ 		if (!cacheSandboxScript) {
+-			cacheSandboxScript = compileScript(`${__dirname}/setup-node-sandbox.js`,
+-				`(function (host, data) { ${fs.readFileSync(`${__dirname}/setup-node-sandbox.js`, 'utf8')}\n})`);
++			cacheSandboxScript = compileScript(`${__dirname}/${VM2_LIB_PATH || ''}setup-node-sandbox.js`,
++				`(function (host, data) { ${fs.readFileSync(`${__dirname}/${VM2_LIB_PATH || ''}setup-node-sandbox.js`, 'utf8')}\n})`);
+ 		}
+ 
+ 		const closure = this._runScript(cacheSandboxScript);
+diff --git a/node_modules/vm2/lib/resolver-compat.js b/node_modules/vm2/lib/resolver-compat.js
+index 0ef30ee..ba58bc2 100644
+--- a/node_modules/vm2/lib/resolver-compat.js
++++ b/node_modules/vm2/lib/resolver-compat.js
+@@ -185,7 +185,7 @@ let cacheEventsScript;
+ const SPECIAL_MODULES = {
+ 	events(vm) {
+ 		if (!cacheEventsScript) {
+-			const eventsSource = fs.readFileSync(`${__dirname}/events.js`, 'utf8');
++			const eventsSource = fs.readFileSync(`${__dirname}/${VM2_LIB_PATH || ''}events.js`, 'utf8');
+ 			cacheEventsScript = new VMScript(`(function (fromhost) { const module = {}; module.exports={};{ ${eventsSource}
+ } return module.exports;})`, {filename: 'events.js'});
+ 		}
+diff --git a/node_modules/vm2/lib/vm.js b/node_modules/vm2/lib/vm.js
+index 1463e17..d1a1e57 100644
+--- a/node_modules/vm2/lib/vm.js
++++ b/node_modules/vm2/lib/vm.js
+@@ -139,10 +139,10 @@ function doWithTimeout(fn, timeout) {
+ 	}
+ }
+ 
+-const bridgeScript = compileScript(`${__dirname}/bridge.js`,
+-	`(function(global) {"use strict"; const exports = {};${fs.readFileSync(`${__dirname}/bridge.js`, 'utf8')}\nreturn exports;})`);
+-const setupSandboxScript = compileScript(`${__dirname}/setup-sandbox.js`,
+-	`(function(global, host, bridge, data, context) { ${fs.readFileSync(`${__dirname}/setup-sandbox.js`, 'utf8')}\n})`);
++const bridgeScript = compileScript(`${__dirname}/${VM2_LIB_PATH || ''}bridge.js`,
++	`(function(global) {"use strict"; const exports = {};${fs.readFileSync(`${__dirname}/${VM2_LIB_PATH || ''}bridge.js`, 'utf8')}\nreturn exports;})`);
++const setupSandboxScript = compileScript(`${__dirname}/${VM2_LIB_PATH || ''}setup-sandbox.js`,
++	`(function(global, host, bridge, data, context) { ${fs.readFileSync(`${__dirname}/${VM2_LIB_PATH || ''}setup-sandbox.js`, 'utf8')}\n})`);
+ const getGlobalScript = compileScript('get_global.js', 'this');
+ 
+ let getGeneratorFunctionScript = null;
