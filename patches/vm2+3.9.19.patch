@@ -1,9 +1,22 @@
+diff --git a/node_modules/vm2/lib/builtin.js b/node_modules/vm2/lib/builtin.js
+index 499e1f6..61b45e5 100644
+--- a/node_modules/vm2/lib/builtin.js
++++ b/node_modules/vm2/lib/builtin.js
+@@ -62,7 +62,7 @@ const SPECIAL_MODULES = {
+ 	events: {
+ 		init(vm) {
+ 			if (!cacheEventsScript) {
+-				const eventsSource = fs.readFileSync(`${__dirname}/events.js`, 'utf8');
++				const eventsSource = fs.readFileSync(`${__dirname}/${VM2_LIB_PATH || ''}events.js`, 'utf8');
+ 				cacheEventsScript = new VMScript(`(function (fromhost) { const module = {}; module.exports={};{ ${eventsSource}
+ 	} return module.exports;})`, {filename: 'events.js'});
+ 			}
 diff --git a/node_modules/vm2/lib/nodevm.js b/node_modules/vm2/lib/nodevm.js
-index a55a0e2..19986be 100644
+index d666c70..2098359 100644
 --- a/node_modules/vm2/lib/nodevm.js
 +++ b/node_modules/vm2/lib/nodevm.js
-@@ -236,8 +236,8 @@ class NodeVM extends VM {
- 		objectDefineProperty(this, '_resolver', {__proto__: null, value: resolver});
+@@ -281,8 +281,8 @@ class NodeVM extends VM {
+ 		objectDefineProperty(this, 'resolver', {__proto__: null, value: resolver, enumerable: true});
  
  		if (!cacheSandboxScript) {
 -			cacheSandboxScript = compileScript(`${__dirname}/setup-node-sandbox.js`,
@@ -13,24 +26,11 @@ index a55a0e2..19986be 100644
  		}
  
  		const closure = this._runScript(cacheSandboxScript);
-diff --git a/node_modules/vm2/lib/resolver-compat.js b/node_modules/vm2/lib/resolver-compat.js
-index 0ef30ee..ba58bc2 100644
---- a/node_modules/vm2/lib/resolver-compat.js
-+++ b/node_modules/vm2/lib/resolver-compat.js
-@@ -185,7 +185,7 @@ let cacheEventsScript;
- const SPECIAL_MODULES = {
- 	events(vm) {
- 		if (!cacheEventsScript) {
--			const eventsSource = fs.readFileSync(`${__dirname}/events.js`, 'utf8');
-+			const eventsSource = fs.readFileSync(`${__dirname}/${VM2_LIB_PATH || ''}events.js`, 'utf8');
- 			cacheEventsScript = new VMScript(`(function (fromhost) { const module = {}; module.exports={};{ ${eventsSource}
- } return module.exports;})`, {filename: 'events.js'});
- 		}
 diff --git a/node_modules/vm2/lib/vm.js b/node_modules/vm2/lib/vm.js
-index 1463e17..d1a1e57 100644
+index 0b71f0b..e2e367b 100644
 --- a/node_modules/vm2/lib/vm.js
 +++ b/node_modules/vm2/lib/vm.js
-@@ -139,10 +139,10 @@ function doWithTimeout(fn, timeout) {
+@@ -142,10 +142,10 @@ function doWithTimeout(fn, timeout) {
  	}
  }
  
