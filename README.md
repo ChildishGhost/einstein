@@ -1,5 +1,9 @@
 # Einstein :smirk_cat:
 
+<p align="center">
+<a href="https://github.com/ChildishGhost/einstein/blob/dev/.github/workflows/build.yaml"><img alt="Build Status" src="https://github.com/ChildishGhost/einstein/actions/workflows/build.yaml/badge.svg"></a>
+</p>
+
 A completely reinvented cross-platform enthusiast-oriented `Spotlight` :mag:-like world-class productivity tool to optimize high-quality desktop experience and automation with excessively flexible community-driven plugin eco-system.
 
 ![The awesome screenshot!](./.github/screenshot1.png)
