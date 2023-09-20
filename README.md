@@ -16,13 +16,13 @@ See build instructions below.
 
 ### Requirements
 
-- [Node.js](https://nodejs.org/) >= `18.15.0`
+- [Node.js](https://nodejs.org/) >= `18.16.1`
 - [npm](https://www.npmjs.com/) >= `9.0.0`
 
 One can install `node` and `npm` via `nvm`.
 
 ```bash
-nvm install 18.15.0
+nvm install 18.16.1
 ```
 
 ### Build and Run Einstein
