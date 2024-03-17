@@ -12,7 +12,7 @@ const allowList = [
 	'SSH_AUTH_SOCK',
 	'TZ',
 	'DISPLAY', 'XAUTHORIZATION', 'XAUTHORITY',
-	'EDITOR', 'VISUAL',
+	'EDITOR', 'VISUAL', 'BROWSER',
 	'HOME', 'MAIL', 'PATH',
 	// Linux
 	'DBUS_SESSION_BUS_ADDRESS',
