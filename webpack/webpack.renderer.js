@@ -74,6 +74,7 @@ module.exports = Object.assign({}, utils.defaultConfig, {
 					}, {
 						loader: 'css-loader',
 						options: { modules: {
+							namedExport: false,
 							exportLocalsConvention: 'dashes',
 						} },
 					}],
@@ -94,6 +95,7 @@ module.exports = Object.assign({}, utils.defaultConfig, {
 					}, {
 						loader: 'css-loader',
 						options: { modules: {
+							namedExport: false,
 							exportLocalsConvention: 'dashes',
 						} },
 					}, {
