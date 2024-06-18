@@ -4,7 +4,7 @@
 <a href="https://github.com/ChildishGhost/einstein/blob/dev/.github/workflows/build.yaml"><img alt="Build Status" src="https://github.com/ChildishGhost/einstein/actions/workflows/build.yaml/badge.svg"></a>
 </p>
 
-A completely reinvented cross-platform enthusiast-oriented `Spotlight` :mag:-like world-class productivity tool to optimize high-quality desktop experience and automation with excessively flexible community-driven plugin eco-system.
+A completely reinvented cross-platform enthusiast-oriented `Spotlight` :mag:-like world-class productivity tool to optimize high-quality desktop experience and automation with excessively flexible community-driven plugin ecosystem.
 
 ![The awesome screenshot!](./.github/screenshot1.png)
 
@@ -80,7 +80,7 @@ See [LICENSE](/LICENSE) file
 
 ## See also
 
-- [albert](https://github.com/albertlauncher/albert) (not a open source software)
+- [albert](https://github.com/albertlauncher/albert) (not an open-source software)
 - [Alfred](https://www.alfredapp.com/) (proprietary macOS only app)
 - [Electron](https://www.electronjs.org/) (MIT License)
 - [Fuse.js](https://fusejs.io/) (Apache License)
