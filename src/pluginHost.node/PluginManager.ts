@@ -152,6 +152,7 @@ class PluginManager {
 
 					return CommentJSON.parse(data)
 				} catch (e) {
+					console.log(`Failed to read or parse file ${configPath}: ${e.message}`)
 					return {}
 				}
 			},
