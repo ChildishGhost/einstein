@@ -70,7 +70,7 @@ export default class PluginScanner {
 		try {
 			return JSON.parse(data)
 		} catch (e) {
-			throw new SyntaxError(`Invalid plugin package.json in ${path}`)
+			throw new SyntaxError(`Invalid plugin package.json in ${path}: ${e.message}`)
 		}
 	}
 }
