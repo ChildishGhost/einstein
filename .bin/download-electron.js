@@ -1,12 +1,14 @@
 #!/usr/bin/env node
 // modified from node_modules/electron/install.js
-const { version } = require('../node_modules/electron/package')
 
 const fs = require('fs')
 const os = require('os')
 const path = require('path')
-const extract = require('extract-zip')
+
 const { downloadArtifact } = require('@electron/get')
+const extract = require('extract-zip')
+
+const { version } = require('../node_modules/electron/package')
 
 const arch = process.env.ELECTRON_ARCH || process.arch
 const platform = process.env.ELECTRON_PLATFORM || os.platform()
@@ -50,16 +52,16 @@ function extractFile(zipPath) {
 
 function getPlatformPath() {
 	switch (platform) {
-		case 'mas':
-		case 'darwin':
-			return 'Electron.app/Contents/MacOS/Electron'
-		case 'freebsd':
-		case 'openbsd':
-		case 'linux':
-			return 'electron'
-		case 'win32':
-			return 'electron.exe'
-		default:
-			throw new Error('Electron builds are not available on platform: ' + platform)
+	case 'mas':
+	case 'darwin':
+		return 'Electron.app/Contents/MacOS/Electron'
+	case 'freebsd':
+	case 'openbsd':
+	case 'linux':
+		return 'electron'
+	case 'win32':
+		return 'electron.exe'
+	default:
+		throw new Error('Electron builds are not available on platform: ' + platform)
 	}
 }

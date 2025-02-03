@@ -7,7 +7,6 @@ type CreateVMOptions = {
 	injectGlobals?: { [key: string]: any }
 }
 
-// eslint-disable-next-line import/prefer-default-export
 export const createVM = (options: CreateVMOptions = {}) =>
 	new NodeVM({
 		sandbox: options.injectGlobals || {},
@@ -17,10 +16,9 @@ export const createVM = (options: CreateVMOptions = {}) =>
 			context: 'sandbox',
 			// TODO(davy): remove dangerous node.js APIs
 			builtin: [ '*' ],
-			// eslint-disable-next-line camelcase
+
 			customRequire: __non_webpack_require__,
 			mock: {
-				// eslint-disable-next-line global-require
 				'fuse.js': require('fuse.js'),
 
 				...(options.injectModules || {}),

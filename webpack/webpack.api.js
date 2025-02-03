@@ -94,6 +94,7 @@ module.exports = {
 		new ProgressPlugin(),
 		new ESLintPlugin({
 			extensions: ['.js', '.ts'],
+			configType: 'flat',
 		}),
 		new CleanWebpackPlugin(),
 		new CreateFileWebpack({

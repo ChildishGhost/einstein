@@ -1,5 +1,6 @@
-import { IEnvironment, ISearchEngine, SearchResult, spawn } from 'einstein'
 import * as fs from 'fs'
+
+import { IEnvironment, ISearchEngine, SearchResult, spawn } from 'einstein'
 import Fuse from 'fuse.js'
 
 import EventType from './EventType'
@@ -42,7 +43,6 @@ type LinuxDesktopApplicationIdentifier = {
 const DESKTOP_ENTRY = '[Desktop Entry]'
 const DESKTOP_ACTION = '[Desktop Action'
 
-// eslint-disable-next-line max-len
 const isLaunchable = (groupName: string) => groupName === DESKTOP_ENTRY || groupName.startsWith(DESKTOP_ACTION)
 
 export default class LinuxDesktopApplicationSearchEngine implements ISearchEngine {

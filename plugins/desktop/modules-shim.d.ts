@@ -1,4 +1,3 @@
-/* eslint-disable import/prefer-default-export */
 declare module 'file-icon' {
 	type Options = {
 		size?: number

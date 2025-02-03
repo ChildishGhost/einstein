@@ -1,9 +1,9 @@
-import { IEnvironment, ISearchEngine, SearchResult, spawn } from 'einstein'
 import { existsSync as fileExists, readdirSync as readdir, statSync as fileStat } from 'fs'
-import Fuse from 'fuse.js'
 import { join as pathJoin } from 'path'
 
+import { IEnvironment, ISearchEngine, SearchResult, spawn } from 'einstein'
 import { fileIconToBuffer as appIconAsBuffer } from 'file-icon'
+import Fuse from 'fuse.js'
 
 import EventType from './EventType'
 
