@@ -15,7 +15,6 @@ extends:
   - plugin:@typescript-eslint/eslint-recommended
   - plugin:vue/vue3-essential
   - prettier
-  - prettier/prettier
 
 parser: vue-eslint-parser
 parserOptions:
@@ -79,6 +78,7 @@ rules:
     - error
     - first
   tsdoc/syntax: warn
+  arrow-body-style: off
 
 settings:
   import/core-modules:
