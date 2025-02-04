@@ -83,6 +83,7 @@ module.exports = Object.assign({}, utils.defaultConfig, {
 		new ProgressPlugin(),
 		new ESLintPlugin({
 			extensions: ['.js', '.ts'],
+			configType: 'flat',
 		}),
 		new CleanWebpackPlugin(),
 		...createManifestPlugins,

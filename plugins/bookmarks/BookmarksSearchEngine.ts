@@ -10,7 +10,6 @@ export default abstract class BookmarksSearchEngine implements ISearchEngine {
 
 	protected abstract loadBookmarks(): Bookmark[] | PromiseLike<Bookmark[]>
 
-	// eslint-disable-next-line no-useless-constructor
 	constructor(protected readonly context: PluginContext<Configs>) {
 		this.isReady = (async () => {
 			const bookmarks = await this.loadBookmarks()

@@ -53,5 +53,4 @@ const findIcon = (app: string) => {
 	return undefined
 }
 
-/* eslint-disable-next-line import/prefer-default-export */
 export { findIcon, walk }

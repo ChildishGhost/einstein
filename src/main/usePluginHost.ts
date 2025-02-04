@@ -8,11 +8,9 @@ import Environment from '@/main/Environment'
 
 const errorFormat = '\x1b[1;31m%s\x1b[0m'
 const withLogger = (fn: (logger: Console) => void) => {
-	/* eslint-disable no-console */
 	console.group('Logs from Plugin Host:')
 	fn(console)
 	console.groupEnd()
-	/* eslint-enable no-console */
 }
 
 const handleProcessOutputStream = (stream: Readable, formatString: string = '%s') => {

@@ -25,7 +25,11 @@ const isPacket = (obj: any): obj is Packet => {
 export class ChildProcessMessageProtocol implements Protocol<Message> {
 	private listeners: Listener[] = []
 
-	constructor(private token: string, private remoteToken: string, private process: ChildProcess) {
+	constructor(
+		private token: string,
+		private remoteToken: string,
+		private process: ChildProcess,
+	) {
 		this.process.on('message', this.onMessage.bind(this))
 	}
 

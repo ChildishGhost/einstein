@@ -66,7 +66,6 @@ class PluginManager {
 
 	private pluginScanner = new PluginScanner()
 
-	// eslint-disable-next-line no-useless-constructor
 	constructor(private readonly app: AppContext) {
 		//
 	}

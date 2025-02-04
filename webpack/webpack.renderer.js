@@ -1,4 +1,3 @@
-/* eslint-disable */
 'use strict';
 
 const path = require('path');
@@ -120,6 +119,7 @@ module.exports = Object.assign({}, utils.defaultConfig, {
 		new ProgressPlugin(),
 		new ESLintPlugin({
 			extensions: ['.js', '.ts', '.vue'],
+			configType: 'flat',
 		}),
 		new CleanWebpackPlugin(),
 		new VueLoaderPlugin(),

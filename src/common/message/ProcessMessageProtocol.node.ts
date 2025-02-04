@@ -23,7 +23,10 @@ const isPacket = (obj: any): obj is Packet => {
 export class ProcessMessageProtocol implements Protocol<Message> {
 	private listeners: Listener[] = []
 
-	constructor(private token: string, private remoteToken: string) {
+	constructor(
+		private token: string,
+		private remoteToken: string,
+	) {
 		process.on('message', this.onMessage.bind(this))
 	}
 

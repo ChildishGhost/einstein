@@ -90,7 +90,7 @@ const registerMenu = (
 }
 
 app.on('ready', async () => {
-	let operation = await createApp() // eslint-disable-line prefer-const
+	let operation = await createApp()
 
 	app.once('will-quit', () => operation.destroyApp())
 
