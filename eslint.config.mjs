@@ -21,7 +21,7 @@ const compat = new FlatCompat({
 
 export default [ ...fixupConfigRules(compat.extends(
 	"plugin:@typescript-eslint/eslint-recommended",
-	"plugin:vue/vue3-essential",
+	"plugin:vue/essential",
 	"prettier",
 )), {
 	plugins: {
