@@ -36,7 +36,7 @@
 		"eslint-config-prettier": "^10.1.5",
 		"eslint-import-resolver-alias": "^1.1.2",
 		"eslint-import-resolver-typescript": "^4.4.4",
-		"eslint-plugin-import": "^2.31.0",
+		"eslint-plugin-import": "^2.32.0",
 		"eslint-plugin-tsdoc": "^0.4.0",
 		"eslint-plugin-vue": "^10.5.0",
 		"eslint-webpack-plugin": "^5.0.2",
