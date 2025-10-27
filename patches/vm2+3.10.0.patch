@@ -12,7 +12,7 @@ index 499e1f6..61b45e5 100644
  	} return module.exports;})`, {filename: 'events.js'});
  			}
 diff --git a/node_modules/vm2/lib/nodevm.js b/node_modules/vm2/lib/nodevm.js
-index d666c70..2098359 100644
+index bbccb19..890757f 100644
 --- a/node_modules/vm2/lib/nodevm.js
 +++ b/node_modules/vm2/lib/nodevm.js
 @@ -281,8 +281,8 @@ class NodeVM extends VM {
@@ -27,7 +27,7 @@ index d666c70..2098359 100644
  
  		const closure = this._runScript(cacheSandboxScript);
 diff --git a/node_modules/vm2/lib/vm.js b/node_modules/vm2/lib/vm.js
-index 0b71f0b..e2e367b 100644
+index 3c4f2d3..5824060 100644
 --- a/node_modules/vm2/lib/vm.js
 +++ b/node_modules/vm2/lib/vm.js
 @@ -142,10 +142,10 @@ function doWithTimeout(fn, timeout) {
