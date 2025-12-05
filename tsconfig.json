@@ -8,11 +8,11 @@
 		"lib": ["DOM", "ES6", "DOM.Iterable", "ScriptHost", "ES2019.Array", "ES2019.Object"],
 		"allowJs": true,
 		"moduleResolution": "node",
-		"baseUrl": ".",
 		"paths": {
-			"@/*": ["src/*"],
-			"einstein": ["src/api"]
+			"@/*": ["./src/*"],
+			"einstein": ["./src/api"]
 		},
+		"skipLibCheck": true,
 		"experimentalDecorators": true
 	}
 }
