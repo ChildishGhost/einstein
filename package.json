@@ -50,7 +50,7 @@
 		"sass-loader": "^16.0.6",
 		"ts-loader": "^9.5.4",
 		"typescript": "^5.9.3",
-		"typescript-eslint": "^8.53.0",
+		"typescript-eslint": "^8.54.0",
 		"vue-eslint-parser": "^10.2.0",
 		"vue-loader": "^17.4.2",
 		"webpack": "^5.104.1",
