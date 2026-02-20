@@ -13,7 +13,7 @@ jobs:
 
       - uses: actions/setup-node@v6
         with:
-          node-version: '22'
+          node-version: '24'
 
       - name: Change diff
         run: git --no-pager show -m "$GITHUB_SHA" --color
