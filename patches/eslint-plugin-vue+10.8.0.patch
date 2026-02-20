@@ -1,0 +1,18 @@
+diff --git a/node_modules/eslint-plugin-vue/dist/configs/base.js b/node_modules/eslint-plugin-vue/dist/configs/base.js
+index d658cd4..0050d93 100644
+--- a/node_modules/eslint-plugin-vue/dist/configs/base.js
++++ b/node_modules/eslint-plugin-vue/dist/configs/base.js
+@@ -20,9 +20,6 @@ var require_base = /* @__PURE__ */ require_rolldown_runtime.__commonJSMin(((expo
+ }));
+
+ //#endregion
+-Object.defineProperty(exports, 'default', {
+-  enumerable: true,
+-  get: function () {
+-    return require_base();
+-  }
+-});
+\ No newline at end of file
++
++// --- PATCH: Remove invalid top-level "default" export for ESLint 9 ---
++module.exports = require_base();
