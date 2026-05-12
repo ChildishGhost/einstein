@@ -1,8 +1,8 @@
 diff --git a/node_modules/vm2/lib/builtin.js b/node_modules/vm2/lib/builtin.js
-index 499e1f6..61b45e5 100644
+index 5023503..e6f5108 100644
 --- a/node_modules/vm2/lib/builtin.js
 +++ b/node_modules/vm2/lib/builtin.js
-@@ -62,7 +62,7 @@ const SPECIAL_MODULES = {
+@@ -109,7 +109,7 @@ const SPECIAL_MODULES = {
  	events: {
  		init(vm) {
  			if (!cacheEventsScript) {
@@ -12,10 +12,10 @@ index 499e1f6..61b45e5 100644
  	} return module.exports;})`, {filename: 'events.js'});
  			}
 diff --git a/node_modules/vm2/lib/nodevm.js b/node_modules/vm2/lib/nodevm.js
-index bbccb19..890757f 100644
+index 9666993..0730e45 100644
 --- a/node_modules/vm2/lib/nodevm.js
 +++ b/node_modules/vm2/lib/nodevm.js
-@@ -281,8 +281,8 @@ class NodeVM extends VM {
+@@ -317,8 +317,8 @@ class NodeVM extends VM {
  		objectDefineProperty(this, 'resolver', {__proto__: null, value: resolver, enumerable: true});
  
  		if (!cacheSandboxScript) {
@@ -27,21 +27,28 @@ index bbccb19..890757f 100644
  
  		const closure = this._runScript(cacheSandboxScript);
 diff --git a/node_modules/vm2/lib/vm.js b/node_modules/vm2/lib/vm.js
-index 3c4f2d3..5824060 100644
+index 8e985ca..1a02dae 100644
 --- a/node_modules/vm2/lib/vm.js
 +++ b/node_modules/vm2/lib/vm.js
-@@ -142,10 +142,10 @@ function doWithTimeout(fn, timeout) {
- 	}
+@@ -124,8 +124,8 @@ function doWithTimeout(fn, timeout) {
  }
  
--const bridgeScript = compileScript(`${__dirname}/bridge.js`,
--	`(function(global) {"use strict"; const exports = {};${fs.readFileSync(`${__dirname}/bridge.js`, 'utf8')}\nreturn exports;})`);
--const setupSandboxScript = compileScript(`${__dirname}/setup-sandbox.js`,
--	`(function(global, host, bridge, data, context) { ${fs.readFileSync(`${__dirname}/setup-sandbox.js`, 'utf8')}\n})`);
-+const bridgeScript = compileScript(`${__dirname}/${VM2_LIB_PATH || ''}bridge.js`,
-+	`(function(global) {"use strict"; const exports = {};${fs.readFileSync(`${__dirname}/${VM2_LIB_PATH || ''}bridge.js`, 'utf8')}\nreturn exports;})`);
-+const setupSandboxScript = compileScript(`${__dirname}/${VM2_LIB_PATH || ''}setup-sandbox.js`,
-+	`(function(global, host, bridge, data, context) { ${fs.readFileSync(`${__dirname}/${VM2_LIB_PATH || ''}setup-sandbox.js`, 'utf8')}\n})`);
+ const bridgeScript = compileScript(
+-	`${__dirname}/bridge.js`,
+-	`(function(global) {"use strict"; const exports = {};${fs.readFileSync(`${__dirname}/bridge.js`, 'utf8')}\nreturn exports;})`,
++	`${__dirname}/${VM2_LIB_PATH || ''}bridge.js`,
++	`(function(global) {"use strict"; const exports = {};${fs.readFileSync(`${__dirname}/${VM2_LIB_PATH || ''}bridge.js`, 'utf8')}\nreturn exports;})`,
+ );
+ // SECURITY (GHSA-2cm2-m3w5-gp2f): the bootstrap script declares
+ // INTERNAL_STATE_NAME at the script's top level so the binding lands in
+@@ -141,8 +141,8 @@ const bridgeScript = compileScript(
+ // source containing the canonical identifier (or any unicode-escaped
+ // variant), so no user script can shadow or redeclare the binding.
+ const setupSandboxScript = compileScript(
+-	`${__dirname}/setup-sandbox.js`,
+-	`let ${INTERNAL_STATE_NAME};(function(global, host, bridge, data, context) { ${fs.readFileSync(`${__dirname}/setup-sandbox.js`, 'utf8')}\n})`,
++	`${__dirname}/${VM2_LIB_PATH || ''}setup-sandbox.js`,
++	`let ${INTERNAL_STATE_NAME};(function(global, host, bridge, data, context) { ${fs.readFileSync(`${__dirname}/${VM2_LIB_PATH || ''}setup-sandbox.js`, 'utf8')}\n})`,
+ );
  const getGlobalScript = compileScript('get_global.js', 'this');
  
- let getGeneratorFunctionScript = null;
