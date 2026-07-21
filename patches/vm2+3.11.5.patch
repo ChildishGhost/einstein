@@ -1,8 +1,8 @@
 diff --git a/node_modules/vm2/lib/builtin.js b/node_modules/vm2/lib/builtin.js
-index 5023503..e6f5108 100644
+index cb29d5e..513aa49 100644
 --- a/node_modules/vm2/lib/builtin.js
 +++ b/node_modules/vm2/lib/builtin.js
-@@ -109,7 +109,7 @@ const SPECIAL_MODULES = {
+@@ -189,7 +189,7 @@ const SPECIAL_MODULES = {
  	events: {
  		init(vm) {
  			if (!cacheEventsScript) {
@@ -12,10 +12,10 @@ index 5023503..e6f5108 100644
  	} return module.exports;})`, {filename: 'events.js'});
  			}
 diff --git a/node_modules/vm2/lib/nodevm.js b/node_modules/vm2/lib/nodevm.js
-index 9666993..0730e45 100644
+index ae4eaae..d48232a 100644
 --- a/node_modules/vm2/lib/nodevm.js
 +++ b/node_modules/vm2/lib/nodevm.js
-@@ -317,8 +317,8 @@ class NodeVM extends VM {
+@@ -347,8 +347,8 @@ class NodeVM extends VM {
  		objectDefineProperty(this, 'resolver', {__proto__: null, value: resolver, enumerable: true});
  
  		if (!cacheSandboxScript) {
