@@ -16,12 +16,12 @@ import {
 	AppContext,
 } from 'einstein'
 
-import { PluginMetadata } from '@/pluginHost.node/PluginMetadata'
-import PluginScanner from '@/pluginHost.node/PluginScanner'
 
 import { generateAPI } from './api'
 import Environment from './Environment'
 import { createVM } from './sandbox'
+import { PluginMetadata } from '@/pluginHost.node/PluginMetadata'
+import PluginScanner from '@/pluginHost.node/PluginScanner'
 
 type Plugin = {
 	metadata: PluginMetadata
