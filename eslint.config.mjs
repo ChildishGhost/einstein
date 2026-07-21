@@ -5,7 +5,7 @@ import { fixupConfigRules, fixupPluginRules } from "@eslint/compat"
 import { FlatCompat } from "@eslint/eslintrc"
 import js from "@eslint/js"
 import typescriptEslint from "@typescript-eslint/eslint-plugin"
-import _import from "eslint-plugin-import"
+import _import from "eslint-plugin-import-x"
 import tsdoc from "eslint-plugin-tsdoc"
 import vue from "eslint-plugin-vue"
 import globals from "globals"
@@ -105,6 +105,11 @@ export default [ ...fixupConfigRules(compat.extends(
 			ignorePackages: true,
 
 			pattern: {
+				json: "always",
+				main: "always",
+				node: "always",
+				renderer: "always",
+				scss: "always",
 				vue: "always",
 			},
 		} ],

@@ -1,7 +1,8 @@
 import { fork, ChildProcess } from 'child_process'
-import { protocol } from 'electron'
 import { Readable, Writable } from 'stream'
 import { StringDecoder } from 'string_decoder'
+
+import { protocol } from 'electron'
 
 import { ChildProcessMessageProtocol, MessageTunnel } from '@/common/message/ChildProcessMessageProtocol.main'
 import Environment from '@/main/Environment'

@@ -8,7 +8,7 @@ const path = require('path')
 const { downloadArtifact } = require('@electron/get')
 const extract = require('extract-zip')
 
-const { version } = require('../node_modules/electron/package')
+const { version } = require('../node_modules/electron/package.json')
 
 const arch = process.env.ELECTRON_ARCH || process.arch
 const platform = process.env.ELECTRON_PLATFORM || os.platform()
