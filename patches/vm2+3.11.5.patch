@@ -1,8 +1,18 @@
 diff --git a/node_modules/vm2/lib/builtin.js b/node_modules/vm2/lib/builtin.js
-index cb29d5e..513aa49 100644
+index cb29d5e..dd86bde 100644
 --- a/node_modules/vm2/lib/builtin.js
 +++ b/node_modules/vm2/lib/builtin.js
-@@ -189,7 +189,7 @@ const SPECIAL_MODULES = {
+@@ -87,7 +87,8 @@ const DANGEROUS_BUILTINS = new Set([
+ 	'vm',
+ 	'repl',
+ 	'inspector',
+-	'process',
++	// XXX(xatier): allow `process` explicitly
++	//'process',
+ 	// Host-process abort DoS: `trace_events.createTracing({categories: [...]})`
+ 	// asserts `args[0]->IsArray()` in C++; the array crosses the bridge as a
+ 	// Proxy, which fails the assertion and aborts the entire host process.
+@@ -189,7 +190,7 @@ const SPECIAL_MODULES = {
  	events: {
  		init(vm) {
  			if (!cacheEventsScript) {
