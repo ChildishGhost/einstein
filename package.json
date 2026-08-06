@@ -46,7 +46,7 @@
 		"patch-package": "^8.0.1",
 		"prettier": "^3.8.1",
 		"prettier-eslint": "^16.4.2",
-		"sass": "^1.98.0",
+		"sass": "^1.102.0",
 		"sass-loader": "^16.0.6",
 		"ts-loader": "^9.5.7",
 		"typescript": "^5.9.3",
