@@ -23,7 +23,7 @@
 		"@eslint/js": "^10.0.1",
 		"@types/node": "^16.11.19",
 		"@typescript-eslint/eslint-plugin": "^8.65.0",
-		"@typescript-eslint/parser": "^8.65.0",
+		"@typescript-eslint/parser": "^8.66.0",
 		"@vue/compiler-sfc": "^3.5.28",
 		"babel-loader": "^10.0.0",
 		"babel-plugin-module-resolver": "^5.0.2",
