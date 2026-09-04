@@ -3,7 +3,6 @@ import { openUrlFn } from 'einstein'
 import { spawn } from './spawn'
 import Environment from '@/pluginHost.node/Environment'
 
-
 export const openUrl: openUrlFn = async (url: string) => {
 	switch (Environment.platform) {
 	case 'linux':

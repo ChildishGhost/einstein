@@ -6,7 +6,7 @@ const os = require('os')
 const path = require('path')
 
 const { downloadArtifact } = require('@electron/get')
-const extract = require('extract-zip')
+const { extract } = require('@electron-internal/extract-zip')
 
 const { version } = require('../node_modules/electron/package.json')
 
