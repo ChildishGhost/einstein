@@ -3,7 +3,6 @@ import { BrowserWindow, ipcMain, MessageChannelMain as ElectionMessageChannel } 
 import Environment from './Environment'
 import { MessageTunnel, MessagePortMainProtocol } from '@/common/message/MessagePortMainProtocol.main'
 
-
 const prepareMessageProtocol = () =>
 	new Promise<MessagePortMainProtocol>((resolve) => {
 		ipcMain.once('sharedProcess:registerMessageChannel', ({ sender }, { nonce }) => {

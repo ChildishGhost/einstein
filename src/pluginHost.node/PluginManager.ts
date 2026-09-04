@@ -16,7 +16,6 @@ import {
 	AppContext,
 } from 'einstein'
 
-
 import { generateAPI } from './api'
 import Environment from './Environment'
 import { createVM } from './sandbox'
