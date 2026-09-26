@@ -10,6 +10,7 @@
 		"clean": "rm -rf node_modules && rm -rf dist/{electron,main,node,plugins,renderer}",
 		"lint": "eslint",
 		"lint:fix": "npm run lint -- --fix",
+		"test": "node --test \"test/**/*.test.mjs\"",
 		"format": "prettier -w src/ plugins/ && eslint --fix",
 		"run": "npm run build:webpack && electron .",
 		"run:without-build": "electron .",
