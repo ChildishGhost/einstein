@@ -48,6 +48,11 @@ dist/electron/electron
 - `run`: Bundle sources and run with electron
 - `watch`: Watch and bundle sources
 - `clean`: Clean up everything including `node_modules`
+- `test`: Run the tests
+- `docs:check`: Check RFCs and docs against the [RFC process](docs/rfc/README.md)
+- `docs:index`: Regenerate the RFC index
+- `rfc:new -- <kebab-title>`: Create the next RFC draft from the template
+- `rfc:status -- <NNNN> <status>`: Change an RFC's status and update the index
 
 ## Plugins
 
@@ -73,6 +78,10 @@ pass show <filter>
 ### Example plugin
 
 - this is not enabled
+
+## Contributing
+
+Decisions (behavior, interfaces, architecture, significant dependencies) start as RFCs: see [docs/rfc](docs/rfc/README.md) for the workflow and the index. Docs are written in English with a Traditional Chinese translation (`*.zh-tw.md`). Coding agents follow [AGENTS.md](AGENTS.md).
 
 ## License
 
