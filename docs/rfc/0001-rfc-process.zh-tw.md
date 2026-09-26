@@ -1,11 +1,11 @@
-<!-- source-sha256: 433c702a57e85be244671dfbe3b2b15e1a562364b94b72a0c27e2289858a0bec -->
+<!-- source-sha256: 42cf6071042d5a9e32b44e7dcccc575dbf63f2480bb66f358e235504f5b714ce -->
 
 > 本文為 [0001-rfc-process.md](0001-rfc-process.md) 的翻譯，內容以英文版為準。
 
 ---
 rfc: 0001
 title: RFC-driven development process
-status: accepted
+status: implemented
 created: 2026-09-26
 references: [0000]
 ---

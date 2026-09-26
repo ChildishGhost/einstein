@@ -1,7 +1,7 @@
 ---
 rfc: 0001
 title: RFC-driven development process
-status: accepted
+status: implemented
 created: 2026-09-26
 references: [0000]
 ---

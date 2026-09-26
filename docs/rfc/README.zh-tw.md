@@ -1,4 +1,4 @@
-<!-- source-sha256: 2e791470e1195d2b632912f277ce2d847770afecb9689c23747c3677ec1fd8b6 -->
+<!-- source-sha256: cf1a75a0bba19beb8bc98349e5b753e887e199d4a8cf2e688b0b8151810cac35 -->
 
 > 本文為 [README.md](README.md) 的翻譯，內容以英文版為準。
 
@@ -30,5 +30,5 @@ Einstein 的每項決策都從這裡開始——新增或變更的行為、介�
 | RFC | Title | Status |
 |---|---|---|
 | [0000](0000-template.md) | RFC template | implemented |
-| [0001](0001-rfc-process.md) | RFC-driven development process | accepted |
+| [0001](0001-rfc-process.md) | RFC-driven development process | implemented |
 <!-- rfc-index:end -->
