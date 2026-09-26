@@ -107,6 +107,7 @@ export default [ ...fixupConfigRules(compat.extends(
 			pattern: {
 				json: "always",
 				main: "always",
+				mjs: "always",
 				node: "always",
 				renderer: "always",
 				scss: "always",
