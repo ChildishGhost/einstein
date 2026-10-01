@@ -1,0 +1,89 @@
+diff --git a/Cargo.lock b/Cargo.lock
+index 959f7a55288f2b9485e0b50fb3e6d9bd59f5ff58..ac6b77c88e367d5926f8362e052b47989ce09e09 100644
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -2680,6 +2680,7 @@ dependencies = [
+  "web-time",
+  "wgpu",
+  "windows 0.61.3",
++ "zed-font-kit",
+ ]
+ 
+ [[package]]
+diff --git a/crates/gpui-core/Cargo.toml b/crates/gpui-core/Cargo.toml
+index 8f9450c74acb23f02b1765d9d9774e623569ec4a..3efa7be0deff901154df6e8951e52aa29681d683 100644
+--- a/crates/gpui-core/Cargo.toml
++++ b/crates/gpui-core/Cargo.toml
+@@ -55,6 +55,10 @@ two-face = { version = "0.5.2", default-features = false, features = ["syntect-o
+ [target.'cfg(target_os = "linux")'.dependencies]
+ ashpd = { version = "0.13", default-features = false, features = ["async-io", "global_shortcuts"] }
+ 
++# fontconfig's `sans-serif` for `.SystemUIFont`; the font-kit GPUI's Linux text system already uses.
++[target.'cfg(any(target_os = "linux", target_os = "freebsd"))'.dependencies]
++font-kit = { git = "https://github.com/zed-industries/font-kit", rev = "94b0f28166665e8fd2f53ff6d268a14955c82269", package = "zed-font-kit", version = "0.14.1-zed" }
++
+ [target.'cfg(any(target_os = "linux", target_os = "macos", target_os = "windows"))'.dependencies]
+ global-hotkey = "0.8"
+ 
+diff --git a/crates/gpui-core/src/renderer/styles.rs b/crates/gpui-core/src/renderer/styles.rs
+index 4d97176ecb220f555bbabc43855dbb1444417432..b489037c4b0adc5bd0e928b49f6b4987a5980a09 100644
+--- a/crates/gpui-core/src/renderer/styles.rs
++++ b/crates/gpui-core/src/renderer/styles.rs
+@@ -51,6 +51,38 @@ where
+ /// The app's text system, recorded at startup so `fontFamily` lists can see which families exist.
+ pub(crate) static TEXT_SYSTEM: OnceLock<Arc<gpui::TextSystem>> = OnceLock::new();
+ 
++const SYSTEM_UI_FONT: &str = ".SystemUIFont";
++
++fn installed_font_names() -> Option<&'static [String]> {
++    static INSTALLED: OnceLock<Vec<String>> = OnceLock::new();
++    let text_system = TEXT_SYSTEM.get()?;
++    Some(INSTALLED.get_or_init(|| text_system.all_font_names()))
++}
++
++/// The desktop's UI font: fontconfig's `sans-serif`, since GPUI maps `.SystemUIFont` to IBM Plex
++/// Sans on Linux, which is rarely installed. `None` keeps GPUI's mapping.
++#[cfg(any(target_os = "linux", target_os = "freebsd"))]
++fn system_ui_font() -> Option<&'static str> {
++    use font_kit::{family_name::FamilyName, properties::Properties, source::SystemSource};
++    static FAMILY: OnceLock<Option<String>> = OnceLock::new();
++    FAMILY
++        .get_or_init(|| {
++            let family = SystemSource::new()
++                .select_best_match(&[FamilyName::SansSerif], &Properties::new())
++                .ok()?
++                .load()
++                .ok()?
++                .family_name();
++            installed_font_names()?.contains(&family).then_some(family)
++        })
++        .as_deref()
++}
++
++#[cfg(not(any(target_os = "linux", target_os = "freebsd")))]
++fn system_ui_font() -> Option<&'static str> {
++    None
++}
++
+ /// Applies a CSS-like `fontFamily` list: the first installed family becomes the font and the
+ /// families after it its per-glyph fallbacks. GPUI drops a font's fallbacks along with a family
+ /// it cannot load, so a missing first choice must not be the font.
+@@ -60,10 +92,15 @@ fn apply_font_family<E: gpui::Styled>(mut el: E, list: &str) -> E {
+         .map(|family| family.trim().trim_matches(['"', '\'']).to_string())
+         .filter(|family| !family.is_empty())
+         .collect();
++    if families.iter().any(|family| family == SYSTEM_UI_FONT) {
++        if let Some(system) = system_ui_font() {
++            for family in families.iter_mut().filter(|family| *family == SYSTEM_UI_FONT) {
++                *family = system.to_string();
++            }
++        }
++    }
+     if families.len() > 1 {
+-        static INSTALLED: OnceLock<Vec<String>> = OnceLock::new();
+-        if let Some(text_system) = TEXT_SYSTEM.get() {
+-            let installed = INSTALLED.get_or_init(|| text_system.all_font_names());
++        if let Some(installed) = installed_font_names() {
+             if let Some(first) = families.iter().position(|family| installed.contains(family)) {
+                 families.drain(..first);
+             }

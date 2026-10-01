@@ -1,0 +1,89 @@
+diff --git a/crates/gpui-core/src/renderer.rs b/crates/gpui-core/src/renderer.rs
+index d438c96e6d977cc986ee6cbf32b94863a9ddc24f..a07903e50e1bb632f99498a3e4830d79b3e5dcfa 100644
+--- a/crates/gpui-core/src/renderer.rs
++++ b/crates/gpui-core/src/renderer.rs
+@@ -682,6 +682,13 @@ async fn run_threaded_app_commands(
+                     let open = |cx: &mut gpui::App, window_options: &WindowOptions| {
+                         let (tree, callback, title, selection, clock) =
+                             (tree.clone(), callback.clone(), title.clone(), selection.clone(), clock.clone());
++                        #[cfg(target_os = "linux")]
++                        let bounds = popup_bounds(
++                            window_options,
++                            bounds,
++                            cx.primary_display().map(|display| display.bounds()),
++                            is_wayland_session(),
++                        );
+                         cx.open_window(
+                             to_gpui_window_options(window_options, bounds),
+                             |window, cx| {
+@@ -2552,6 +2559,32 @@ fn layer_shell_fallback<T>(options: &WindowOptions, opened: &gpui::Result<T>) ->
+     })
+ }
+ 
++/// X11 popups (and the layer-shell fallback) open where a top-anchored layer surface sits:
++/// centered horizontally, `layer_margin_top` below the display top. Explicit `x`/`y` win.
++#[cfg(target_os = "linux")]
++fn popup_bounds(
++    options: &WindowOptions,
++    bounds: gpui::Bounds<gpui::Pixels>,
++    display: Option<gpui::Bounds<gpui::Pixels>>,
++    layer_shell: bool,
++) -> gpui::Bounds<gpui::Pixels> {
++    let popup = match options.kind.as_deref() {
++        Some("popup") => true,
++        Some("layerShell") => !layer_shell,
++        _ => false,
++    };
++    match display {
++        Some(display) if popup && (options.x.is_none() || options.y.is_none()) => gpui::Bounds {
++            origin: gpui::point(
++                display.origin.x + (display.size.width - bounds.size.width) * 0.5,
++                display.origin.y + gpui::px(options.layer_margin_top.unwrap_or(160.0) as f32),
++            ),
++            size: bounds.size,
++        },
++        _ => bounds,
++    }
++}
++
+ #[cfg(test)]
+ mod window_options_tests {
+     use super::*;
+@@ -2619,6 +2652,37 @@ mod window_options_tests {
+         assert!(layer_shell_fallback(&layer_shell, &other).is_none());
+         assert!(layer_shell_fallback(&WindowOptions::default(), &unsupported).is_none());
+     }
++
++    #[cfg(target_os = "linux")]
++    #[test]
++    fn x11_popups_open_where_the_layer_surface_would() {
++        let px = |value: f32| gpui::px(value);
++        let centered = gpui::Bounds {
++            origin: gpui::point(px(440.0), px(372.0)),
++            size: gpui::size(px(600.0), px(56.0)),
++        };
++        let display = Some(gpui::Bounds {
++            origin: gpui::point(px(1280.0), px(0.0)),
++            size: gpui::size(px(1280.0), px(800.0)),
++        });
++        let with = |kind: &str, margin: Option<f64>| WindowOptions {
++            kind: Some(kind.to_string()),
++            layer_margin_top: margin,
++            ..WindowOptions::default()
++        };
++
++        let placed = popup_bounds(&with("layerShell", Some(120.0)), centered, display, false);
++        assert_eq!(placed.origin, gpui::point(px(1620.0), px(120.0)));
++        assert_eq!(placed.size, centered.size);
++        let placed = popup_bounds(&with("popup", None), centered, display, false);
++        assert_eq!(placed.origin, gpui::point(px(1620.0), px(160.0)));
++
++        assert_eq!(popup_bounds(&with("layerShell", None), centered, display, true), centered);
++        assert_eq!(popup_bounds(&WindowOptions::default(), centered, display, false), centered);
++        assert_eq!(popup_bounds(&with("popup", None), centered, None, false), centered);
++        let explicit = WindowOptions { x: Some(5.0), y: Some(6.0), ..with("popup", None) };
++        assert_eq!(popup_bounds(&explicit, centered, display, false), centered);
++    }
+ }
+ 
+ #[cfg(test)]

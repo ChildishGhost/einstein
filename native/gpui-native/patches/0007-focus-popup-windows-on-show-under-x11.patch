@@ -1,0 +1,133 @@
+diff --git a/Cargo.lock b/Cargo.lock
+index ac6b77c88e367d5926f8362e052b47989ce09e09..6f0670f08ccca85b37d8a2e498d30e0de2c496fe 100644
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -2666,6 +2666,7 @@ dependencies = [
+  "napi-derive",
+  "parking_lot",
+  "pulldown-cmark",
++ "raw-window-handle",
+  "reqwest_client",
+  "rustc-hash 2.1.3",
+  "serde",
+@@ -2680,6 +2681,7 @@ dependencies = [
+  "web-time",
+  "wgpu",
+  "windows 0.61.3",
++ "x11rb",
+  "zed-font-kit",
+ ]
+ 
+diff --git a/crates/gpui-core/Cargo.toml b/crates/gpui-core/Cargo.toml
+index b7be9b6f0ccfc4e1842c0524bb1c10253157a940..de2144b881294c7fec230fc573096cd671a75e64 100644
+--- a/crates/gpui-core/Cargo.toml
++++ b/crates/gpui-core/Cargo.toml
+@@ -62,6 +62,9 @@ font-kit = { git = "https://github.com/zed-industries/font-kit", rev = "94b0f281
+ gpui = { git = "https://github.com/countradooku/zed.git", rev = "5fc2db20b183d305a1de5166ee1c42ad2b7794a6", default-features = false, features = [
+   "x11",
+ ] }
++# Focus for override-redirect popups on X11, through GPUI's own XCB connection.
++raw-window-handle = "0.6"
++x11rb = { version = "0.13", features = ["allow-unsafe-code"] }
+ 
+ [target.'cfg(any(target_os = "linux", target_os = "macos", target_os = "windows"))'.dependencies]
+ global-hotkey = "0.8"
+diff --git a/crates/gpui-core/src/renderer.rs b/crates/gpui-core/src/renderer.rs
+index 04ba386f4ecd278b40d24a85f849c0f18ef4ead6..7ed110d9291d5aab9ce282bca09c43fbefe3e96d 100644
+--- a/crates/gpui-core/src/renderer.rs
++++ b/crates/gpui-core/src/renderer.rs
+@@ -681,7 +681,12 @@ async fn run_threaded_app_commands(
+                                     // Focus and geometry changes, for launcher-style hosts.
+                                     let activation = events.clone();
+                                     cx.observe_window_activation(window, move |_view, window, _cx| {
+-                                        let kind = if window.is_window_active() { "windowFocus" } else { "windowBlur" };
++                                        let active = window.is_window_active();
++                                        #[cfg(any(target_os = "linux", target_os = "freebsd"))]
++                                        if !active && x11_holds_input_focus(window) {
++                                            return;
++                                        }
++                                        let kind = if active { "windowFocus" } else { "windowBlur" };
+                                         emit_event_full(&activation, 0, kind, |_| {});
+                                     })
+                                     .detach();
+@@ -698,6 +703,10 @@ async fn run_threaded_app_commands(
+                                     .detach();
+                                     GpuiView::new(tree, callback, title, selection, clock)
+                                 });
++                                #[cfg(any(target_os = "linux", target_os = "freebsd"))]
++                                if activate {
++                                    focus_x11_override_redirect(window);
++                                }
+                                 crate::kit::wrap(view, window, cx, wants_transparent_root(window_options))
+                             },
+                         )
+@@ -769,6 +778,8 @@ async fn run_ui_commands(
+             UiCommand::ActivateWindow => window.update(cx, |_view, window, cx| {
+                 cx.activate(true);
+                 window.activate_window();
++                #[cfg(any(target_os = "linux", target_os = "freebsd"))]
++                focus_x11_override_redirect(window);
+             }),
+             UiCommand::Close { response } => {
+                 let result = window
+@@ -2375,6 +2386,60 @@ fn is_wayland_session() -> bool {
+     std::env::var_os("WAYLAND_DISPLAY").is_some()
+ }
+ 
++/// No window manager sees override-redirect (popup) windows on X11, so
++/// `activate_window()`'s `_NET_ACTIVE_WINDOW` request never focuses them.
++#[cfg(any(target_os = "linux", target_os = "freebsd"))]
++fn focus_x11_override_redirect(window: &gpui::Window) {
++    use x11rb::connection::Connection as _;
++    use x11rb::protocol::xproto::{ConnectionExt as _, InputFocus};
++
++    let Some((xcb, x_window)) = x11_connection(window) else {
++        return;
++    };
++    let override_redirect = xcb
++        .get_window_attributes(x_window)
++        .ok()
++        .and_then(|cookie| cookie.reply().ok())
++        .is_some_and(|attributes| attributes.override_redirect);
++    if override_redirect {
++        xcb.set_input_focus(InputFocus::PARENT, x_window, x11rb::CURRENT_TIME)
++            .map(|cookie| cookie.ignore_error())
++            .ok();
++        xcb.flush().ok();
++    }
++}
++
++/// A keyboard grab (e.g. a global shortcut's passive grab) sends FocusOut
++/// without moving focus; GPUI reports it as deactivation all the same.
++#[cfg(any(target_os = "linux", target_os = "freebsd"))]
++fn x11_holds_input_focus(window: &gpui::Window) -> bool {
++    use x11rb::protocol::xproto::ConnectionExt as _;
++
++    x11_connection(window).is_some_and(|(xcb, x_window)| {
++        xcb.get_input_focus()
++            .ok()
++            .and_then(|cookie| cookie.reply().ok())
++            .is_some_and(|reply| reply.focus == x_window)
++    })
++}
++
++/// GPUI's own XCB connection and the window's X id, or `None` off X11.
++#[cfg(any(target_os = "linux", target_os = "freebsd"))]
++#[allow(unsafe_code, reason = "GPUI exposes its XCB connection only as a raw handle")]
++fn x11_connection(window: &gpui::Window) -> Option<(x11rb::xcb_ffi::XCBConnection, u32)> {
++    use raw_window_handle::{HasDisplayHandle, HasWindowHandle, RawDisplayHandle, RawWindowHandle};
++
++    let (Ok(RawWindowHandle::Xcb(handle)), Ok(RawDisplayHandle::Xcb(display))) = (
++        HasWindowHandle::window_handle(window).map(|handle| handle.as_raw()),
++        HasDisplayHandle::display_handle(window).map(|handle| handle.as_raw()),
++    ) else {
++        return None;
++    };
++    // SAFETY: GPUI's live connection, borrowed on its own thread; should_drop = false.
++    let xcb = unsafe { x11rb::xcb_ffi::XCBConnection::from_raw_xcb_connection(display.connection?.as_ptr(), false) };
++    Some((xcb.ok()?, handle.window.get()))
++}
++
+ /// Wayland compositors without zwlr_layer_shell_v1 (e.g. GNOME) get a popup instead.
+ #[cfg(target_os = "linux")]
+ fn layer_shell_fallback<T>(options: &WindowOptions, opened: &gpui::Result<T>) -> Option<WindowOptions> {

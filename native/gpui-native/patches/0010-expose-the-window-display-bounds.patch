@@ -1,0 +1,76 @@
+diff --git a/crates/gpui-core/src/renderer.rs b/crates/gpui-core/src/renderer.rs
+index 004f14c31e5c25ba085f623ccae45185cbd3231a..d438c96e6d977cc986ee6cbf32b94863a9ddc24f 100644
+--- a/crates/gpui-core/src/renderer.rs
++++ b/crates/gpui-core/src/renderer.rs
+@@ -485,6 +485,9 @@ enum UiCommand {
+     GetWindowSize {
+         response: SyncSender<WindowSize>,
+     },
++    GetDisplayBounds {
++        response: SyncSender<Option<Vec<f64>>>,
++    },
+     GetElementBounds {
+         id: u64,
+         response: SyncSender<Option<crate::automation::ElementBounds>>,
+@@ -764,6 +767,22 @@ async fn run_threaded_app_commands(
+     }
+ }
+ 
++#[cfg(not(target_family = "wasm"))]
++fn display_bounds(window: &gpui::Window, cx: &gpui::App) -> Option<Vec<f64>> {
++    // GPUI updates the window's display only on resize, so a Wayland window that has
++    // not resized since entering its output has none yet; a single display is unambiguous.
++    let display = window.display(cx).or_else(|| match cx.displays().as_slice() {
++        [only] => Some(only.clone()),
++        _ => None,
++    })?;
++    let bounds = display.visible_bounds();
++    Some(
++        [bounds.origin.x, bounds.origin.y, bounds.size.width, bounds.size.height]
++            .map(|value| f64::from(f32::from(value)))
++            .to_vec(),
++    )
++}
++
+ #[cfg(any(target_os = "windows", target_os = "linux", target_os = "freebsd"))]
+ fn refresh_ui_window(
+     window: crate::kit::NativeWindow,
+@@ -928,6 +947,9 @@ async fn run_ui_commands(
+                         .ok();
+                 })
+             }
++            UiCommand::GetDisplayBounds { response } => window.update(cx, move |_view, window, cx| {
++                response.send(display_bounds(window, cx)).ok();
++            }),
+             UiCommand::GetAutomationBounds { response } => {
+                 window.update(cx, move |_view, window, cx| {
+                     cx.notify();
+diff --git a/crates/gpui-core/src/renderer/api.rs b/crates/gpui-core/src/renderer/api.rs
+index c7b10433672853659dfa54d98f09459771420c38..ed3763a946d30681d3442bc730bef3d667a917fe 100644
+--- a/crates/gpui-core/src/renderer/api.rs
++++ b/crates/gpui-core/src/renderer/api.rs
+@@ -994,6 +994,24 @@ impl GpuiRenderer {
+         ))
+     }
+ 
++    /// The window's display as `[x, y, width, height]` in logical pixels, in the
++    /// same coordinates as the window bounds; `null` while it has no display.
++    #[cfg_attr(not(target_family = "wasm"), napi)]
++    pub fn get_display_bounds(&self) -> Result<Option<Vec<f64>>> {
++        #[cfg(target_os = "macos")]
++        return update_window(|_view, window, cx| display_bounds(window, cx));
++
++        #[cfg(any(target_os = "windows", target_os = "linux", target_os = "freebsd"))]
++        {
++            let (response, receiver) = sync_channel(1);
++            self.send_ui_command(UiCommand::GetDisplayBounds { response })?;
++            recv_ui_response(receiver, "the display bounds query")
++        }
++
++        #[cfg(not(any(target_os = "macos", target_os = "windows", target_os = "linux", target_os = "freebsd")))]
++        Err(Error::from_reason("getDisplayBounds is not supported on this platform yet"))
++    }
++
+     #[cfg_attr(not(all(target_arch = "wasm32", target_os = "unknown")), napi)]
+     pub fn get_window_insets(&self) -> Result<WindowInsets> {
+         #[cfg(target_os = "macos")]

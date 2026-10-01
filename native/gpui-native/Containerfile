@@ -1,0 +1,115 @@
+# Builds the patched gpui-native addon for Linux (RFC-0008/R15) and its installable packages (dist/pkg/),
+# from the repository root:
+#   podman build -f native/gpui-native/Containerfile --output type=local,dest=native/gpui-native/dist native/gpui-native
+# --build-arg TARGETS=x86_64-unknown-linux-gnu builds a single target.
+
+# Bookworm ships glibc 2.36, the oldest the addon supports.
+FROM docker.io/library/debian:bookworm@sha256:f37a335e82bca302e955fa39f9dfe28f1be618f016f8a2b56318e5a5111afc26 AS build
+
+ARG TARGETS="x86_64-unknown-linux-gnu aarch64-unknown-linux-gnu"
+ARG GLIBC_VERSION=2.36
+ARG RUST_VERSION=1.97.1
+ARG RUSTUP_VERSION=1.29.1
+# 0.14: zig 0.15+ needs clang 18+ for bindgen, bookworm has 14.
+ARG ZIG_VERSION=0.14.1
+ARG CARGO_ZIGBUILD_VERSION=0.23.4
+ARG NODE_VERSION=22.23.3
+# The version upstream's bun.lock resolves.
+ARG NAPI_CLI_VERSION=3.8.6
+
+# Link libraries for every target, from Debian's multiarch packages.
+RUN set -eux; \
+	native=$(dpkg --print-architecture); \
+	for arch in amd64 arm64; do [ "$arch" = "$native" ] || dpkg --add-architecture "$arch"; done; \
+	apt-get update; \
+	apt-get install -y --no-install-recommends ca-certificates curl git xz-utils pkg-config clang; \
+	for arch in amd64 arm64; do \
+		apt-get install -y --no-install-recommends \
+			libfontconfig-dev:$arch libfreetype-dev:$arch libwayland-dev:$arch libx11-dev:$arch \
+			libx11-xcb-dev:$arch libxcb1-dev:$arch libxkbcommon-dev:$arch libxkbcommon-x11-dev:$arch; \
+	done; \
+	rm -rf /var/lib/apt/lists/*
+
+ENV RUSTUP_HOME=/opt/rustup CARGO_HOME=/opt/cargo PATH=/opt/cargo/bin:/opt/zig:/opt/node/bin:$PATH
+RUN set -eux; \
+	case $(uname -m) in \
+		x86_64) \
+			rustup=dda7234360b7f578ca8b0ddcb80145646fa61a67c1720a5abc7051b35c9fcb71; \
+			zig=24aeeec8af16c381934a6cd7d95c807a8cb2cf7df9fa40d359aa884195c4716c; \
+			node=df450af89261115ef9f9e3830c3eeb2cc9213b63c720b1af623cb5dcbe2e02de; node_arch=x64;; \
+		aarch64) \
+			rustup=15f6e4ce9f583b929c996c91562bad6d4454f3281de858b02cdfdef615fac433; \
+			zig=f7a654acc967864f7a050ddacfaa778c7504a0eca8d2b678839c21eea47c992b; \
+			node=a44aeb94849a299b22df10b9e622ec2f605c2183501bc40590705131de7c740f; node_arch=arm64;; \
+	esac; \
+	cd /tmp; \
+	curl -fsSLo rustup-init "https://static.rust-lang.org/rustup/archive/$RUSTUP_VERSION/$(uname -m)-unknown-linux-gnu/rustup-init"; \
+	curl -fsSLo zig.tar.xz "https://ziglang.org/download/$ZIG_VERSION/zig-$(uname -m)-linux-$ZIG_VERSION.tar.xz"; \
+	curl -fsSLo node.tar.xz "https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-$node_arch.tar.xz"; \
+	printf '%s  %s\n' "$rustup" rustup-init "$zig" zig.tar.xz "$node" node.tar.xz | sha256sum -c -; \
+	chmod +x rustup-init; \
+	./rustup-init -y --no-modify-path --profile minimal --default-toolchain "$RUST_VERSION" \
+		--target x86_64-unknown-linux-gnu --target aarch64-unknown-linux-gnu; \
+	mkdir /opt/zig /opt/node; \
+	tar -xJf zig.tar.xz -C /opt/zig --strip-components 1; \
+	tar -xJf node.tar.xz -C /opt/node --strip-components 1; \
+	rm -rf /tmp/*; \
+	cargo install --locked "cargo-zigbuild@$CARGO_ZIGBUILD_VERSION"; \
+	npm install -g "@napi-rs/cli@$NAPI_CLI_VERSION"
+# Upstream's rust-toolchain.toml also asks for wasm and rust-src; the addon needs neither.
+ENV RUSTUP_TOOLCHAIN=$RUST_VERSION
+
+# napi-rs passes a bare triple to cargo-zigbuild, which takes the glibc version as a suffix.
+# cargo-zigbuild runs this wrapper (CARGO) as its cargo. For a host target it forces the nightly
+# channel, which makes cargo apply upstream's [unstable] build-std; unset it to build like upstream CI.
+RUN printf '#!/bin/sh\ncase "$1" in\nzigbuild)\n\tfor a; do shift; case "$a" in *-linux-gnu) a="$a.%s";; esac; set -- "$@" "$a"; done\n\texec cargo-zigbuild "$@";;\n*)\n\tunset __CARGO_TEST_CHANNEL_OVERRIDE_DO_NOT_USE_THIS\n\texec cargo "$@";;\nesac\n' \
+		"$GLIBC_VERSION" > /usr/local/bin/cargo-glibc \
+	&& chmod +x /usr/local/bin/cargo-glibc
+
+COPY upstream.json /src/
+COPY patches/ /src/patches/
+WORKDIR /src/upstream
+RUN set -eux; \
+	git init -q; \
+	git fetch -q --depth 1 "$(node -p 'require("/src/upstream.json").repository')" \
+		"$(node -p 'require("/src/upstream.json").commit')"; \
+	git checkout -q FETCH_HEAD; \
+	for patch in /src/patches/*.patch; do git apply --whitespace=nowarn "$patch"; done
+
+WORKDIR /src/upstream/packages/core
+RUN set -eux; \
+	for target in $TARGETS; do \
+		lib=/usr/lib/$(echo "$target" | sed 's/-unknown//'); \
+		PKG_CONFIG_ALLOW_CROSS=1 PKG_CONFIG_ALLOW_SYSTEM_LIBS=1 \
+		PKG_CONFIG_LIBDIR=$lib/pkgconfig:/usr/share/pkgconfig \
+		CARGO=cargo-glibc \
+			napi build --platform --release --strip --cross-compile --target "$target" \
+				--manifest-path ../../crates/gpui-core/Cargo.toml --no-default-features \
+				--features napi-bindings,native-window --output-dir /out -- --locked; \
+	done
+
+# The runtime and Vue packages ship TypeScript only; build them against the versions upstream's bun.lock pins.
+# The Vue package's own build script needs Bun, so it is compiled with tsc directly.
+WORKDIR /src/upstream/packages
+RUN set -eux; \
+	npm install --prefix /opt/tsdeps --ignore-scripts --no-audit --no-fund typescript@5.9.3 @types/node@24.13.3 \
+		zod@4.4.3 eventsource-parser@4.1.0 @webgpu/types@0.1.72 @vue/runtime-core@3.5.41; \
+	ln -s /opt/tsdeps/node_modules node_modules; \
+	mkdir node_modules/@gpui-native; \
+	for p in core runtime; do ln -s "$PWD/$p" node_modules/@gpui-native/$p; done; \
+	(cd runtime && npm run build); \
+	(cd vue && /opt/tsdeps/node_modules/.bin/tsc -p tsconfig.build.json --emitDeclarationOnly false); \
+	version=$(node -p 'require("./core/package.json").version'); \
+	for p in core runtime vue; do \
+		mkdir -p /out/pkg/$p; \
+		cp $p/package.json ../LICENSE /out/pkg/$p/; \
+		(cd /out/pkg/$p && npm pkg delete devDependencies scripts); \
+		sed -i "s/\"workspace:\^\"/\"^$version\"/" /out/pkg/$p/package.json; \
+	done; \
+	cp core/index.cjs core/index.d.ts /out/*.node /out/pkg/core/; \
+	cp -r runtime/dist /out/pkg/runtime/; \
+	cp -r vue/dist /out/pkg/vue/
+
+FROM scratch
+COPY --from=build /out/*.node /
+COPY --from=build /out/pkg/ /pkg/

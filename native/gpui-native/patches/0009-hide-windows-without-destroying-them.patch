@@ -1,0 +1,113 @@
+diff --git a/crates/gpui-core/src/renderer.rs b/crates/gpui-core/src/renderer.rs
+index 139d0a6256c4775d024baffdeac7ab4577df5cdd..004f14c31e5c25ba085f623ccae45185cbd3231a 100644
+--- a/crates/gpui-core/src/renderer.rs
++++ b/crates/gpui-core/src/renderer.rs
+@@ -520,6 +520,11 @@ enum UiCommand {
+         height: f32,
+     },
+     StartWindowMove,
++    /// Answers whether the window was hidden in place (X11 only).
++    HideWindow {
++        response: SyncSender<bool>,
++    },
++    ShowWindow,
+ }
+ 
+ #[cfg(any(target_os = "windows", target_os = "linux", target_os = "freebsd"))]
+@@ -1106,6 +1111,21 @@ async fn run_ui_commands(
+                 window.resize(size);
+             }),
+             UiCommand::StartWindowMove => window.update(cx, |_view, window, _cx| window.start_window_move()),
++            UiCommand::HideWindow { response } => window.update(cx, move |_view, window, _cx| {
++                #[cfg(any(target_os = "linux", target_os = "freebsd"))]
++                let hidden = set_x11_mapped(window, false);
++                #[cfg(target_os = "windows")]
++                let hidden = false;
++                response.send(hidden).ok();
++            }),
++            UiCommand::ShowWindow => window.update(cx, |_view, window, cx| {
++                #[cfg(any(target_os = "linux", target_os = "freebsd"))]
++                set_x11_mapped(window, true);
++                cx.activate(true);
++                window.activate_window();
++                #[cfg(any(target_os = "linux", target_os = "freebsd"))]
++                focus_x11_override_redirect(window);
++            }),
+         };
+         if let Err(error) = result {
+             log::error!("Failed to handle GPUI UI command: {error:#}");
+@@ -2453,6 +2473,20 @@ fn focus_x11_override_redirect(window: &gpui::Window) {
+     }
+ }
+ 
++/// GPUI has no per-window hide; on X11 unmap/map keeps the window and its id.
++/// Returns `false` off X11.
++#[cfg(any(target_os = "linux", target_os = "freebsd"))]
++fn set_x11_mapped(window: &gpui::Window, mapped: bool) -> bool {
++    use x11rb::connection::Connection as _;
++    use x11rb::protocol::xproto::ConnectionExt as _;
++
++    let Some((xcb, x_window)) = x11_connection(window) else {
++        return false;
++    };
++    let sent = if mapped { xcb.map_window(x_window) } else { xcb.unmap_window(x_window) };
++    sent.map(|cookie| cookie.ignore_error()).is_ok() && xcb.flush().is_ok()
++}
++
+ /// A keyboard grab (e.g. a global shortcut's passive grab) sends FocusOut
+ /// without moving focus; GPUI reports it as deactivation all the same.
+ #[cfg(any(target_os = "linux", target_os = "freebsd"))]
+diff --git a/crates/gpui-core/src/renderer/api.rs b/crates/gpui-core/src/renderer/api.rs
+index 87fe84d399bb1316389e7d42855f0f20d811814c..c7b10433672853659dfa54d98f09459771420c38 100644
+--- a/crates/gpui-core/src/renderer/api.rs
++++ b/crates/gpui-core/src/renderer/api.rs
+@@ -595,7 +595,7 @@ impl GpuiRenderer {
+                 options.width = Some(width);
+                 options.height = Some(height);
+             }
+-            if !self.visible.load(std::sync::atomic::Ordering::Acquire) {
++            if !self.visible.load(std::sync::atomic::Ordering::Acquire) && self.ui_commands.lock().is_none() {
+                 return Ok(());
+             }
+             return self.send_ui_command(UiCommand::SetWindowSize {
+@@ -620,8 +620,9 @@ impl GpuiRenderer {
+         Err(Error::from_reason("startWindowMove is not supported on this platform yet"))
+     }
+ 
+-    /// Close the platform window but keep the renderer and its retained tree;
++    /// Hide the platform window but keep the renderer and its retained tree;
+     /// emits `windowHide`. `showWindow()` brings it back with the same state.
++    /// X11 unmaps the window; elsewhere it is closed and reopened on show.
+     #[cfg_attr(not(target_family = "wasm"), napi)]
+     pub fn hide_window(&self) -> Result<()> {
+         #[cfg(any(target_os = "windows", target_os = "linux", target_os = "freebsd"))]
+@@ -630,6 +631,15 @@ impl GpuiRenderer {
+             if !*self.initialized.lock() || !self.visible.load(Ordering::Acquire) {
+                 return Ok(());
+             }
++            let (response, receiver) = sync_channel(1);
++            if self.send_ui_command(UiCommand::HideWindow { response }).is_ok()
++                && receiver.recv_timeout(Duration::from_secs(2)).unwrap_or(false)
++            {
++                self.visible.store(false, Ordering::Release);
++                let callback = self.reopen.lock().as_ref().and_then(|(callback, _)| callback.clone());
++                emit_event_full(&callback, 0, "windowHide", |_| {});
++                return Ok(());
++            }
+             let Some(sender) = self.ui_commands.lock().take() else {
+                 return Ok(());
+             };
+@@ -663,7 +673,12 @@ impl GpuiRenderer {
+             let Some((callback, options)) = self.reopen.lock().clone() else {
+                 return Err(Error::from_reason("Nothing to show"));
+             };
+-            self.open_threaded_window(options, callback.clone())?;
++            if self.ui_commands.lock().is_some() {
++                self.send_ui_command(UiCommand::ShowWindow)?;
++                self.visible.store(true, std::sync::atomic::Ordering::Release);
++            } else {
++                self.open_threaded_window(options, callback.clone())?;
++            }
+             emit_event_full(&callback, 0, "windowShow", |_| {});
+             return Ok(());
+         }
