@@ -32,3 +32,20 @@ jobs:
           pushd plugins/desktop && npm ci; popd
           npm run lint
           npm run build
+
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version-file: .tool-versions
+
+      - name: gpui-native sources
+        run: deno task native:fetch
+
+      # docker is the runner's container engine (RFC-0008/R15)
+      - name: gpui-native addon and packages
+        run: CONTAINER_ENGINE=docker deno task native:build
+
+      - name: Deno build and tests
+        run: |
+          deno task install:ui
+          deno task build
+          deno task test

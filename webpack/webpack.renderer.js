@@ -142,6 +142,7 @@ module.exports = Object.assign({}, utils.defaultConfig, {
 	],
 	resolve: {
 		extensions: ['.js', '.ts', '.vue'],
+		extensionAlias: { '.js': ['.ts', '.js'] },
 	},
 	target: 'electron-renderer',
 });
