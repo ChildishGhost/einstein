@@ -1,4 +1,4 @@
-<!-- source-sha256: fa6e264ff814e75f38a1cafbb0089f02a59a61df2510c3ea42d07792ddefcbc6 -->
+<!-- source-sha256: a9d006f02f44c04cfe38dd48a82756061ec4b2ad02f8e096dd6e0c6140695a69 -->
 
 > 本文為 [README.md](README.md) 的翻譯，內容以英文版為準。
 
@@ -14,7 +14,12 @@
 
 ## 快速開始
 
-請參閱下方的建置說明。
+請參閱下方的建置說明。在 Linux 上，Einstein 也能在 Deno 上執行，並以 gpui-native 繪製原生 UI：請見 [Linux 上的 Einstein：Deno 與 gpui-native 技術堆疊](docs/linux-deno-stack.zh-tw.md)。
+
+## 文件
+
+- [Linux 上的 Einstein：Deno 與 gpui-native 技術堆疊](docs/linux-deno-stack.zh-tw.md)：需求、建置、全域快捷鍵、外掛、更新 gpui-native
+- [RFC](docs/rfc/README.zh-tw.md)：設計決策與 RFC 流程
 
 ## 建置
 
@@ -29,7 +34,7 @@
 nvm install 24.14.0
 ```
 
-### 建置並執行 Einstein
+### 建置並執行 Einstein（Electron）
 
 ```bash
 # build the distributable electron application
@@ -97,4 +102,6 @@ pass show <filter>
 - [Alfred](https://www.alfredapp.com/)（專有、僅限 macOS 的應用程式）
 - [Electron](https://www.electronjs.org/)（MIT 授權）
 - [Fuse.js](https://fusejs.io/)（Apache 授權）
+- [Deno](https://deno.com/)（MIT 授權）
+- [gpui-native](https://github.com/countradooku/gpui-native)（Apache 授權）
 - [Vue.js](https://vuejs.org/)（MIT 授權）

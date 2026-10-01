@@ -10,7 +10,12 @@ A completely reinvented cross-platform enthusiast-oriented `Spotlight` :mag:-lik
 
 ## Getting started
 
-See build instructions below.
+See build instructions below. On Linux, Einstein can also run on Deno with a native UI drawn by gpui-native: see [Einstein on Linux: the Deno and gpui-native stack](docs/linux-deno-stack.md).
+
+## Documentation
+
+- [Einstein on Linux: the Deno and gpui-native stack](docs/linux-deno-stack.md): requirements, build, global shortcut, plugins, updating gpui-native
+- [RFCs](docs/rfc/README.md): design decisions and the RFC process
 
 ## Build
 
@@ -25,7 +30,7 @@ One can install `node` and `npm` via `nvm`.
 nvm install 24.14.0
 ```
 
-### Build and Run Einstein
+### Build and Run Einstein (Electron)
 
 ```bash
 # build the distributable electron application
@@ -93,4 +98,6 @@ See [LICENSE](/LICENSE) file
 - [Alfred](https://www.alfredapp.com/) (proprietary macOS only app)
 - [Electron](https://www.electronjs.org/) (MIT License)
 - [Fuse.js](https://fusejs.io/) (Apache License)
+- [Deno](https://deno.com/) (MIT License)
+- [gpui-native](https://github.com/countradooku/gpui-native) (Apache License)
 - [Vue.js](https://vuejs.org/) (MIT License)
