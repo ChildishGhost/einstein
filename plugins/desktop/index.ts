@@ -1,9 +1,9 @@
 import { IEnvironment, PluginContext, PluginSetup } from 'einstein'
 
-import DarwinApplicationSearchEngine from './DarwinApplicationSearchEngine'
-import EventType from './EventType'
-import IApplicationSearchEngine from './IApplicationSearchEngine'
-import LinuxDesktopApplicationSearchEngine from './LinuxDesktopApplicationSearchEngine'
+import DarwinApplicationSearchEngine from './DarwinApplicationSearchEngine.ts'
+import EventType from './EventType.ts'
+import IApplicationSearchEngine from './IApplicationSearchEngine.ts'
+import LinuxDesktopApplicationSearchEngine from './LinuxDesktopApplicationSearchEngine.ts'
 
 const createEngine = async (env: IEnvironment): Promise<IApplicationSearchEngine> => {
 	switch (env.platform) {

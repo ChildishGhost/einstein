@@ -1,10 +1,10 @@
-import * as fs from 'fs'
+import * as fs from 'node:fs'
 
 import { IEnvironment, ISearchEngine, SearchResult, spawn } from 'einstein'
 import Fuse from 'fuse.js'
 
-import EventType from './EventType'
-import { findIcon } from './utils'
+import EventType from './EventType.ts'
+import { findIcon } from './utils.ts'
 
 /*
 file = {
@@ -42,6 +42,30 @@ type LinuxDesktopApplicationIdentifier = {
 
 const DESKTOP_ENTRY = '[Desktop Entry]'
 const DESKTOP_ACTION = '[Desktop Action'
+
+// Subdirectories are allowed by the XDG Desktop Menu spec; `seen` holds real paths so symlink cycles end.
+const collectDesktopFiles = (dir: string, seen: Set<string>, acc: string[]) => {
+	let names: string[]
+	try {
+		const real = fs.realpathSync(dir)
+		if (seen.has(real)) return acc
+		seen.add(real)
+		names = fs.readdirSync(dir)
+	} catch (error) {
+		console.log(`unreadable applications directory: ${dir}, skipping: ${error.message}`)
+		return acc
+	}
+	names.forEach((name) => {
+		const path = `${dir}${name}`
+		try {
+			if (fs.statSync(path).isDirectory()) collectDesktopFiles(`${path}/`, seen, acc)
+			else if (name.endsWith('.desktop')) acc.push(path)
+		} catch (error) {
+			console.log(`unreadable .desktop entry found: ${path}, skipping: ${error.message}`)
+		}
+	})
+	return acc
+}
 
 const isLaunchable = (groupName: string) => groupName === DESKTOP_ENTRY || groupName.startsWith(DESKTOP_ACTION)
 
@@ -109,7 +133,7 @@ export default class LinuxDesktopApplicationSearchEngine implements ISearchEngin
 			if (fs.existsSync(dir)) {
 				const stats = fs.statSync(dir)
 				if (stats.isDirectory()) {
-					desktopFiles.push(...fs.readdirSync(dir).map((file) => `${dir}${file}`))
+					collectDesktopFiles(dir, new Set(), desktopFiles)
 				}
 			}
 		})
@@ -131,9 +155,14 @@ export default class LinuxDesktopApplicationSearchEngine implements ISearchEngin
 		//
 		// Key=Value
 		desktopFiles.forEach((file: string) => {
+			let content: string
+			try {
+				content = fs.readFileSync(file, { encoding: 'utf8' })
+			} catch (error) {
+				console.log(`unreadable .desktop file found: ${file}, skipping: ${error.message}`)
+				return
+			}
 			this.desktopFiles[file] = { content: undefined }
-
-			const content = fs.readFileSync(file, { encoding: 'utf8' })
 
 			let currentGroup = ''
 			content.split('\n').forEach((line: string) => {
@@ -179,10 +208,13 @@ export default class LinuxDesktopApplicationSearchEngine implements ISearchEngin
 		// flatten this.desktopFiles
 		const preSearch: LinuxDesktopApplicationPreSearch[] = Object.entries(this.desktopFiles).reduce(
 			(acc, [ filename, file ]) => {
-				Object.entries(file).forEach(([ group, _ ]) => {
-					if (isLaunchable(group)) {
+				// one entry that fails (e.g. an unreadable icon) must not hide every other app
+				const items: LinuxDesktopApplicationPreSearch[] = []
+				try {
+					Object.entries(file).forEach(([ group, _ ]) => {
+						if (!isLaunchable(group)) return
 						const isAction = group.startsWith(DESKTOP_ACTION)
-						acc.push({
+						items.push({
 							file: filename,
 							name: isAction ? `${file[DESKTOP_ENTRY].Name}: ${file[group].Name}` : file[DESKTOP_ENTRY].Name,
 							exec: file[group].Exec,
@@ -194,8 +226,13 @@ export default class LinuxDesktopApplicationSearchEngine implements ISearchEngin
 							group,
 							action: isAction,
 						})
-					}
-				})
+					})
+				} catch (error) {
+					console.log(`unprocessable .desktop file found: ${filename}, skipping: ${error.message}`)
+					delete this.desktopFiles[filename]
+					return acc
+				}
+				acc.push(...items)
 				return acc
 			},
 			[],
@@ -225,6 +262,12 @@ export default class LinuxDesktopApplicationSearchEngine implements ISearchEngin
 		Object.entries(this.desktopFiles).forEach(([ filename, file ]) => {
 			Object.entries(file).forEach(([ group, section ]) => {
 				if (isLaunchable(group)) {
+					// only actions can get here without Exec; ill-formed entries were already dropped
+					if (!('Exec' in section)) {
+						console.log(`action without Exec found: ${filename}: ${group}, skipping`)
+						delete this.desktopFiles[filename][group]
+						return
+					}
 					if (section.Exec.includes('%')) {
 						// we don't pass parameters into the Exec command from the frontend, remove them all
 						this.desktopFiles[filename][group].Exec = sanitize(section.Exec).trim()

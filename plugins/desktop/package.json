@@ -3,6 +3,7 @@
 	"uid": "tw.childish.einstein.plugins.desktop",
 	"version": "0.0.1",
 	"main": "dist/index.js",
+	"module": "index.ts",
 	"dependencies": {
 		"file-icon": "^5.1.0"
 	},

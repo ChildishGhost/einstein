@@ -3,10 +3,11 @@
 	"uid": "tw.childish.einstein.plugins.search",
 	"version": "0.0.1",
 	"main": "dist/index.js",
+	"module": "index.ts",
 	"__webpack_copy": [
 		{
 			"from": "assets/search.png",
-			"to": "search.png",
+			"to": "assets/search.png",
 			"perm": "644"
 		}
 	]

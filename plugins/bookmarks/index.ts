@@ -1,7 +1,7 @@
 import { PluginContext, PluginSetup, openUrl } from 'einstein'
 
-import { ChromiumBookmarksSearchEngine } from './ChromiumBookmarksSearchEngine'
-import { Configs } from './types'
+import { ChromiumBookmarksSearchEngine } from './ChromiumBookmarksSearchEngine.ts'
+import { Configs } from './types.ts'
 
 const setup: PluginSetup = async (context: PluginContext<Configs>) => {
 	const chromiumBookmarksSearchEngine = new ChromiumBookmarksSearchEngine(context)
