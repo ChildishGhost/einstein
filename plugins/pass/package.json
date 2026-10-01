@@ -2,5 +2,6 @@
 	"name": "pass",
 	"uid": "tw.childish.einstein.plugins.pass",
 	"version": "0.0.1",
-	"main": "dist/index.js"
+	"main": "dist/index.js",
+	"module": "index.ts"
 }

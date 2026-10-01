@@ -72,7 +72,7 @@ const searchEngine = {
 	async search(term: string, trigger?: string): Promise<SearchResult[]> {
 		const result: SearchResult[] = []
 
-		const icon = `plugin://${this.context.metadata.uid}/search.png`
+		const icon = `plugin://${this.context.metadata.uid}/assets/search.png`
 		if (term.length > 0) {
 			this.engines.forEach((e: engine) => {
 				// populate the result array with the matched search engine trigger

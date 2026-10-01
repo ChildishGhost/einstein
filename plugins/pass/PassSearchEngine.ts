@@ -1,7 +1,7 @@
 import { IEnvironment, ISearchEngine, SearchResult, spawn } from 'einstein'
 import Fuse from 'fuse.js'
 
-import { findIcon, walk } from './utils'
+import { findIcon, walk } from './utils.ts'
 
 type PreSearch = {
 	file: string

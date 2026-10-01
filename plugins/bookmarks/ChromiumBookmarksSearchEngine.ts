@@ -1,9 +1,9 @@
 import { existsSync, readdirSync, statSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
-import { join as joinPath } from 'path'
+import { join as joinPath } from 'node:path'
 
-import BookmarksSearchEngine from './BookmarksSearchEngine'
-import { Bookmark } from './types'
+import BookmarksSearchEngine from './BookmarksSearchEngine.ts'
+import { Bookmark } from './types.ts'
 
 // fields we are interested in
 // See BookmarkTreeNode in the below reference
@@ -74,7 +74,8 @@ const processBookmarkFiles = async (paths: string[]) => {
 }
 
 export class ChromiumBookmarksSearchEngine extends BookmarksSearchEngine {
-	browsers: string[]
+	// Set by the base constructor through loadBookmarks, so it must not be re-initialized after it.
+	declare browsers: string[]
 
 	private async configureBrowsers() {
 		// default browsers

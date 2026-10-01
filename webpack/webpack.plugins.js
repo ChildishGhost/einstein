@@ -1,6 +1,7 @@
 'use strict';
 
-const { chmodSync, copyFileSync, readdirSync, existsSync } = require('fs');
+const { chmodSync, copyFileSync, readdirSync, existsSync, mkdirSync } = require('fs');
+const { dirname } = require('path');
 const { ProgressPlugin } = require('webpack');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const CreateFileWebpack = require('create-file-webpack');
@@ -11,7 +12,8 @@ const createPackage = ({ name, version, uid }) => ({
 	name,
 	version,
 	uid,
-	module: 'index.js',
+	main: 'index.js',
+	module: 'index.mjs',
 });
 
 const buildExample = !!process.env.BUILD_EXAMPLE_PLUGIN
@@ -37,6 +39,7 @@ const copyAssetsPlugins = plugins
 			compiler.hooks.done.tap('copy assets', () => {
 				for (const { from, to, perm } of __webpack_copy) {
 					const destination = utils.rel(`dist/plugins/${name}/${to}`)
+					mkdirSync(dirname(destination), { recursive: true })
 					copyFileSync(utils.rel(`plugins/${name}/${from}`), destination)
 
 					if (perm) {
@@ -47,7 +50,7 @@ const copyAssetsPlugins = plugins
 		},
 	}))
 
-module.exports = Object.assign({}, utils.defaultConfig, {
+const commonjsConfig = Object.assign({}, utils.defaultConfig, {
 	name: 'plugins',
 	entry: Object.fromEntries(plugins
 		.map((name) => [name, utils.rel(`plugins/${name}/index.ts`)])
@@ -75,6 +78,7 @@ module.exports = Object.assign({}, utils.defaultConfig, {
 	},
 	resolve: {
 		extensions: ['.js', '.ts'],
+		extensionAlias: { '.js': ['.ts', '.js'] },
 		alias: {
 			einstein: utils.rel('src/api'),
 		},
@@ -91,3 +95,22 @@ module.exports = Object.assign({}, utils.defaultConfig, {
 	],
 	target: 'node',
 });
+
+// The ES module bundle for the Deno plugin host (RFC-0008/R18). It runs after the CommonJS build, whose clean
+// step would otherwise remove it.
+const moduleConfig = Object.assign({}, commonjsConfig, {
+	name: 'plugins:module',
+	dependencies: [ 'plugins' ],
+	output: {
+		path: utils.rel('dist/plugins'),
+		filename: '[name]/index.mjs',
+		chunkFilename: '[name]/[chunkhash].mjs',
+		module: true,
+		library: { type: 'module' },
+	},
+	experiments: { outputModule: true },
+	externalsType: 'module',
+	plugins: [ new ProgressPlugin() ],
+});
+
+module.exports = [ commonjsConfig, moduleConfig ];

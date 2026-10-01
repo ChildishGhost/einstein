@@ -1,9 +1,0 @@
----
-env:
-  browser: false
-  node: true
-
-settings:
-  import/core-modules:
-    - einstein
-    - fuse.js

@@ -1,11 +1,11 @@
-import { existsSync as fileExists, readdirSync as readdir, statSync as fileStat } from 'fs'
-import { join as pathJoin } from 'path'
+import { existsSync as fileExists, readdirSync as readdir, statSync as fileStat } from 'node:fs'
+import { join as pathJoin } from 'node:path'
 
 import { IEnvironment, ISearchEngine, SearchResult, spawn } from 'einstein'
 import { fileIconToBuffer as appIconAsBuffer } from 'file-icon'
 import Fuse from 'fuse.js'
 
-import EventType from './EventType'
+import EventType from './EventType.ts'
 
 type Application = {
 	name: string

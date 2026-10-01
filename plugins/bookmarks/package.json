@@ -3,10 +3,11 @@
 	"uid": "tw.childish.einstein.plugins.bookmarks.chromium",
 	"version": "0.0.1",
 	"main": "dist/index.js",
+	"module": "index.ts",
 	"__webpack_copy": [
 		{
 			"from": "assets/link.svg",
-			"to": "link.svg",
+			"to": "assets/link.svg",
 			"perm": "644"
 		}
 	]
