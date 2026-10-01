@@ -50,6 +50,7 @@ module.exports = Object.assign({}, utils.defaultConfig, {
 	},
 	resolve: {
 		extensions: ['.js', '.ts'],
+		extensionAlias: { '.js': ['.ts', '.js'] },
 	},
 	plugins: [
 		new ProgressPlugin(),
