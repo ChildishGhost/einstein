@@ -1,4 +1,4 @@
-<!-- source-sha256: 0feda2aa89abf15110b1b4963cb1e826be069f47465f6aa5bb8d8719241baea8 -->
+<!-- source-sha256: 52bb587ef82516eb997e1d0f57f5d4753e8ca8131dff3d9738dadf495836f09b -->
 
 > 本文為 [README.md](README.md) 的翻譯，內容以英文版為準。
 
@@ -38,4 +38,5 @@ Einstein 的每項決策都從這裡開始——新增或變更的行為、介�
 | [0006](0006-build-and-distribution.md) | Build, toolchain and distribution | implemented |
 | [0007](0007-launcher-visual-design.md) | Launcher visual design | implemented |
 | [0008](0008-deno-gpui-runtime.md) | Deno and gpui-native runtime on Linux | implemented |
+| [0009](0009-quick-actions.md) | Quick actions | draft |
 <!-- rfc-index:end -->
