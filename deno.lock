@@ -1,0 +1,106 @@
+{
+  "version": "5",
+  "specifiers": {
+    "jsr:@std/assert@1.0.19": "1.0.19",
+    "jsr:@std/assert@^1.0.19": "1.0.19",
+    "jsr:@std/fs@1.0.24": "1.0.24",
+    "jsr:@std/internal@^1.0.12": "1.0.14",
+    "jsr:@std/internal@^1.0.14": "1.0.14",
+    "jsr:@std/path@1.1.6": "1.1.6",
+    "jsr:@std/path@^1.1.5": "1.1.6",
+    "jsr:@std/testing@1.0.21": "1.0.21"
+  },
+  "jsr": {
+    "@std/assert@1.0.19": {
+      "integrity": "eaada96ee120cb980bc47e040f82814d786fe8162ecc53c91d8df60b8755991e",
+      "dependencies": [
+        "jsr:@std/internal@^1.0.12"
+      ]
+    },
+    "@std/fs@1.0.24": {
+      "integrity": "f3061b45b81673a2bece689da041df32d174be064c89eb6397fb5718d3fb7877",
+      "dependencies": [
+        "jsr:@std/internal@^1.0.14",
+        "jsr:@std/path@^1.1.5"
+      ]
+    },
+    "@std/internal@1.0.14": {
+      "integrity": "291516b3d4c35024d6ffbc0a9df5bf4c64116e05b50012cf846710152d2ffdf7"
+    },
+    "@std/path@1.1.6": {
+      "integrity": "c68485c2a4dfbb5ae3cc74fae4e8c4e5d874cf8a8ed12927917235c758b46cbe",
+      "dependencies": [
+        "jsr:@std/internal@^1.0.14"
+      ]
+    },
+    "@std/testing@1.0.21": {
+      "integrity": "a0d14b2519005242821565091127c7d6fa96ca1b330e84e9249afcd602ee764f",
+      "dependencies": [
+        "jsr:@std/assert@^1.0.19",
+        "jsr:@std/internal@^1.0.14"
+      ]
+    }
+  },
+  "workspace": {
+    "dependencies": [
+      "jsr:@std/assert@1.0.19",
+      "jsr:@std/fs@1.0.24",
+      "jsr:@std/path@1.1.6",
+      "jsr:@std/testing@1.0.21"
+    ],
+    "packageJson": {
+      "dependencies": [
+        "npm:@antfu/eslint-config@9",
+        "npm:@babel/core@^7.29.0",
+        "npm:@eslint/compat@^2.0.2",
+        "npm:@eslint/eslintrc@^3.3.3",
+        "npm:@eslint/js@^10.0.1",
+        "npm:@types/node@24",
+        "npm:@typescript-eslint/eslint-plugin@^8.65.0",
+        "npm:@typescript-eslint/parser@^8.66.0",
+        "npm:@vitejs/plugin-vue@6.0.8",
+        "npm:@vue/compiler-core@3.5.41",
+        "npm:@vue/compiler-sfc@^3.5.28",
+        "npm:babel-loader@10",
+        "npm:babel-plugin-module-resolver@^5.0.2",
+        "npm:clean-webpack-plugin@4",
+        "npm:comment-json@^4.5.1",
+        "npm:create-file-webpack@^1.0.2",
+        "npm:css-loader@^7.1.4",
+        "npm:electron-debug@^4.1.0",
+        "npm:electron@^44.1.0",
+        "npm:eslint-config-prettier@^10.1.8",
+        "npm:eslint-import-resolver-alias@^1.1.2",
+        "npm:eslint-import-resolver-typescript@^4.4.4",
+        "npm:eslint-plugin-import-x@^4.17.1",
+        "npm:eslint-plugin-tsdoc@~0.5.2",
+        "npm:eslint-plugin-vue@^10.10.0",
+        "npm:eslint-webpack-plugin@6",
+        "npm:eslint@^10.7.0",
+        "npm:fuse.js@^7.1.0",
+        "npm:globals@^17.3.0",
+        "npm:html-webpack-plugin@^5.6.8",
+        "npm:mini-css-extract-plugin@^2.10.0",
+        "npm:patch-package@^8.0.1",
+        "npm:prettier-eslint@^16.4.2",
+        "npm:prettier@^3.8.1",
+        "npm:sass-loader@^16.0.6",
+        "npm:sass@^1.102.0",
+        "npm:source-map-support@~0.5.21",
+        "npm:ts-loader@^9.6.2",
+        "npm:typescript-eslint@^8.65.0",
+        "npm:typescript@^5.9.3",
+        "npm:vite@8.2.2",
+        "npm:vm2@^3.11.6",
+        "npm:vue-eslint-parser@^10.4.0",
+        "npm:vue-loader@^17.4.2",
+        "npm:vue@^3.5.41",
+        "npm:webpack-cli@^6.0.1",
+        "npm:webpack-dev-server@6",
+        "npm:webpack-hot-middleware@^2.26.1",
+        "npm:webpack-merge@^6.0.1",
+        "npm:webpack@^5.109.0"
+      ]
+    }
+  }
+}

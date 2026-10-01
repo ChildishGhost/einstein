@@ -13,6 +13,9 @@
 			"@/*": ["src/*"],
 			"einstein": ["src/api"]
 		},
-		"experimentalDecorators": true
-	}
+		"experimentalDecorators": true,
+		"rewriteRelativeImportExtensions": true
+	},
+	// The Deno stack is type-checked by Deno (RFC 0008).
+	"exclude": ["node_modules", "dist", "native", "tests", ".bin/*.ts", "src/*.deno", "src/common/**/*.deno.ts"]
 }
