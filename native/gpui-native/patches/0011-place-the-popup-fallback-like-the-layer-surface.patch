@@ -1,0 +1,192 @@
+diff --git a/crates/gpui-core/src/renderer.rs b/crates/gpui-core/src/renderer.rs
+index e008f8c7ea3fec7fa6bbd86c061838e31d19c5fb..f2c08b795e5945e074a3acec2cc3f8d7498b37c2 100644
+--- a/crates/gpui-core/src/renderer.rs
++++ b/crates/gpui-core/src/renderer.rs
+@@ -682,6 +682,13 @@ async fn run_threaded_app_commands(
+                     let open = |cx: &mut gpui::App, window_options: &WindowOptions| {
+                         let (tree, callback, title, selection, clock) =
+                             (tree.clone(), callback.clone(), title.clone(), selection.clone(), clock.clone());
++                        #[cfg(target_os = "linux")]
++                        let bounds = popup_bounds(
++                            window_options,
++                            bounds,
++                            cx.primary_display().map(|display| display.bounds()),
++                            is_wayland_session(),
++                        );
+                         cx.open_window(
+                             to_gpui_window_options(window_options, bounds),
+                             |window, cx| {
+@@ -720,6 +727,8 @@ async fn run_threaded_app_commands(
+                                     }
+                                     GpuiView::new(tree, callback, title, selection, clock)
+                                 });
++                                #[cfg(target_os = "linux")]
++                                place_x11_popup(window, window_options);
+                                 #[cfg(any(target_os = "linux", target_os = "freebsd"))]
+                                 if activate {
+                                     focus_x11_override_redirect(window);
+@@ -751,8 +760,9 @@ async fn run_threaded_app_commands(
+                         }
+                     })
+                     .detach();
++                    let placement = window_options.clone();
+                     cx.spawn(async move |cx| {
+-                        run_ui_commands(commands, window, requested_size, cx).await;
++                        run_ui_commands(commands, window, requested_size, placement, cx).await;
+                     })
+                     .detach();
+                     *initialized.lock() = true;
+@@ -806,10 +816,12 @@ fn refresh_ui_window(
+     clippy::too_many_lines,
+     reason = "the UI-thread command loop is one exhaustive protocol dispatcher"
+ )]
++#[cfg_attr(not(target_os = "linux"), allow(unused_variables))]
+ async fn run_ui_commands(
+     mut commands: mpsc::UnboundedReceiver<UiCommand>,
+     window: crate::kit::NativeWindow,
+     requested_size: RequestedSize,
++    placement: WindowOptions,
+     cx: &mut gpui::AsyncApp,
+ ) {
+     let mut closed_by_command = false;
+@@ -1148,6 +1160,8 @@ async fn run_ui_commands(
+                 response.send(hidden).ok();
+             }),
+             UiCommand::ShowWindow => window.update(cx, |_view, window, cx| {
++                #[cfg(target_os = "linux")]
++                place_x11_popup(window, &placement);
+                 #[cfg(any(target_os = "linux", target_os = "freebsd"))]
+                 set_x11_mapped(window, true);
+                 cx.activate(true);
+@@ -2628,6 +2642,68 @@ fn layer_shell_fallback<T>(options: &WindowOptions, opened: &gpui::Result<T>) ->
+     })
+ }
+ 
++/// X11 popups (and the layer-shell fallback) open where a top-anchored layer surface sits:
++/// centered horizontally, `layer_margin_top` below the display top. Explicit `x`/`y` win.
++#[cfg(target_os = "linux")]
++fn popup_bounds(
++    options: &WindowOptions,
++    bounds: gpui::Bounds<gpui::Pixels>,
++    display: Option<gpui::Bounds<gpui::Pixels>>,
++    layer_shell: bool,
++) -> gpui::Bounds<gpui::Pixels> {
++    let popup = match options.kind.as_deref() {
++        Some("popup") => true,
++        Some("layerShell") => !layer_shell,
++        _ => false,
++    };
++    match display {
++        Some(display) if popup && (options.x.is_none() || options.y.is_none()) => gpui::Bounds {
++            origin: gpui::point(
++                display.origin.x + (display.size.width - bounds.size.width) * 0.5,
++                display.origin.y + gpui::px(options.layer_margin_top.unwrap_or(160.0) as f32),
++            ),
++            size: bounds.size,
++        },
++        _ => bounds,
++    }
++}
++
++/// No compositor picks an output on X11: a placed popup moves to the monitor under
++/// the pointer each time it opens or shows, as layer surfaces follow the active output.
++#[cfg(target_os = "linux")]
++fn place_x11_popup(window: &gpui::Window, options: &WindowOptions) {
++    use x11rb::connection::Connection as _;
++    use x11rb::protocol::xproto::{ConfigureWindowAux, ConnectionExt as _};
++
++    let Some((xcb, x_window)) = x11_connection(window) else {
++        return;
++    };
++    let (root, monitors) = x11_monitors(&xcb, x_window);
++    let pointer = root
++        .and_then(|root| xcb.query_pointer(root).ok())
++        .and_then(|cookie| cookie.reply().ok())
++        .map(|reply| (i32::from(reply.root_x), i32::from(reply.root_y)));
++    let Some(monitor) = pick_x11_monitor(&monitors, pointer) else {
++        return;
++    };
++    let scale = window.scale_factor();
++    let logical = |value: i32| gpui::px(value as f32 / scale);
++    let display = gpui::Bounds {
++        origin: gpui::point(logical(monitor.x), logical(monitor.y)),
++        size: gpui::size(logical(monitor.width), logical(monitor.height)),
++    };
++    let current = window.bounds();
++    let placed = popup_bounds(options, current, Some(display), false);
++    if placed.origin == current.origin {
++        return;
++    }
++    let physical = |value: gpui::Pixels| (f32::from(value) * scale).round() as i32;
++    xcb.configure_window(x_window, &ConfigureWindowAux::new().x(physical(placed.origin.x)).y(physical(placed.origin.y)))
++        .map(|cookie| cookie.ignore_error())
++        .ok();
++    xcb.flush().ok();
++}
++
+ #[cfg(test)]
+ mod window_options_tests {
+     use super::*;
+@@ -2695,6 +2771,62 @@ mod window_options_tests {
+         assert!(layer_shell_fallback(&layer_shell, &other).is_none());
+         assert!(layer_shell_fallback(&WindowOptions::default(), &unsupported).is_none());
+     }
++
++    #[cfg(target_os = "linux")]
++    #[test]
++    fn x11_popups_open_where_the_layer_surface_would() {
++        let px = |value: f32| gpui::px(value);
++        let centered = gpui::Bounds {
++            origin: gpui::point(px(440.0), px(372.0)),
++            size: gpui::size(px(600.0), px(56.0)),
++        };
++        let display = Some(gpui::Bounds {
++            origin: gpui::point(px(1280.0), px(0.0)),
++            size: gpui::size(px(1280.0), px(800.0)),
++        });
++        let with = |kind: &str, margin: Option<f64>| WindowOptions {
++            kind: Some(kind.to_string()),
++            layer_margin_top: margin,
++            ..WindowOptions::default()
++        };
++
++        let placed = popup_bounds(&with("layerShell", Some(120.0)), centered, display, false);
++        assert_eq!(placed.origin, gpui::point(px(1620.0), px(120.0)));
++        assert_eq!(placed.size, centered.size);
++        let placed = popup_bounds(&with("popup", None), centered, display, false);
++        assert_eq!(placed.origin, gpui::point(px(1620.0), px(160.0)));
++
++        assert_eq!(popup_bounds(&with("layerShell", None), centered, display, true), centered);
++        assert_eq!(popup_bounds(&WindowOptions::default(), centered, display, false), centered);
++        assert_eq!(popup_bounds(&with("popup", None), centered, None, false), centered);
++        let explicit = WindowOptions { x: Some(5.0), y: Some(6.0), ..with("popup", None) };
++        assert_eq!(popup_bounds(&explicit, centered, display, false), centered);
++    }
++
++    #[cfg(target_os = "linux")]
++    #[test]
++    fn x11_popups_open_on_the_monitor_under_the_pointer() {
++        let monitor = |x: i32, width: i32, height: i32, primary: bool| X11Monitor { x, y: 0, width, height, primary };
++        let (left, right) = (monitor(0, 1280, 800, true), monitor(1280, 1024, 600, false));
++        let both = [left, right];
++
++        assert_eq!(pick_x11_monitor(&both, Some((1500, 100))), Some(right));
++        assert_eq!(pick_x11_monitor(&both, Some((1279, 799))), Some(left));
++        assert_eq!(pick_x11_monitor(&both, Some((1500, 700))), Some(left), "off every monitor: the primary");
++        assert_eq!(pick_x11_monitor(&both, None), Some(left));
++        assert_eq!(pick_x11_monitor(&[right, monitor(2304, 800, 600, false)], None), Some(right), "no primary: the first");
++        assert_eq!(pick_x11_monitor(&[], Some((0, 0))), None);
++
++        let px = |value: f32| gpui::px(value);
++        let launcher = gpui::Bounds { origin: gpui::point(px(0.0), px(0.0)), size: gpui::size(px(600.0), px(56.0)) };
++        let display = gpui::Bounds {
++            origin: gpui::point(px(right.x as f32), px(right.y as f32)),
++            size: gpui::size(px(right.width as f32), px(right.height as f32)),
++        };
++        let popup = WindowOptions { kind: Some("popup".to_string()), ..WindowOptions::default() };
++        let placed = popup_bounds(&popup, launcher, Some(display), false);
++        assert_eq!(placed.origin, gpui::point(px(1492.0), px(160.0)));
++    }
+ }
+ 
+ #[cfg(test)]

@@ -1,0 +1,261 @@
+diff --git a/crates/gpui-core/src/custom_elements/input.rs b/crates/gpui-core/src/custom_elements/input.rs
+index 53657e667dd5d5a20ecb8287aee99a911346163a..e33d8bdde6fe1b47cbc8c4508b85d9aca0d33122 100644
+--- a/crates/gpui-core/src/custom_elements/input.rs
++++ b/crates/gpui-core/src/custom_elements/input.rs
+@@ -20,10 +20,11 @@ use std::time::Duration;
+ 
+ use gpui::{
+     App, Bounds, ClipboardItem, Context, CursorStyle, DispatchPhase, ElementInputHandler, Entity,
+-    EntityInputHandler, FocusHandle, GlobalElementId, KeyBinding, LayoutId, MouseButton,
+-    MouseDownEvent, MouseMoveEvent, MouseUpEvent, PaintQuad, Pixels, Point, ScrollWheelEvent,
+-    SharedString, Style, Task, TextRun, TextStyle, UTF16Selection, UnderlineStyle, Window,
+-    WrappedLine, actions, div, fill, point, prelude::*, px, relative, size,
++    EntityInputHandler, FocusHandle, GlobalElementId, KeyBinding, KeyBindingContextPredicate,
++    KeyContext, Keystroke, LayoutId, Modifiers, MouseButton, MouseDownEvent, MouseMoveEvent,
++    MouseUpEvent, PaintQuad, Pixels, Point, ScrollWheelEvent, SharedString, Style, Subscription,
++    Task, TextRun, TextStyle, UTF16Selection, UnderlineStyle, Window, WrappedLine, actions, div,
++    fill, point, prelude::*, px, relative, size,
+ };
+ use unicode_segmentation::UnicodeSegmentation;
+ use web_time::Instant;
+@@ -321,9 +322,44 @@ struct TextEditorElement {
+     max_rows: usize,
+     last_prop_value: Option<String>,
+     theme: Theme,
++    key_capture: KeyCapture,
+     state: Option<Entity<TextEditorState>>,
+ }
+ 
++/// `captureKeys`: key-downs the focused editor keeps from ancestor bindings and listeners.
++#[derive(Clone, Default, PartialEq)]
++enum KeyCapture {
++    #[default]
++    None,
++    All,
++    Keys(Vec<Keystroke>),
++}
++
++impl KeyCapture {
++    fn from_prop(value: &serde_json::Value) -> Self {
++        match value {
++            serde_json::Value::String(all) if all == "all" => Self::All,
++            serde_json::Value::Array(keys) => Self::Keys(
++                keys.iter()
++                    .filter_map(serde_json::Value::as_str)
++                    .filter_map(|key| Keystroke::parse(key).ok())
++                    .collect(),
++            ),
++            _ => Self::None,
++        }
++    }
++
++    fn captures(&self, keystroke: &Keystroke) -> bool {
++        match self {
++            Self::None => false,
++            Self::All => true,
++            Self::Keys(keys) => keys
++                .iter()
++                .any(|key| key.key == keystroke.key && key.modifiers == keystroke.modifiers),
++        }
++    }
++}
++
+ impl TextEditorElement {
+     fn new(multiline: bool) -> Self {
+         Self {
+@@ -335,6 +371,7 @@ impl TextEditorElement {
+             max_rows: if multiline { 10 } else { 1 },
+             last_prop_value: None,
+             theme: Theme::dark(),
++            key_capture: KeyCapture::None,
+             state: None,
+         }
+     }
+@@ -414,6 +451,8 @@ impl CustomElement for TextEditorElement {
+                     undo_stack: VecDeque::new(),
+                     redo_stack: VecDeque::new(),
+                     last_edit: None,
++                    key_capture: KeyCapture::None,
++                    key_capture_subscription: None,
+                 })
+             })
+             .clone();
+@@ -439,6 +478,7 @@ impl CustomElement for TextEditorElement {
+             if prop_changed {
+                 state.sync_prop_value(self.value.clone(), cx);
+             }
++            state.set_key_capture(self.key_capture.clone(), cx);
+         });
+         self.last_prop_value = Some(self.value.clone());
+ 
+@@ -528,6 +568,7 @@ impl CustomElement for TextEditorElement {
+                     as usize;
+             }
+             "theme" => self.theme = Theme::from_prop(Some(&value)),
++            "captureKeys" => self.key_capture = KeyCapture::from_prop(&value),
+             _ => {}
+         }
+     }
+@@ -540,6 +581,7 @@ impl CustomElement for TextEditorElement {
+             "minRows",
+             "maxRows",
+             "theme",
++            "captureKeys",
+         ]
+     }
+ 
+@@ -683,9 +725,68 @@ struct TextEditorState {
+     undo_stack: VecDeque<EditSnapshot>,
+     redo_stack: VecDeque<EditSnapshot>,
+     last_edit: Option<LastEdit>,
++    key_capture: KeyCapture,
++    key_capture_subscription: Option<Subscription>,
+ }
+ 
+ impl TextEditorState {
++    fn key_context(&self) -> &'static str {
++        if !self.multiline {
++            INPUT_KEY_CONTEXT
++        } else if self.emits_submit {
++            TEXTAREA_SUBMIT_KEY_CONTEXT
++        } else {
++            TEXTAREA_KEY_CONTEXT
++        }
++    }
++
++    fn set_key_capture(&mut self, capture: KeyCapture, cx: &mut Context<Self>) {
++        if self.key_capture == capture {
++            return;
++        }
++        self.key_capture = capture;
++        self.key_capture_subscription = (self.key_capture != KeyCapture::None).then(|| {
++            let state = cx.weak_entity();
++            // Interceptors run before key bindings, so a window-root binding (Tab: focus next)
++            // cannot claim the key first.
++            cx.intercept_keystrokes(move |event, window, cx| {
++                if let Some(state) = state.upgrade() {
++                    Self::capture_key_down(&state, &event.keystroke, window, cx);
++                }
++            })
++        });
++    }
++
++    fn capture_key_down(
++        state: &Entity<Self>,
++        keystroke: &Keystroke,
++        window: &mut Window,
++        cx: &mut App,
++    ) {
++        let editor = state.read(cx);
++        if !editor.key_capture.captures(keystroke) || !editor.focus_handle.is_focused(window) {
++            return;
++        }
++        if editor.emits_key_down {
++            emit_key_down(&editor.callback, editor.element_id, keystroke, None);
++        }
++        let focus_handle = editor.focus_handle.clone();
++        let own_binding = own_binding(editor.key_context(), keystroke, cx);
++        // Stopped keys skip GPUI's binding dispatch and text fallback, so replay the editor's own;
++        // control characters (Tab's "\t") are left to the key-down handler.
++        if let Some(action) = own_binding {
++            focus_handle.dispatch_action(action.as_ref(), window, cx);
++        } else if keystroke.modifiers.is_subset_of(&Modifiers::shift())
++            && let Some(text) = keystroke.key_char.clone()
++            && !text.chars().any(char::is_control)
++        {
++            state.update(cx, |editor, cx| {
++                editor.replace_text_in_range(None, &text, window, cx);
++            });
++        }
++        cx.stop_propagation();
++    }
++
+     fn reset_blink(&mut self, cx: &Context<Self>) {
+         self.blink_anchor = cx.background_executor().now();
+     }
+@@ -1665,13 +1766,7 @@ impl gpui::Render for TextEditorState {
+         let key_up_callback = self.callback.clone();
+         let element_id = self.element_id;
+         div()
+-            .key_context(if !self.multiline {
+-                INPUT_KEY_CONTEXT
+-            } else if self.emits_submit {
+-                TEXTAREA_SUBMIT_KEY_CONTEXT
+-            } else {
+-                TEXTAREA_KEY_CONTEXT
+-            })
++            .key_context(self.key_context())
+             .track_focus(&self.focus_handle)
+             .cursor(CursorStyle::IBeam)
+             .on_action(cx.listener(Self::backspace))
+@@ -1714,12 +1809,12 @@ impl gpui::Render for TextEditorState {
+             .on_scroll_wheel(cx.listener(Self::on_scroll_wheel))
+             .when(self.emits_key_down, move |editor| {
+                 editor.on_key_down(move |event, _window, _cx| {
+-                    emit_event_full(&key_down_callback, element_id, "keyDown", |payload| {
+-                        payload.key = Some(event.keystroke.key.clone());
+-                        payload.key_char.clone_from(&event.keystroke.key_char);
+-                        payload.is_held = Some(event.is_held);
+-                        payload.modifiers = Some(event.keystroke.modifiers.into());
+-                    });
++                    emit_key_down(
++                        &key_down_callback,
++                        element_id,
++                        &event.keystroke,
++                        Some(event.is_held),
++                    );
+                 })
+             })
+             .when(self.emits_key_up, move |editor| {
+@@ -1741,6 +1836,34 @@ impl gpui::Render for TextEditorState {
+     }
+ }
+ 
++fn emit_key_down(
++    callback: &Option<EventCallback>,
++    element_id: u64,
++    keystroke: &Keystroke,
++    is_held: Option<bool>,
++) {
++    emit_event_full(callback, element_id, "keyDown", |payload| {
++        payload.key = Some(keystroke.key.clone());
++        payload.key_char.clone_from(&keystroke.key_char);
++        payload.is_held = is_held;
++        payload.modifiers = Some(keystroke.modifiers.into());
++    });
++}
++
++/// The editor's own binding for `keystroke`, ignoring bindings of ancestor contexts.
++fn own_binding(context: &str, keystroke: &Keystroke, cx: &App) -> Option<Box<dyn gpui::Action>> {
++    let predicate = KeyBindingContextPredicate::parse(context).ok()?;
++    let context = KeyContext::parse(context).ok()?;
++    let (bindings, _) = cx
++        .key_bindings()
++        .borrow()
++        .bindings_for_input(std::slice::from_ref(keystroke), &[context]);
++    bindings
++        .into_iter()
++        .find(|binding| binding.predicate().is_some_and(|own| *own == predicate))
++        .map(|binding| binding.action().boxed_clone())
++}
++
+ struct EditorTextElement {
+     input: Entity<TextEditorState>,
+     min_rows: usize,
+diff --git a/packages/runtime/src/types.ts b/packages/runtime/src/types.ts
+index 1740abbbc037f94e6d78f31a5684cbf18452c0a8..001950a29a6e08ff8109adedd59eac354069ead6 100644
+--- a/packages/runtime/src/types.ts
++++ b/packages/runtime/src/types.ts
+@@ -387,6 +387,12 @@ export interface InputProps extends HostProps {
+   placeholder?: string
+   readOnly?: boolean
+   theme?: GpuiTheme
++  /**
++   * Key-downs kept from ancestor and window bindings (e.g. Tab focus navigation) while the
++   * editor is focused; they still reach `onKeyDown`. Keystrokes use the binding syntax
++   * (`"tab"`, `"shift-tab"`, `"ctrl-n"`); `"all"` captures every key-down.
++   */
++  captureKeys?: string[] | "all"
+ }
+ 
+ export interface TextareaProps extends InputProps {

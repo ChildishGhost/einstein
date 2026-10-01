@@ -1,0 +1,1003 @@
+diff --git a/Cargo.lock b/Cargo.lock
+index 4d64651f37359dcae04bd5cf8319cf69b2b60711..959f7a55288f2b9485e0b50fb3e6d9bd59f5ff58 100644
+--- a/Cargo.lock
++++ b/Cargo.lock
+@@ -2385,6 +2385,23 @@ version = "0.3.4"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "e4eba85ea1d0a966a983acd07deee566e67395d2d96b6fb39e62b5a833f1eb0b"
+ 
++[[package]]
++name = "global-hotkey"
++version = "0.8.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "8c386b0a4a70cb2d39fffd74480f985b6f0bfbcb934b6a6b6b7e630e448f242e"
++dependencies = [
++ "crossbeam-channel",
++ "keyboard-types",
++ "objc2 0.6.4",
++ "objc2-app-kit 0.3.2",
++ "once_cell",
++ "thiserror 2.0.20",
++ "windows-sys 0.59.0",
++ "x11rb",
++ "xkeysym",
++]
++
+ [[package]]
+ name = "globset"
+ version = "0.4.20"
+@@ -2625,6 +2642,7 @@ dependencies = [
+ name = "gpui-core"
+ version = "0.2.0"
+ dependencies = [
++ "ashpd",
+  "base64",
+  "chrono",
+  "csscolorparser",
+@@ -2632,6 +2650,7 @@ dependencies = [
+  "event-listener",
+  "foreign-types",
+  "futures",
++ "global-hotkey",
+  "gpui",
+  "gpui-base",
+  "gpui-component",
+@@ -3735,6 +3754,17 @@ dependencies = [
+  "wasm-bindgen",
+ ]
+ 
++[[package]]
++name = "keyboard-types"
++version = "0.7.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "b750dcadc39a09dbadd74e118f6dd6598df77fa01df0cfcdc52c28dece74528a"
++dependencies = [
++ "bitflags 2.13.1",
++ "serde",
++ "unicode-segmentation",
++]
++
+ [[package]]
+ name = "khronos-egl"
+ version = "6.0.0"
+diff --git a/crates/gpui-core/Cargo.toml b/crates/gpui-core/Cargo.toml
+index 3845e4ef07210d2770ca2eb24d280e50177afb85..8f9450c74acb23f02b1765d9d9774e623569ec4a 100644
+--- a/crates/gpui-core/Cargo.toml
++++ b/crates/gpui-core/Cargo.toml
+@@ -50,6 +50,14 @@ napi-derive = "3"
+ syntect = { version = "5.3", default-features = false, features = ["regex-onig"] }
+ two-face = { version = "0.5.2", default-features = false, features = ["syntect-onig"] }
+ 
++# Global shortcuts: the XDG GlobalShortcuts portal on Wayland (same ashpd
++# executor setup as GPUI), OS hotkey APIs elsewhere.
++[target.'cfg(target_os = "linux")'.dependencies]
++ashpd = { version = "0.13", default-features = false, features = ["async-io", "global_shortcuts"] }
++
++[target.'cfg(any(target_os = "linux", target_os = "macos", target_os = "windows"))'.dependencies]
++global-hotkey = "0.8"
++
+ [target.'cfg(target_family = "wasm")'.dependencies]
+ syntect = { version = "5.3", default-features = false, features = ["regex-fancy"] }
+ two-face = { version = "0.5.2", default-features = false, features = ["syntect-fancy"] }
+diff --git a/crates/gpui-core/src/element_tree.rs b/crates/gpui-core/src/element_tree.rs
+index 0548f2a60f61aff98c623eb9e5b5d14fafd45b67..96a51cfb43c5018c7dceb5500b1a2530dc471c96 100644
+--- a/crates/gpui-core/src/element_tree.rs
++++ b/crates/gpui-core/src/element_tree.rs
+@@ -14,15 +14,8 @@
+ use napi_derive::napi;
+ 
+ /// Event payload sent back to JS when a user interacts with an element.
+-#[derive(Debug, Clone)]
+-#[cfg_attr(
+-    all(target_arch = "wasm32", target_os = "unknown"),
+-    derive(serde::Serialize)
+-)]
+-#[cfg_attr(
+-    all(target_arch = "wasm32", target_os = "unknown"),
+-    serde(rename_all = "camelCase")
+-)]
++#[derive(Debug, Clone, serde::Serialize)]
++#[serde(rename_all = "camelCase")]
+ #[cfg_attr(not(all(target_arch = "wasm32", target_os = "unknown")), napi(object))]
+ pub struct EventPayload {
+     /// Numeric element ID (matches the ID assigned in JS via createElement).
+@@ -159,10 +152,7 @@ impl Default for EventPayload {
+ }
+ 
+ #[derive(Debug, Clone)]
+-#[cfg_attr(
+-    all(target_arch = "wasm32", target_os = "unknown"),
+-    derive(serde::Serialize)
+-)]
++#[derive(serde::Serialize)]
+ #[cfg_attr(not(all(target_arch = "wasm32", target_os = "unknown")), napi(object))]
+ #[derive(Default)]
+ #[allow(
+@@ -182,14 +172,8 @@ pub struct EventModifiers {
+ /// soft-wraps must produce one box per visual row. Without the geometry the only
+ /// way to assert either is a screenshot.
+ #[derive(Debug, Clone)]
+-#[cfg_attr(
+-    all(target_arch = "wasm32", target_os = "unknown"),
+-    derive(serde::Serialize)
+-)]
+-#[cfg_attr(
+-    all(target_arch = "wasm32", target_os = "unknown"),
+-    serde(rename_all = "camelCase")
+-)]
++#[derive(serde::Serialize)]
++#[serde(rename_all = "camelCase")]
+ #[cfg_attr(not(all(target_arch = "wasm32", target_os = "unknown")), napi(object))]
+ pub struct HighlightMatch {
+     /// Numeric id of the element that painted the run.
+@@ -206,10 +190,7 @@ pub struct HighlightMatch {
+ }
+ 
+ #[derive(Debug, Clone)]
+-#[cfg_attr(
+-    all(target_arch = "wasm32", target_os = "unknown"),
+-    derive(serde::Serialize)
+-)]
++#[derive(serde::Serialize)]
+ #[cfg_attr(not(all(target_arch = "wasm32", target_os = "unknown")), napi(object))]
+ pub struct HighlightRect {
+     pub x: f64,
+diff --git a/crates/gpui-core/src/kit/mod.rs b/crates/gpui-core/src/kit/mod.rs
+index 55f23d262086cfc3787c7922f84b3e0baa219934..0ebcf040eb75a868356f43aa6261e9ad918d185e 100644
+--- a/crates/gpui-core/src/kit/mod.rs
++++ b/crates/gpui-core/src/kit/mod.rs
+@@ -78,8 +78,19 @@ pub(crate) fn wrap(
+     view: Entity<GpuiView>,
+     window: &mut Window,
+     cx: &mut gpui::App,
++    transparent: bool,
+ ) -> Entity<Root> {
+-    cx.new(|cx| Root::new(view, window, cx).bordered(false))
++    cx.new(|cx| {
++        let root = Root::new(view, window, cx).bordered(false);
++        // Root paints the theme background under everything. For transparent
++        // or blurred windows that shows up as opaque corners around rounded
++        // app chrome and as blank bands while the window is being resized.
++        if transparent {
++            gpui::Styled::bg(root, gpui::transparent_black())
++        } else {
++            root
++        }
++    })
+ }
+ 
+ pub(crate) fn init(cx: &mut gpui::App) {
+diff --git a/crates/gpui-core/src/lib.rs b/crates/gpui-core/src/lib.rs
+index d43196c44434720f6c705ca5705fb90027d070a7..838ca54cca355f7ed6156741f87ab3aeb0fe6fd3 100644
+--- a/crates/gpui-core/src/lib.rs
++++ b/crates/gpui-core/src/lib.rs
+@@ -18,6 +18,8 @@ mod gpu_binding;
+ #[cfg(not(target_family = "wasm"))]
+ pub use gpu_binding::{NativeWgpuAdapter, NativeWgpuDevice, request_wgpu_adapter};
+ mod gpu_canvas;
++#[cfg(any(target_os = "linux", target_os = "macos", target_os = "windows"))]
++mod global_shortcut;
+ mod kit;
+ mod markdown;
+ mod motion;
+diff --git a/crates/gpui-core/src/renderer.rs b/crates/gpui-core/src/renderer.rs
+index 8a70138738301ce8bc5c0fd320909641717703b2..aa14c651eb665f053fb21bf42377264fe25447d3 100644
+--- a/crates/gpui-core/src/renderer.rs
++++ b/crates/gpui-core/src/renderer.rs
+@@ -515,6 +515,11 @@ enum UiCommand {
+         response: SyncSender<std::result::Result<(), String>>,
+     },
+     Blur,
++    SetWindowSize {
++        width: f32,
++        height: f32,
++    },
++    StartWindowMove,
+ }
+ 
+ #[cfg(any(target_os = "windows", target_os = "linux", target_os = "freebsd"))]
+@@ -526,6 +531,8 @@ struct OpenWindowRequest {
+     selection: SharedSelection,
+     clock: crate::automation::AutomationClock,
+     initialized: Arc<Mutex<bool>>,
++    /// Set while `hide_window()` closes the window: the renderer stays alive.
++    hiding: Arc<std::sync::atomic::AtomicBool>,
+     commands: mpsc::UnboundedReceiver<UiCommand>,
+     response: SyncSender<std::result::Result<(), String>>,
+ }
+@@ -644,6 +651,7 @@ async fn run_threaded_app_commands(
+                     selection,
+                     clock,
+                     initialized,
++                    hiding,
+                     commands,
+                     response,
+                 } = request;
+@@ -663,17 +671,42 @@ async fn run_threaded_app_commands(
+                         .open_window(
+                             to_gpui_window_options(&window_options, bounds),
+                             |window, cx| {
+-                                let view = cx.new(|_| {
++                                let events = callback.clone();
++                                let view = cx.new(|cx| {
++                                    // Focus and geometry changes, for launcher-style hosts.
++                                    let activation = events.clone();
++                                    cx.observe_window_activation(window, move |_view, window, _cx| {
++                                        let kind = if window.is_window_active() { "windowFocus" } else { "windowBlur" };
++                                        emit_event_full(&activation, 0, kind, |_| {});
++                                    })
++                                    .detach();
++                                    let moved = events.clone();
++                                    cx.observe_window_bounds(window, move |_view, window, _cx| {
++                                        let bounds = window.bounds();
++                                        emit_event_full(&moved, 0, "windowMove", |payload| {
++                                            payload.x = Some(f64::from(f32::from(bounds.origin.x)));
++                                            payload.y = Some(f64::from(f32::from(bounds.origin.y)));
++                                            payload.width = Some(f64::from(f32::from(bounds.size.width)));
++                                            payload.height = Some(f64::from(f32::from(bounds.size.height)));
++                                        });
++                                    })
++                                    .detach();
+                                     GpuiView::new(tree, callback, title, selection, clock)
+                                 });
+-                                crate::kit::wrap(view, window, cx)
++                                crate::kit::wrap(view, window, cx, wants_transparent_root(&window_options))
+                             },
+                         )
+                         .map(crate::kit::NativeWindow::new)
+                         .map_err(|error| format!("Failed to open the GPUI window: {error}"))?;
+                     let window_id = window.window_id();
+                     cx.on_window_closed(move |_cx, closed_id| {
+-                        if closed_id == window_id {
++                        if closed_id != window_id {
++                            return;
++                        }
++                        if hiding.swap(false, std::sync::atomic::Ordering::AcqRel) {
++                            // Hidden, not closed: the retained tree lives on for showWindow().
++                            emit_event_full(&callback_for_close, 0, "windowHide", |_| {});
++                        } else {
+                             *initialized_for_close.lock() = false;
+                             emit_event_full(&callback_for_close, 0, "windowClose", |_| {});
+                         }
+@@ -1033,6 +1066,10 @@ async fn run_ui_commands(
+                 result
+             }
+             UiCommand::Blur => window.update(cx, |_view, window, _cx| window.blur()),
++            UiCommand::SetWindowSize { width, height } => window.update(cx, move |_view, window, _cx| {
++                window.resize(gpui::size(gpui::px(width), gpui::px(height)));
++            }),
++            UiCommand::StartWindowMove => window.update(cx, |_view, window, _cx| window.start_window_move()),
+         };
+         if let Err(error) = result {
+             log::error!("Failed to handle GPUI UI command: {error:#}");
+@@ -2178,6 +2215,21 @@ pub struct WindowOptions {
+     /// Show the window when it opens. Call `activateWindow()` to reveal it.
+     /// Ignored by GPUI on Linux.
+     pub show: Option<bool>,
++    /// `"normal"` (default) | `"popup"` (above other windows, no taskbar entry)
++    /// | `"floating"` | `"layerShell"` (Wayland overlay surface, for launchers;
++    /// falls back to `"popup"` elsewhere).
++    pub kind: Option<String>,
++    /// `"server"` (default) | `"client"` (no native frame; the app draws its own).
++    pub decorations: Option<String>,
++    /// Explicit window origin. Ignored by Wayland compositors, which place windows themselves.
++    pub x: Option<f64>,
++    pub y: Option<f64>,
++    /// Wayland app_id / X11 WM_CLASS; also the layer-shell namespace.
++    pub app_id: Option<String>,
++    /// `layerShell`: distance from the top edge of the output (default 160).
++    pub layer_margin_top: Option<f64>,
++    /// `layerShell`: `"onDemand"` (default; focus follows clicks) | `"exclusive"`.
++    pub layer_keyboard: Option<String>,
+ }
+ 
+ impl Default for WindowOptions {
+@@ -2199,6 +2251,13 @@ impl Default for WindowOptions {
+             traffic_light_y: None,
+             focus: Some(true),
+             show: Some(true),
++            kind: None,
++            decorations: None,
++            x: None,
++            y: None,
++            app_id: None,
++            layer_margin_top: None,
++            layer_keyboard: None,
+         }
+     }
+ }
+@@ -2229,6 +2288,44 @@ fn to_gpui_window_options(
+         }
+         _ => None,
+     };
++    let bounds = match (options.x, options.y) {
++        (Some(x), Some(y)) => gpui::Bounds {
++            origin: gpui::point(gpui::px(x as f32), gpui::px(y as f32)),
++            size: bounds.size,
++        },
++        _ => bounds,
++    };
++    let kind = match options.kind.as_deref() {
++        #[cfg(target_os = "linux")]
++        Some("layerShell") if is_wayland_session() => {
++            use gpui::layer_shell::{Anchor, KeyboardInteractivity, Layer, LayerShellOptions};
++            gpui::WindowKind::LayerShell(LayerShellOptions {
++                namespace: options.app_id.clone().unwrap_or_else(|| "gpui-native".to_string()),
++                layer: Layer::Overlay,
++                anchor: Anchor::TOP,
++                margin: Some((
++                    gpui::px(options.layer_margin_top.unwrap_or(160.0) as f32),
++                    gpui::px(0.0),
++                    gpui::px(0.0),
++                    gpui::px(0.0),
++                )),
++                keyboard_interactivity: if options.layer_keyboard.as_deref() == Some("exclusive") {
++                    KeyboardInteractivity::Exclusive
++                } else {
++                    KeyboardInteractivity::OnDemand
++                },
++                ..Default::default()
++            })
++        }
++        Some("popup" | "layerShell") => gpui::WindowKind::PopUp,
++        Some("floating") => gpui::WindowKind::Floating,
++        _ => gpui::WindowKind::Normal,
++    };
++    let window_decorations = match options.decorations.as_deref() {
++        Some("client") => Some(gpui::WindowDecorations::Client),
++        Some("server") => Some(gpui::WindowDecorations::Server),
++        _ => None,
++    };
+     let window_bounds = if options.fullscreen.unwrap_or(false) {
+         gpui::WindowBounds::Fullscreen(bounds)
+     } else {
+@@ -2246,10 +2343,25 @@ fn to_gpui_window_options(
+         window_min_size,
+         focus: options.focus.unwrap_or(true),
+         show: options.show.unwrap_or(true),
++        kind,
++        window_decorations,
++        app_id: options.app_id.clone(),
+         ..Default::default()
+     }
+ }
+ 
++/// Whether the app asked for a see-through window (then the kit root must not paint).
++pub(crate) fn wants_transparent_root(options: &WindowOptions) -> bool {
++    matches!(options.window_background.as_deref(), Some("transparent" | "blurred"))
++        || (options.window_background.is_none() && options.transparent.unwrap_or(false))
++}
++
++/// Layer-shell surfaces exist only on Wayland; X11 sessions get a popup instead.
++#[cfg(target_os = "linux")]
++fn is_wayland_session() -> bool {
++    std::env::var_os("WAYLAND_DISPLAY").is_some()
++}
++
+ #[cfg(test)]
+ mod window_options_tests {
+     use super::*;
+diff --git a/crates/gpui-core/src/renderer/api.rs b/crates/gpui-core/src/renderer/api.rs
+index b086499096aa3b047d3db85c8855c96b42539a88..382b161f19f4e722434c1845a788dbeb8dac92a4 100644
+--- a/crates/gpui-core/src/renderer/api.rs
++++ b/crates/gpui-core/src/renderer/api.rs
+@@ -31,10 +31,31 @@ pub struct GpuiRenderer {
+     selection: SharedSelection,
+     #[cfg(any(target_os = "windows", target_os = "linux", target_os = "freebsd"))]
+     pub(super) ui_commands: Mutex<Option<mpsc::UnboundedSender<UiCommand>>>,
++    /// hide_window()/show_window(): the window is closed and reopened around
++    /// the same retained tree, so app state survives while hidden.
++    #[cfg(any(target_os = "windows", target_os = "linux", target_os = "freebsd"))]
++    pub(super) hiding: Arc<std::sync::atomic::AtomicBool>,
++    #[cfg(any(target_os = "windows", target_os = "linux", target_os = "freebsd"))]
++    pub(super) visible: Arc<std::sync::atomic::AtomicBool>,
++    #[cfg(any(target_os = "windows", target_os = "linux", target_os = "freebsd"))]
++    reopen: Mutex<Option<(Option<EventCallback>, WindowOptions)>>,
++    #[cfg(any(target_os = "linux", target_os = "macos", target_os = "windows"))]
++    global_shortcuts: Mutex<crate::global_shortcut::GlobalShortcuts>,
+     #[cfg(target_family = "wasm")]
+     pub(super) web_renderer_id: u64,
+ }
+ 
++/// Constructor for hosts that are not Node (e.g. a C ABI embedding): events are
++/// delivered to a plain Rust closure instead of an N-API threadsafe function.
++#[cfg(not(target_family = "wasm"))]
++impl GpuiRenderer {
++    pub fn with_event_callback(callback: impl Fn(EventPayload) + Send + Sync + 'static) -> Self {
++        let renderer = Self::new(None);
++        *renderer.event_callback.lock() = Some(Arc::new(callback));
++        renderer
++    }
++}
++
+ #[cfg_attr(not(target_family = "wasm"), napi)]
+ impl GpuiRenderer {
+     #[cfg_attr(
+@@ -65,6 +86,14 @@ impl GpuiRenderer {
+             selection: SharedSelection::default(),
+             #[cfg(any(target_os = "windows", target_os = "linux", target_os = "freebsd"))]
+             ui_commands: Mutex::new(None),
++            #[cfg(any(target_os = "windows", target_os = "linux", target_os = "freebsd"))]
++            hiding: Arc::new(std::sync::atomic::AtomicBool::new(false)),
++            #[cfg(any(target_os = "windows", target_os = "linux", target_os = "freebsd"))]
++            visible: Arc::new(std::sync::atomic::AtomicBool::new(false)),
++            #[cfg(any(target_os = "windows", target_os = "linux", target_os = "freebsd"))]
++            reopen: Mutex::new(None),
++            #[cfg(any(target_os = "linux", target_os = "macos", target_os = "windows"))]
++            global_shortcuts: Mutex::new(crate::global_shortcut::GlobalShortcuts::new()),
+             #[cfg(target_family = "wasm")]
+             web_renderer_id: NEXT_WEB_RENDERER_ID.fetch_add(1, Ordering::Relaxed),
+         }
+@@ -318,7 +347,7 @@ impl GpuiRenderer {
+                     |window, cx| {
+                         let view =
+                             cx.new(|_| GpuiView::new(tree, callback, title, selection, clock));
+-                        crate::kit::wrap(view, window, cx)
++                        crate::kit::wrap(view, window, cx, wants_transparent_root(&window_options))
+                     },
+                 )
+                 .map(crate::kit::NativeWindow::new)
+@@ -429,7 +458,7 @@ impl GpuiRenderer {
+                                 clock.clone(),
+                             )
+                         });
+-                        crate::kit::wrap(view, window, cx)
++                        crate::kit::wrap(view, window, cx, wants_transparent_root(&window_options))
+                     },
+                 )
+                 .map(crate::kit::NativeWindow::new)
+@@ -496,7 +525,15 @@ impl GpuiRenderer {
+         if *self.initialized.lock() {
+             return Err(Error::from_reason("Renderer is already initialized"));
+         }
++        let callback = self.event_callback_for_view();
++        *self.reopen.lock() = Some((callback.clone(), options.clone()));
++        self.open_threaded_window(options, callback)?;
++        self.event_callback.lock().take();
++        Ok(())
++    }
+ 
++    #[cfg(any(target_os = "windows", target_os = "linux", target_os = "freebsd"))]
++    fn open_threaded_window(&self, options: WindowOptions, callback: Option<EventCallback>) -> Result<()> {
+         let title = options
+             .title
+             .clone()
+@@ -506,12 +543,13 @@ impl GpuiRenderer {
+         threaded_app_sender()?
+             .unbounded_send(ThreadedAppCommand::Open(OpenWindowRequest {
+                 tree: self.tree.clone(),
+-                callback: self.event_callback_for_view(),
++                callback,
+                 title,
+                 options,
+                 selection: self.selection.clone(),
+                 clock: self.clock.clone(),
+                 initialized: self.initialized.clone(),
++                hiding: self.hiding.clone(),
+                 commands: command_receiver,
+                 response: open_sender,
+             }))
+@@ -533,10 +571,147 @@ impl GpuiRenderer {
+         }
+ 
+         *self.ui_commands.lock() = Some(command_sender);
+-        self.event_callback.lock().take();
++        self.visible.store(true, std::sync::atomic::Ordering::Release);
+         Ok(())
+     }
+ 
++    // ── Window control (launcher-style hosts) ────────────────────────
++
++    /// Resize the window (content size in logical pixels). While hidden, the
++    /// size is remembered for the next `showWindow()`.
++    #[cfg_attr(not(target_family = "wasm"), napi)]
++    pub fn set_window_size(&self, width: f64, height: f64) -> Result<()> {
++        #[cfg(any(target_os = "windows", target_os = "linux", target_os = "freebsd"))]
++        {
++            if let Some((_, options)) = self.reopen.lock().as_mut() {
++                options.width = Some(width);
++                options.height = Some(height);
++            }
++            if !self.visible.load(std::sync::atomic::Ordering::Acquire) {
++                return Ok(());
++            }
++            return self.send_ui_command(UiCommand::SetWindowSize {
++                width: width as f32,
++                height: height as f32,
++            });
++        }
++        #[cfg(not(any(target_os = "windows", target_os = "linux", target_os = "freebsd")))]
++        {
++            let _ = (width, height);
++            Err(Error::from_reason("setWindowSize is not supported on this platform yet"))
++        }
++    }
++
++    /// Begin an interactive move (call from a mouse-down handler), for
++    /// windows without a native titlebar.
++    #[cfg_attr(not(target_family = "wasm"), napi)]
++    pub fn start_window_move(&self) -> Result<()> {
++        #[cfg(any(target_os = "windows", target_os = "linux", target_os = "freebsd"))]
++        return self.send_ui_command(UiCommand::StartWindowMove);
++        #[cfg(not(any(target_os = "windows", target_os = "linux", target_os = "freebsd")))]
++        Err(Error::from_reason("startWindowMove is not supported on this platform yet"))
++    }
++
++    /// Close the platform window but keep the renderer and its retained tree;
++    /// emits `windowHide`. `showWindow()` brings it back with the same state.
++    #[cfg_attr(not(target_family = "wasm"), napi)]
++    pub fn hide_window(&self) -> Result<()> {
++        #[cfg(any(target_os = "windows", target_os = "linux", target_os = "freebsd"))]
++        {
++            use std::sync::atomic::Ordering;
++            if !*self.initialized.lock() || !self.visible.load(Ordering::Acquire) {
++                return Ok(());
++            }
++            let Some(sender) = self.ui_commands.lock().take() else {
++                return Ok(());
++            };
++            self.hiding.store(true, Ordering::Release);
++            self.visible.store(false, Ordering::Release);
++            let (close_sender, close_receiver) = sync_channel(1);
++            sender
++                .unbounded_send(UiCommand::Close { response: close_sender })
++                .map_err(|_| Error::from_reason("The GPUI UI thread is not running"))?;
++            return match close_receiver.recv_timeout(Duration::from_secs(2)) {
++                Ok(result) => result.map_err(Error::from_reason),
++                Err(_) => Err(Error::from_reason("Timed out waiting for GPUI to hide the window")),
++            };
++        }
++        #[cfg(not(any(target_os = "windows", target_os = "linux", target_os = "freebsd")))]
++        Err(Error::from_reason("hideWindow is not supported on this platform yet"))
++    }
++
++    /// Reopen a hidden window (same tree, same options, remembered size) and
++    /// focus it; emits `windowShow`. Activates the window if already visible.
++    #[cfg_attr(not(target_family = "wasm"), napi)]
++    pub fn show_window(&self) -> Result<()> {
++        #[cfg(any(target_os = "windows", target_os = "linux", target_os = "freebsd"))]
++        {
++            if !*self.initialized.lock() {
++                return Err(Error::from_reason("Renderer not initialized. Call init() first."));
++            }
++            if self.visible.load(std::sync::atomic::Ordering::Acquire) {
++                return self.send_ui_command(UiCommand::ActivateWindow);
++            }
++            let Some((callback, options)) = self.reopen.lock().clone() else {
++                return Err(Error::from_reason("Nothing to show"));
++            };
++            self.open_threaded_window(options, callback.clone())?;
++            emit_event_full(&callback, 0, "windowShow", |_| {});
++            return Ok(());
++        }
++        #[cfg(not(any(target_os = "windows", target_os = "linux", target_os = "freebsd")))]
++        Err(Error::from_reason("showWindow is not supported on this platform yet"))
++    }
++
++    // ── Global shortcuts ─────────────────────────────────────────────
++
++    /// Register system-wide shortcuts (replacing any registered before).
++    /// `shortcuts_json`: `[{ "id", "accelerator": "Meta+Space", "description" }]`.
++    /// Wayland uses the GlobalShortcuts portal with `app_id` (reverse-DNS,
++    /// matching an installed `<app_id>.desktop`); elsewhere OS hotkey APIs.
++    /// Emits `globalShortcutStatus` (JSON) and `globalShortcut` (id) events.
++    #[cfg_attr(not(target_family = "wasm"), napi)]
++    pub fn register_global_shortcuts(&self, app_id: String, shortcuts_json: String) -> Result<()> {
++        #[cfg(any(target_os = "linux", target_os = "macos", target_os = "windows"))]
++        {
++            let shortcuts: Vec<crate::global_shortcut::ShortcutSpec> =
++                serde_json::from_str(&shortcuts_json).map_err(|e| Error::from_reason(e.to_string()))?;
++            // The view callback outlives init (it is kept for showWindow()).
++            #[cfg(any(target_os = "windows", target_os = "linux"))]
++            let callback = self.reopen.lock().as_ref().and_then(|(callback, _)| callback.clone());
++            #[cfg(target_os = "macos")]
++            let callback = self.event_callback_for_view();
++            self.global_shortcuts.lock().bind(app_id, shortcuts, callback);
++            return Ok(());
++        }
++        #[cfg(not(any(target_os = "linux", target_os = "macos", target_os = "windows")))]
++        {
++            let _ = (app_id, shortcuts_json);
++            Err(Error::from_reason("global shortcuts are not supported on this platform"))
++        }
++    }
++
++    /// Open the desktop's shortcut editor for our shortcuts (Wayland portal v2).
++    #[cfg_attr(not(target_family = "wasm"), napi)]
++    pub fn configure_global_shortcuts(&self) {
++        #[cfg(any(target_os = "linux", target_os = "macos", target_os = "windows"))]
++        self.global_shortcuts.lock().configure();
++    }
++
++    #[cfg_attr(not(target_family = "wasm"), napi)]
++    pub fn unregister_global_shortcuts(&self) {
++        #[cfg(any(target_os = "linux", target_os = "macos", target_os = "windows"))]
++        self.global_shortcuts.lock().stop();
++    }
++
++    #[cfg_attr(not(target_family = "wasm"), napi)]
++    pub fn is_window_visible(&self) -> bool {
++        #[cfg(any(target_os = "windows", target_os = "linux", target_os = "freebsd"))]
++        return self.visible.load(std::sync::atomic::Ordering::Acquire);
++        #[cfg(not(any(target_os = "windows", target_os = "linux", target_os = "freebsd")))]
++        *self.initialized.lock()
++    }
++
+     // ── Mutation API ─────────────────────────────────────────────────
+ 
+     #[cfg_attr(not(target_family = "wasm"), napi)]
+@@ -865,6 +1040,13 @@ impl GpuiRenderer {
+             }
+         }
+ 
++        #[cfg(any(target_os = "windows", target_os = "linux", target_os = "freebsd"))]
++        {
++            self.visible.store(false, std::sync::atomic::Ordering::Release);
++            self.reopen.lock().take();
++        }
++        #[cfg(any(target_os = "linux", target_os = "macos", target_os = "windows"))]
++        self.global_shortcuts.lock().stop();
+         *self.headless.lock() = false;
+         *self.initialized.lock() = false;
+         Ok(())
+diff --git a/crates/gpui-core/src/renderer/backend.rs b/crates/gpui-core/src/renderer/backend.rs
+index 86563f7d324637e7431d9e292773c80de356cb95..45e530510883765b879e55561b28f9214e15ed29 100644
+--- a/crates/gpui-core/src/renderer/backend.rs
++++ b/crates/gpui-core/src/renderer/backend.rs
+@@ -270,6 +270,12 @@ impl Backend for GpuiRenderer {
+         #[cfg(target_os = "macos")]
+         return invalidate_window();
+ 
++        // Hidden (hide_window): mutations still land in the retained tree and
++        // are painted when the window is shown again.
++        #[cfg(any(target_os = "windows", target_os = "linux", target_os = "freebsd"))]
++        if !self.visible.load(std::sync::atomic::Ordering::Acquire) && *self.initialized.lock() {
++            return Ok(());
++        }
+         #[cfg(any(target_os = "windows", target_os = "linux", target_os = "freebsd"))]
+         return self.send_ui_command(UiCommand::Invalidate);
+ 
+diff --git a/crates/gpui-core/src/global_shortcut.rs b/crates/gpui-core/src/global_shortcut.rs
+new file mode 100644
+--- /dev/null
++++ b/crates/gpui-core/src/global_shortcut.rs
+@@ -0,0 +1,339 @@
++//! Global (system-wide) shortcuts, registered at runtime.
++//!
++//! * Wayland: the XDG `GlobalShortcuts` portal. The app *requests* shortcuts;
++//!   the desktop (e.g. KDE) binds them, may ask the user, remembers the choice
++//!   per app id, and lets the user change the key in its own settings.
++//! * X11 / macOS / Windows: OS hotkey APIs via the `global-hotkey` crate
++//!   (XGrabKey / Carbon / RegisterHotKey).
++//!
++//! Results arrive through the renderer's event callback:
++//! `globalShortcut` (value = shortcut id) on activation, and
++//! `globalShortcutStatus` (value = JSON) when binding succeeds or fails.
++
++use std::sync::mpsc as std_mpsc;
++use std::thread;
++
++use crate::element_tree::EventPayload;
++use crate::renderer::EventCallback;
++
++#[derive(Clone, Debug, serde::Deserialize)]
++pub struct ShortcutSpec {
++    pub id: String,
++    /// "Meta+Space", "Ctrl+Alt+K", … (Meta/Super/Logo/Cmd are the same key).
++    pub accelerator: String,
++    pub description: String,
++}
++
++pub(crate) enum Command {
++    Bind(Vec<ShortcutSpec>),
++    Configure,
++    Stop,
++}
++
++pub(crate) struct GlobalShortcuts {
++    commands: Option<CommandSender>,
++}
++
++enum CommandSender {
++    #[cfg(target_os = "linux")]
++    Portal(futures::channel::mpsc::UnboundedSender<Command>),
++    #[cfg(any(target_os = "linux", target_os = "macos", target_os = "windows"))]
++    Hotkey(std_mpsc::Sender<Command>),
++}
++
++impl GlobalShortcuts {
++    pub(crate) fn new() -> Self {
++        Self { commands: None }
++    }
++
++    /// Replace the bound set with `shortcuts` (starting the backend lazily).
++    pub(crate) fn bind(&mut self, app_id: String, shortcuts: Vec<ShortcutSpec>, callback: Option<EventCallback>) {
++        if self.commands.is_none() {
++            self.commands = Some(start_backend(app_id, callback));
++        }
++        self.send(Command::Bind(shortcuts));
++    }
++
++    /// Open the desktop's own shortcut configuration (portal v2+).
++    pub(crate) fn configure(&self) {
++        self.send(Command::Configure);
++    }
++
++    pub(crate) fn stop(&mut self) {
++        self.send(Command::Stop);
++        self.commands = None;
++    }
++
++    fn send(&self, command: Command) {
++        match &self.commands {
++            #[cfg(target_os = "linux")]
++            Some(CommandSender::Portal(sender)) => {
++                sender.unbounded_send(command).ok();
++            }
++            #[cfg(any(target_os = "linux", target_os = "macos", target_os = "windows"))]
++            Some(CommandSender::Hotkey(sender)) => {
++                sender.send(command).ok();
++            }
++            _ => {}
++        }
++    }
++}
++
++fn emit(callback: &Option<EventCallback>, event_type: &str, value: String) {
++    if let Some(callback) = callback {
++        callback(EventPayload {
++            element_id: 0.0,
++            event_type: event_type.to_string(),
++            value: Some(value),
++            ..Default::default()
++        });
++    }
++}
++
++fn status(callback: &Option<EventCallback>, backend: &str, state: &str, detail: serde_json::Value) {
++    let mut value = serde_json::json!({ "backend": backend, "state": state });
++    if let (Some(object), serde_json::Value::Object(extra)) = (value.as_object_mut(), detail) {
++        object.extend(extra);
++    }
++    emit(callback, "globalShortcutStatus", value.to_string());
++}
++
++fn start_backend(app_id: String, callback: Option<EventCallback>) -> CommandSender {
++    #[cfg(target_os = "linux")]
++    if std::env::var_os("WAYLAND_DISPLAY").is_some() {
++        let (sender, receiver) = futures::channel::mpsc::unbounded();
++        thread::Builder::new()
++            .name("global-shortcuts-portal".into())
++            .spawn(move || futures::executor::block_on(portal::run(app_id, receiver, callback)))
++            .ok();
++        return CommandSender::Portal(sender);
++    }
++    let _ = &app_id;
++    let (sender, receiver) = std_mpsc::channel();
++    thread::Builder::new()
++        .name("global-shortcuts-hotkey".into())
++        .spawn(move || hotkey::run(receiver, callback))
++        .ok();
++    CommandSender::Hotkey(sender)
++}
++
++/// "Meta+Space" → XDG shortcuts-spec trigger "LOGO+space".
++#[cfg_attr(not(target_os = "linux"), allow(dead_code))]
++fn portal_trigger(accelerator: &str) -> String {
++    accelerator
++        .split('+')
++        .map(|part| match part.trim().to_ascii_lowercase().as_str() {
++            "meta" | "super" | "logo" | "cmd" | "command" | "win" => "LOGO".to_string(),
++            "ctrl" | "control" => "CTRL".to_string(),
++            "alt" | "option" => "ALT".to_string(),
++            "shift" => "SHIFT".to_string(),
++            key => key.to_string(),
++        })
++        .collect::<Vec<_>>()
++        .join("+")
++}
++
++#[cfg(target_os = "linux")]
++mod portal {
++    use ashpd::desktop::global_shortcuts::{BindShortcutsOptions, GlobalShortcuts, NewShortcut};
++    use futures::{FutureExt, StreamExt};
++
++    use super::{Command, EventCallback, ShortcutSpec, emit, portal_trigger, status};
++
++    pub(super) async fn run(
++        app_id: String,
++        mut commands: futures::channel::mpsc::UnboundedReceiver<Command>,
++        callback: Option<EventCallback>,
++    ) {
++        // Non-sandboxed apps must tell the portal who they are (matches the
++        // installed <app_id>.desktop file); the desktop stores bindings per id.
++        // That association is per D-Bus connection and must come first, and
++        // GPUI has already used the shared session connection for other
++        // portals — so shortcuts get a connection of their own.
++        let connection = match ashpd::zbus::connection::Builder::session() {
++            Ok(builder) => builder.build().await,
++            Err(error) => Err(error),
++        };
++        let connection = match connection {
++            Ok(connection) => connection,
++            Err(error) => {
++                status(&callback, "portal", "unavailable", serde_json::json!({ "error": error.to_string() }));
++                return;
++            }
++        };
++        match app_id.parse() {
++            Ok(id) => {
++                if let Err(error) = ashpd::register_host_app_with_connection(connection.clone(), id).await {
++                    status(&callback, "portal", "register-failed", serde_json::json!({ "appId": app_id, "error": error.to_string() }));
++                }
++            }
++            Err(error) => {
++                status(&callback, "portal", "register-failed", serde_json::json!({ "appId": app_id, "error": error.to_string() }));
++            }
++        }
++        let proxy = match GlobalShortcuts::with_connection(connection).await {
++            Ok(proxy) => proxy,
++            Err(error) => {
++                status(&callback, "portal", "unavailable", serde_json::json!({ "error": error.to_string() }));
++                return;
++            }
++        };
++        let mut activated = match proxy.receive_activated().await {
++            Ok(stream) => stream.fuse(),
++            Err(error) => {
++                status(&callback, "portal", "unavailable", serde_json::json!({ "error": error.to_string() }));
++                return;
++            }
++        };
++        let mut session = None;
++        loop {
++            futures::select! {
++                event = activated.next() => {
++                    let Some(event) = event else { break };
++                    emit(&callback, "globalShortcut", event.shortcut_id().to_string());
++                }
++                command = commands.next().fuse() => match command {
++                    Some(Command::Bind(shortcuts)) => {
++                        // A fresh session per bind: closing the old one releases its shortcuts.
++                        if let Some(old) = session.take() {
++                            let old: ashpd::desktop::Session<GlobalShortcuts> = old;
++                            old.close().await.ok();
++                        }
++                        session = bind(&proxy, &shortcuts, &callback).await;
++                    }
++                    Some(Command::Configure) => {
++                        if let Some(active) = &session {
++                            if let Err(error) = proxy.configure_shortcuts(active, None, Default::default()).await {
++                                status(&callback, "portal", "configure-failed", serde_json::json!({ "error": error.to_string() }));
++                            }
++                        }
++                    }
++                    Some(Command::Stop) | None => break,
++                },
++            }
++        }
++        if let Some(active) = session {
++            active.close().await.ok();
++        }
++    }
++
++    async fn bind(
++        proxy: &GlobalShortcuts,
++        shortcuts: &[ShortcutSpec],
++        callback: &Option<EventCallback>,
++    ) -> Option<ashpd::desktop::Session<GlobalShortcuts>> {
++        let session = match proxy.create_session(Default::default()).await {
++            Ok(session) => session,
++            Err(error) => {
++                status(callback, "portal", "failed", serde_json::json!({ "error": error.to_string() }));
++                return None;
++            }
++        };
++        let triggers: Vec<String> = shortcuts.iter().map(|s| portal_trigger(&s.accelerator)).collect();
++        let requested: Vec<NewShortcut> = shortcuts
++            .iter()
++            .zip(&triggers)
++            .map(|(spec, trigger)| NewShortcut::new(spec.id.clone(), spec.description.clone()).preferred_trigger(trigger.as_str()))
++            .collect();
++        let response = match proxy.bind_shortcuts(&session, &requested, None, BindShortcutsOptions::default()).await {
++            Ok(request) => request.response(),
++            Err(error) => Err(error),
++        };
++        match response {
++            Ok(bound) => {
++                let bound: Vec<_> = bound
++                    .shortcuts()
++                    .iter()
++                    .map(|s| serde_json::json!({ "id": s.id(), "trigger": s.trigger_description() }))
++                    .collect();
++                status(callback, "portal", "bound", serde_json::json!({ "shortcuts": bound, "version": proxy.version() }));
++                Some(session)
++            }
++            Err(error) => {
++                // Includes the user cancelling the desktop's dialog.
++                status(callback, "portal", "failed", serde_json::json!({ "error": error.to_string() }));
++                session.close().await.ok();
++                None
++            }
++        }
++    }
++}
++
++#[cfg(any(target_os = "linux", target_os = "macos", target_os = "windows"))]
++mod hotkey {
++    use std::collections::HashMap;
++    use std::str::FromStr;
++    use std::sync::mpsc::{Receiver, RecvTimeoutError};
++    use std::time::Duration;
++
++    use global_hotkey::hotkey::HotKey;
++    use global_hotkey::{GlobalHotKeyEvent, GlobalHotKeyManager, HotKeyState};
++
++    use super::{Command, EventCallback, emit, status};
++
++    /// "Meta+Space" → global-hotkey syntax "super+space".
++    fn parse(accelerator: &str) -> Result<HotKey, String> {
++        let normalized = accelerator
++            .split('+')
++            .map(|part| match part.trim().to_ascii_lowercase().as_str() {
++                "meta" | "logo" | "win" => "super".to_string(),
++                other => other.to_string(),
++            })
++            .collect::<Vec<_>>()
++            .join("+");
++        HotKey::from_str(&normalized).map_err(|error| error.to_string())
++    }
++
++    // NOTE: on Windows the hotkey thread needs a message loop and on macOS
++    // registration must happen on the main thread; this worker thread is
++    // verified only on Linux/X11-style setups (see README).
++    pub(super) fn run(commands: Receiver<Command>, callback: Option<EventCallback>) {
++        let manager = match GlobalHotKeyManager::new() {
++            Ok(manager) => manager,
++            Err(error) => {
++                status(&callback, "hotkey", "unavailable", serde_json::json!({ "error": error.to_string() }));
++                return;
++            }
++        };
++        let mut bound: HashMap<u32, (String, HotKey)> = HashMap::new();
++        loop {
++            match commands.recv_timeout(Duration::from_millis(20)) {
++                Ok(Command::Bind(shortcuts)) => {
++                    for (_, (_, hotkey)) in bound.drain() {
++                        manager.unregister(hotkey).ok();
++                    }
++                    let mut results = Vec::new();
++                    for spec in shortcuts {
++                        match parse(&spec.accelerator).and_then(|hotkey| {
++                            manager.register(hotkey).map(|()| hotkey).map_err(|error| error.to_string())
++                        }) {
++                            Ok(hotkey) => {
++                                bound.insert(hotkey.id(), (spec.id.clone(), hotkey));
++                                results.push(serde_json::json!({ "id": spec.id, "trigger": spec.accelerator }));
++                            }
++                            Err(error) => {
++                                status(&callback, "hotkey", "failed", serde_json::json!({ "id": spec.id, "error": error }));
++                            }
++                        }
++                    }
++                    if !results.is_empty() {
++                        status(&callback, "hotkey", "bound", serde_json::json!({ "shortcuts": results }));
++                    }
++                }
++                Ok(Command::Configure) => {}
++                Ok(Command::Stop) | Err(RecvTimeoutError::Disconnected) => break,
++                Err(RecvTimeoutError::Timeout) => {}
++            }
++            while let Ok(event) = GlobalHotKeyEvent::receiver().try_recv() {
++                if event.state == HotKeyState::Pressed {
++                    if let Some((id, _)) = bound.get(&event.id) {
++                        emit(&callback, "globalShortcut", id.clone());
++                    }
++                }
++            }
++        }
++        for (_, (_, hotkey)) in bound {
++            manager.unregister(hotkey).ok();
++        }
++    }
++}

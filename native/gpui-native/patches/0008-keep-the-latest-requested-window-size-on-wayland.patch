@@ -1,0 +1,96 @@
+diff --git a/crates/gpui-core/src/renderer.rs b/crates/gpui-core/src/renderer.rs
+index 7ed110d9291d5aab9ce282bca09c43fbefe3e96d..139d0a6256c4775d024baffdeac7ab4577df5cdd 100644
+--- a/crates/gpui-core/src/renderer.rs
++++ b/crates/gpui-core/src/renderer.rs
+@@ -662,6 +662,7 @@ async fn run_threaded_app_commands(
+                 let height = options.height.unwrap_or(600.0);
+                 let activate = options.focus.unwrap_or(true);
+                 let window_options = options.clone();
++                let requested_size = RequestedSize::default();
+                 let initialized_for_close = initialized.clone();
+                 let callback_for_close = callback.clone();
+                 let result = cx.update(|cx| -> std::result::Result<(), String> {
+@@ -701,6 +702,14 @@ async fn run_threaded_app_commands(
+                                         });
+                                     })
+                                     .detach();
++                                    #[cfg(target_os = "linux")]
++                                    if window_options.kind.as_deref() == Some("layerShell") && is_wayland_session() {
++                                        let requested = requested_size.clone();
++                                        cx.observe_window_bounds(window, move |_view, window, cx| {
++                                            keep_requested_size(&requested, window, cx);
++                                        })
++                                        .detach();
++                                    }
+                                     GpuiView::new(tree, callback, title, selection, clock)
+                                 });
+                                 #[cfg(any(target_os = "linux", target_os = "freebsd"))]
+@@ -735,7 +744,7 @@ async fn run_threaded_app_commands(
+                     })
+                     .detach();
+                     cx.spawn(async move |cx| {
+-                        run_ui_commands(commands, window, cx).await;
++                        run_ui_commands(commands, window, requested_size, cx).await;
+                     })
+                     .detach();
+                     *initialized.lock() = true;
+@@ -769,6 +778,7 @@ fn refresh_ui_window(
+ async fn run_ui_commands(
+     mut commands: mpsc::UnboundedReceiver<UiCommand>,
+     window: crate::kit::NativeWindow,
++    requested_size: RequestedSize,
+     cx: &mut gpui::AsyncApp,
+ ) {
+     let mut closed_by_command = false;
+@@ -1090,8 +1100,10 @@ async fn run_ui_commands(
+                 result
+             }
+             UiCommand::Blur => window.update(cx, |_view, window, _cx| window.blur()),
+-            UiCommand::SetWindowSize { width, height } => window.update(cx, move |_view, window, _cx| {
+-                window.resize(gpui::size(gpui::px(width), gpui::px(height)));
++            UiCommand::SetWindowSize { width, height } => window.update(cx, |_view, window, _cx| {
++                let size = gpui::size(gpui::px(width), gpui::px(height));
++                requested_size.set(Some((size, REQUESTED_SIZE_RETRIES)));
++                window.resize(size);
+             }),
+             UiCommand::StartWindowMove => window.update(cx, |_view, window, _cx| window.start_window_move()),
+         };
+@@ -2386,6 +2398,38 @@ fn is_wayland_session() -> bool {
+     std::env::var_os("WAYLAND_DISPLAY").is_some()
+ }
+ 
++/// The latest `setWindowSize()` and how often it may still be re-requested.
++#[cfg(any(target_os = "windows", target_os = "linux", target_os = "freebsd"))]
++type RequestedSize = std::rc::Rc<std::cell::Cell<Option<(gpui::Size<gpui::Pixels>, u8)>>>;
++
++/// Bounds a compositor that keeps answering with another size.
++#[cfg(any(target_os = "windows", target_os = "linux", target_os = "freebsd"))]
++const REQUESTED_SIZE_RETRIES: u8 = 4;
++
++/// A layer-surface configure may answer an older `set_size`; GPUI applies it and
++/// re-requests that stale size, so the latest requested size is asserted again.
++#[cfg(target_os = "linux")]
++fn keep_requested_size(requested: &RequestedSize, window: &gpui::Window, cx: &gpui::App) {
++    let Some((size, retries)) = requested.get() else {
++        return;
++    };
++    if retries == 0 || window.viewport_size() == size {
++        return;
++    }
++    requested.set(Some((size, retries - 1)));
++    let requested = requested.clone();
++    // Deferred: GPUI sends set_size for the configured size after this observer returns.
++    window
++        .spawn(cx, async move |cx| {
++            cx.update(|window, _cx| match requested.get() {
++                Some((latest, _)) if window.viewport_size() != latest => window.resize(latest),
++                _ => {}
++            })
++            .ok();
++        })
++        .detach();
++}
++
+ /// No window manager sees override-redirect (popup) windows on X11, so
+ /// `activate_window()`'s `_NET_ACTIVE_WINDOW` request never focuses them.
+ #[cfg(any(target_os = "linux", target_os = "freebsd"))]

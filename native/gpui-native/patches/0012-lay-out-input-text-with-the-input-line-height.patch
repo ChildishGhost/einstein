@@ -1,0 +1,13 @@
+diff --git a/crates/gpui-core/src/custom_elements/input.rs b/crates/gpui-core/src/custom_elements/input.rs
+index e33d8bdde6fe1b47cbc8c4508b85d9aca0d33122..f2e5ca4d3d5af9e8016c3dad34cdb3c3681a5e7b 100644
+--- a/crates/gpui-core/src/custom_elements/input.rs
++++ b/crates/gpui-core/src/custom_elements/input.rs
+@@ -1505,7 +1505,7 @@ impl TextEditorState {
+         };
+         let font_size = style.font_size.to_pixels(window.rem_size());
+         self.font_size = font_size;
+-        self.line_height = window.line_height();
++        self.line_height = style.line_height_in_pixels(window.rem_size());
+         let color = if is_placeholder {
+             gpui::rgba(0x8f8f8fff).into()
+         } else {

@@ -1,0 +1,156 @@
+diff --git a/crates/gpui-core/src/renderer.rs b/crates/gpui-core/src/renderer.rs
+index aa14c651eb665f053fb21bf42377264fe25447d3..ba9405066ba5ee5ee18dd53527429ce4d917ee4f 100644
+--- a/crates/gpui-core/src/renderer.rs
++++ b/crates/gpui-core/src/renderer.rs
+@@ -667,9 +667,11 @@ async fn run_threaded_app_commands(
+                         gpui::size(gpui::px(width as f32), gpui::px(height as f32)),
+                         cx,
+                     );
+-                    let window = cx
+-                        .open_window(
+-                            to_gpui_window_options(&window_options, bounds),
++                    let open = |cx: &mut gpui::App, window_options: &WindowOptions| {
++                        let (tree, callback, title, selection, clock) =
++                            (tree.clone(), callback.clone(), title.clone(), selection.clone(), clock.clone());
++                        cx.open_window(
++                            to_gpui_window_options(window_options, bounds),
+                             |window, cx| {
+                                 let events = callback.clone();
+                                 let view = cx.new(|cx| {
+@@ -693,9 +695,17 @@ async fn run_threaded_app_commands(
+                                     .detach();
+                                     GpuiView::new(tree, callback, title, selection, clock)
+                                 });
+-                                crate::kit::wrap(view, window, cx, wants_transparent_root(&window_options))
++                                crate::kit::wrap(view, window, cx, wants_transparent_root(window_options))
+                             },
+                         )
++                    };
++                    let window = open(cx, &window_options);
++                    #[cfg(target_os = "linux")]
++                    let window = match layer_shell_fallback(&window_options, &window) {
++                        Some(popup) => open(cx, &popup),
++                        None => window,
++                    };
++                    let window = window
+                         .map(crate::kit::NativeWindow::new)
+                         .map_err(|error| format!("Failed to open the GPUI window: {error}"))?;
+                     let window_id = window.window_id();
+@@ -2213,11 +2223,11 @@ pub struct WindowOptions {
+     /// Give the window focus when it opens. Ignored by GPUI on Linux.
+     pub focus: Option<bool>,
+     /// Show the window when it opens. Call `activateWindow()` to reveal it.
+-    /// Ignored by GPUI on Linux.
++    /// On Linux, `false` defers opening the window to the first `showWindow()`.
+     pub show: Option<bool>,
+     /// `"normal"` (default) | `"popup"` (above other windows, no taskbar entry)
+     /// | `"floating"` | `"layerShell"` (Wayland overlay surface, for launchers;
+-    /// falls back to `"popup"` elsewhere).
++    /// falls back to `"popup"` where unsupported).
+     pub kind: Option<String>,
+     /// `"server"` (default) | `"client"` (no native frame; the app draws its own).
+     pub decorations: Option<String>,
+@@ -2362,6 +2372,18 @@ fn is_wayland_session() -> bool {
+     std::env::var_os("WAYLAND_DISPLAY").is_some()
+ }
+ 
++/// Wayland compositors without zwlr_layer_shell_v1 (e.g. GNOME) get a popup instead.
++#[cfg(target_os = "linux")]
++fn layer_shell_fallback<T>(options: &WindowOptions, opened: &gpui::Result<T>) -> Option<WindowOptions> {
++    let unsupported = opened.as_ref().is_err_and(|error| {
++        error.downcast_ref::<gpui::layer_shell::LayerShellNotSupportedError>().is_some()
++    });
++    (unsupported && options.kind.as_deref() == Some("layerShell")).then(|| WindowOptions {
++        kind: Some("popup".to_string()),
++        ..options.clone()
++    })
++}
++
+ #[cfg(test)]
+ mod window_options_tests {
+     use super::*;
+@@ -2410,6 +2432,25 @@ mod window_options_tests {
+         assert!(hidden.focus);
+         assert!(!hidden.show);
+     }
++
++    #[cfg(target_os = "linux")]
++    #[test]
++    fn layer_shell_falls_back_to_popup_only_when_the_compositor_lacks_it() {
++        let layer_shell = WindowOptions {
++            kind: Some("layerShell".to_string()),
++            ..WindowOptions::default()
++        };
++        let unsupported: gpui::Result<()> = Err(gpui::layer_shell::LayerShellNotSupportedError.into());
++        let other: gpui::Result<()> = Err(std::io::Error::other("no display").into());
++
++        let fallback = layer_shell_fallback(&layer_shell, &unsupported).expect("popup fallback");
++        assert_eq!(fallback.kind.as_deref(), Some("popup"));
++        assert!(matches!(mapped(fallback).kind, gpui::WindowKind::PopUp));
++
++        assert!(layer_shell_fallback(&layer_shell, &Ok(())).is_none());
++        assert!(layer_shell_fallback(&layer_shell, &other).is_none());
++        assert!(layer_shell_fallback(&WindowOptions::default(), &unsupported).is_none());
++    }
+ }
+ 
+ #[cfg(test)]
+diff --git a/crates/gpui-core/src/renderer/api.rs b/crates/gpui-core/src/renderer/api.rs
+index 382b161f19f4e722434c1845a788dbeb8dac92a4..87fe84d399bb1316389e7d42855f0f20d811814c 100644
+--- a/crates/gpui-core/src/renderer/api.rs
++++ b/crates/gpui-core/src/renderer/api.rs
+@@ -526,6 +526,14 @@ impl GpuiRenderer {
+             return Err(Error::from_reason("Renderer is already initialized"));
+         }
+         let callback = self.event_callback_for_view();
++        // GPUI ignores `show: false` on Linux; defer opening to the first showWindow() instead.
++        if cfg!(any(target_os = "linux", target_os = "freebsd")) && options.show == Some(false) {
++            let options = WindowOptions { show: Some(true), ..options };
++            *self.reopen.lock() = Some((callback, options));
++            *self.initialized.lock() = true;
++            self.event_callback.lock().take();
++            return Ok(());
++        }
+         *self.reopen.lock() = Some((callback.clone(), options.clone()));
+         self.open_threaded_window(options, callback)?;
+         self.event_callback.lock().take();
+@@ -678,7 +686,12 @@ impl GpuiRenderer {
+                 serde_json::from_str(&shortcuts_json).map_err(|e| Error::from_reason(e.to_string()))?;
+             // The view callback outlives init (it is kept for showWindow()).
+             #[cfg(any(target_os = "windows", target_os = "linux"))]
+-            let callback = self.reopen.lock().as_ref().and_then(|(callback, _)| callback.clone());
++            let callback = self
++                .reopen
++                .lock()
++                .as_ref()
++                .and_then(|(callback, _)| callback.clone())
++                .or_else(|| self.event_callback_for_view());
+             #[cfg(target_os = "macos")]
+             let callback = self.event_callback_for_view();
+             self.global_shortcuts.lock().bind(app_id, shortcuts, callback);
+diff --git a/packages/core/index.d.ts b/packages/core/index.d.ts
+index f71e637c7bdb3b2f353ca8334d372c750ae54df2..1099168d82dfcb7f148453ed6c4a2ad4e35d58c0 100644
+--- a/packages/core/index.d.ts
++++ b/packages/core/index.d.ts
+@@ -653,7 +653,7 @@ export interface WindowOptions {
+   focus?: boolean
+   /**
+    * Show the window when it opens. Call `activateWindow()` to reveal it.
+-   * Ignored by GPUI on Linux.
++   * On Linux, `false` defers opening the window to the first `showWindow()`.
+    */
+   show?: boolean
+ }
+diff --git a/packages/runtime/src/types.ts b/packages/runtime/src/types.ts
+index b8a633bebafbb335f68f7c6ccada4378edb56622..1740abbbc037f94e6d78f31a5684cbf18452c0a8 100644
+--- a/packages/runtime/src/types.ts
++++ b/packages/runtime/src/types.ts
+@@ -22,7 +22,7 @@ export type NativeWindowOptions = Omit<GeneratedWindowOptions, "windowBackground
+   windowBackground?: "opaque" | "transparent" | "blurred"
+   /** Open without taking keyboard focus. Ignored by GPUI on Linux. */
+   focus?: boolean
+-  /** Open hidden; call `activateWindow()`/`useGpuiWindow().activate()` to reveal it. */
++  /** Open hidden; call `activateWindow()`/`useGpuiWindow().activate()` to reveal it (`showWindow()` on Linux). */
+   show?: boolean
+ }
+ 

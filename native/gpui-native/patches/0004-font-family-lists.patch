@@ -1,0 +1,76 @@
+diff --git a/crates/gpui-core/src/renderer.rs b/crates/gpui-core/src/renderer.rs
+index ba9405066ba5ee5ee18dd53527429ce4d917ee4f..04ba386f4ecd278b40d24a85f849c0f18ef4ead6 100644
+--- a/crates/gpui-core/src/renderer.rs
++++ b/crates/gpui-core/src/renderer.rs
+@@ -594,6 +594,9 @@ fn threaded_app_sender() -> Result<mpsc::UnboundedSender<ThreadedAppCommand>> {
+                     .with_assets(gpui_kit_assets::EmbeddedAssets)
+                     .with_quit_mode(gpui::QuitMode::Explicit)
+                     .run(move |cx| {
++                        crate::renderer::styles::TEXT_SYSTEM
++                            .set(cx.text_system().clone())
++                            .ok();
+                         crate::kit::init(cx);
+                         crate::custom_elements::input::init(cx);
+                         crate::custom_elements::img::init(cx);
+diff --git a/crates/gpui-core/src/renderer/styles.rs b/crates/gpui-core/src/renderer/styles.rs
+index 931ec58c0d047972d833fbc859c6b04755fdc41d..4d97176ecb220f555bbabc43855dbb1444417432 100644
+--- a/crates/gpui-core/src/renderer/styles.rs
++++ b/crates/gpui-core/src/renderer/styles.rs
+@@ -5,6 +5,8 @@
+     reason = "validated CSS f64 dimensions narrow to GPUI f32 geometry"
+ )]
+ 
++use std::sync::{Arc, OnceLock};
++
+ use crate::style::{
+     AlignValue, DisplayValue, FlexDirectionValue, FlexWrapValue, OverflowValue, PositionValue,
+     StyleDesc, TextAlignValue, TextOverflowValue, WhiteSpaceValue,
+@@ -46,6 +48,39 @@ where
+     el
+ }
+ 
++/// The app's text system, recorded at startup so `fontFamily` lists can see which families exist.
++pub(crate) static TEXT_SYSTEM: OnceLock<Arc<gpui::TextSystem>> = OnceLock::new();
++
++/// Applies a CSS-like `fontFamily` list: the first installed family becomes the font and the
++/// families after it its per-glyph fallbacks. GPUI drops a font's fallbacks along with a family
++/// it cannot load, so a missing first choice must not be the font.
++fn apply_font_family<E: gpui::Styled>(mut el: E, list: &str) -> E {
++    let mut families: Vec<String> = list
++        .split(',')
++        .map(|family| family.trim().trim_matches(['"', '\'']).to_string())
++        .filter(|family| !family.is_empty())
++        .collect();
++    if families.len() > 1 {
++        static INSTALLED: OnceLock<Vec<String>> = OnceLock::new();
++        if let Some(text_system) = TEXT_SYSTEM.get() {
++            let installed = INSTALLED.get_or_init(|| text_system.all_font_names());
++            if let Some(first) = families.iter().position(|family| installed.contains(family)) {
++                families.drain(..first);
++            }
++        }
++    }
++    let mut families = families.into_iter();
++    let Some(family) = families.next() else {
++        return el;
++    };
++    el = el.font_family(family);
++    let fallbacks: Vec<String> = families.collect();
++    if !fallbacks.is_empty() {
++        el.text_style().font_fallbacks = Some(gpui::FontFallbacks::from_fonts(fallbacks));
++    }
++    el
++}
++
+ #[allow(
+     clippy::too_many_lines,
+     reason = "CSS-to-GPUI style application is one exhaustive property table"
+@@ -240,7 +275,7 @@ pub(crate) fn apply_styles<E: gpui::Styled>(mut el: E, style: &StyleDesc) -> E {
+         el = el.text_size(gpui::px(size as f32));
+     }
+     if let Some(ref family) = style.font_family {
+-        el = el.font_family(family.clone());
++        el = apply_font_family(el, family);
+     }
+     if let Some(weight) = style.resolved_font_weight() {
+         el = el.font_weight(weight);
