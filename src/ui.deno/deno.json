@@ -1,0 +1,8 @@
+{
+	"nodeModulesDir": "auto",
+	"links": [
+		"../../native/gpui-native/dist/pkg/core",
+		"../../native/gpui-native/dist/pkg/runtime",
+		"../../native/gpui-native/dist/pkg/vue"
+	]
+}
