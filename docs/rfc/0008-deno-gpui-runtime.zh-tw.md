@@ -1,11 +1,11 @@
-<!-- source-sha256: 642592e00d3d2873fdc77521045f5a7eee3df8c2fb80582a6e63b1ddf88f071b -->
+<!-- source-sha256: 6603d2c823323ca9f07fb1c5038605e10ca6ac33e48d402d8c8a54de5722833d -->
 
 > 本文為 [0008-deno-gpui-runtime.md](0008-deno-gpui-runtime.md) 的翻譯，內容以英文版為準。
 
 ---
 rfc: 0008
 title: Deno and gpui-native runtime on Linux
-status: draft
+status: accepted
 created: 2026-09-26
 references: [0001, 0002, 0003, 0004, 0005, 0006, 0007]
 gates: accept, verify
