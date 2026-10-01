@@ -1,7 +1,7 @@
-import { AppContext } from './app'
-import { ConfigDefinition, Configuration } from './configuration'
-import { ISearchEngine } from './searchEngine'
-import { EventType, UID } from './types'
+import { AppContext } from './app/index.ts'
+import { ConfigDefinition, Configuration } from './configuration/index.ts'
+import { ISearchEngine } from './searchEngine.ts'
+import { EventType, UID } from './types.ts'
 
 type PluginEventHandler = (data?: any) => void | Promise<void>
 type PluginMetadata = {
@@ -32,4 +32,4 @@ type WithPluginTagged<T> = T & {
 	pluginUid: UID
 }
 
-export { PluginContext, PluginDispose, PluginEventHandler, PluginSetup, PluginMetadata, WithPluginTagged }
+export type { PluginContext, PluginDispose, PluginEventHandler, PluginSetup, PluginMetadata, WithPluginTagged }

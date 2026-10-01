@@ -1,2 +1,2 @@
-export * from './openUrl'
-export * from './spawn'
+export * from './openUrl.ts'
+export * from './spawn.ts'

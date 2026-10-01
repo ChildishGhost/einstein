@@ -16,4 +16,5 @@ interface ISearchEngine {
 	search(term: string, trigger?: string): Promise<SearchResult[]>
 }
 
-export { VOID_TRIGGER, SearchResult, ISearchEngine }
+export { VOID_TRIGGER }
+export type { SearchResult, ISearchEngine }
