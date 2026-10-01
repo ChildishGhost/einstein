@@ -1,0 +1,80 @@
+{
+  "version": "5",
+  "specifiers": {
+    "npm:@gpui-native/core@0.2.0": "0.2.0",
+    "npm:@gpui-native/vue@0.2.0": "0.2.0"
+  },
+  "npm": {
+    "@gpui-native/core@0.2.0": {},
+    "@gpui-native/runtime@0.2.0": {
+      "dependencies": [
+        "@gpui-native/core",
+        "@webgpu/types",
+        "eventsource-parser",
+        "zod"
+      ]
+    },
+    "@gpui-native/vue@0.2.0": {
+      "dependencies": [
+        "@gpui-native/core",
+        "@gpui-native/runtime",
+        "@vue/runtime-core",
+        "eventsource-parser",
+        "zod"
+      ]
+    },
+    "@vue/reactivity@3.5.43": {
+      "integrity": "sha512-G/c9GyOZNI2jVaaS6OX1EF1SSFSv7H0ERqNTl4+DTFMlZmB5eVAB53aLQNam/7NL2NPtaDD7RdVrzf8uJzMuOA==",
+      "dependencies": [
+        "@vue/shared"
+      ]
+    },
+    "@vue/runtime-core@3.5.43": {
+      "integrity": "sha512-hU6U6VnVhBGQDpvlnnDlIB8ZGJBiOcgk2lh/0InltHiz3D8oSkluvuvY+do1G2H3+udeKFsmaBlgVYP7gXQzEw==",
+      "dependencies": [
+        "@vue/reactivity",
+        "@vue/shared"
+      ]
+    },
+    "@vue/shared@3.5.43": {
+      "integrity": "sha512-uksS7YGMR5NZyr4JNq0Rp+QyLns0ueaz20KwzIPW9R0LH1Vnt4E+XUM29PNseEbf1www2gOuhuDi5AKOIXag9Q=="
+    },
+    "@webgpu/types@0.1.74": {
+      "integrity": "sha512-lgiI4hbuLcI9unnm2cL/tvCaQU45dp0xcLWJh5uB/9MBGvIA4F8XIk7nSiBeg+K4xWGYwgZKn80LmERI5CxoTA=="
+    },
+    "eventsource-parser@4.1.1": {
+      "integrity": "sha512-zaWNqeSLeyzEAAt2Q6aDBRDRk/VnPmsKqvToyGvv6aahvLv71A4Jw7jG93Hckf11zXurbqgsffvpSgKPoeU1Qw=="
+    },
+    "zod@4.6.5": {
+      "integrity": "sha512-v5l/aFXZQeai4awLbOpSoHecE9UiMrnfx75tEXLjNonXVARxQ5mOeipTjROUchszUNCqnE+hqAMujRsRHsut2Q=="
+    }
+  },
+  "workspace": {
+    "packageJson": {
+      "dependencies": [
+        "npm:@gpui-native/core@0.2.0",
+        "npm:@gpui-native/vue@0.2.0"
+      ]
+    },
+    "links": {
+      "npm:@gpui-native/core@0.2.0": {},
+      "npm:@gpui-native/runtime@0.2.0": {
+        "dependencies": [
+          "npm:@gpui-native/core@0.2",
+          "npm:@webgpu/types@~0.1.72",
+          "npm:eventsource-parser@^4.1.0",
+          "npm:zod@^4.4.3"
+        ]
+      },
+      "npm:@gpui-native/vue@0.2.0": {
+        "dependencies": [
+          "npm:@gpui-native/core@0.2",
+          "npm:@gpui-native/runtime@0.2",
+          "npm:@vue/runtime-core@^3.5.41",
+          "npm:eventsource-parser@^4.1.0",
+          "npm:zod@^4.4.3"
+        ]
+      }
+    }
+  }
+}
