@@ -130,7 +130,8 @@ export default [ ...fixupConfigRules(compat.extends(
 		"arrow-body-style": "off",
 	},
 }, {
-	files: [ "**/*.vue", " src/**", "plugins/**" ],
+	files: [ "**/*.vue", " src/**" ],
 },{
-	ignores: [ "dist/", "node_modules/", "webpack/", "webpack.config.js" ],
+	// The Deno stack is checked by deno lint and deno fmt (deno.json).
+	ignores: [ "dist/", "node_modules/", "webpack/", "webpack.config.js", "native/", "src/*.deno/", "tests/**/*.ts", ".bin/*.ts", ".bin/*.mts" ],
 } ]
