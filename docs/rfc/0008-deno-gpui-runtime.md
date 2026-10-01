@@ -1,7 +1,7 @@
 ---
 rfc: 0008
 title: Deno and gpui-native runtime on Linux
-status: accepted
+status: implemented
 created: 2026-09-26
 references: [0001, 0002, 0003, 0004, 0005, 0006, 0007]
 gates: accept, verify
