@@ -55,7 +55,7 @@ const hintSearch = (e: engine, icon: string): SearchResult => {
 }
 
 const searchEngine = {
-	context: undefined as PluginContext<Configs>,
+	context: {} as PluginContext<Configs>,
 
 	triggers: Object.freeze(ENGINES.map((e) => e.trigger)),
 	engines: ENGINES as engine[],
@@ -63,14 +63,18 @@ const searchEngine = {
 	async loadEnginesFromConfig() {
 		const config = await this.context.loadConfig()
 
-		if (config.engines ?? false) {
-			this.engines = config.engines as engine[]
+		if (Array.isArray(config.engines)) {
+			this.engines = Array.from(config.engines)
 			this.triggers = Object.freeze(this.engines.map((e: engine) => e.trigger))
 		}
 	},
 
 	async search(term: string, trigger?: string): Promise<SearchResult[]> {
 		const result: SearchResult[] = []
+
+		if (trigger === undefined) {
+			return result
+		}
 
 		const icon = `plugin://${this.context.metadata.uid}/search.png`
 		if (term.length > 0) {
