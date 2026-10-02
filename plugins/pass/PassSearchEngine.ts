@@ -19,9 +19,9 @@ export default class PassSearchEngine implements ISearchEngine {
 
 	static subCommand = Object.freeze([ 'show' ])
 
-	private passFiles: string[]
+	private passFiles: string[] = []
 
-	private fuse: Fuse<PreSearch> = null
+	private fuse!: Fuse<PreSearch>
 
 	private readonly env: IEnvironment
 
