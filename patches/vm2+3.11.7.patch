@@ -1,5 +1,5 @@
 diff --git a/node_modules/vm2/lib/builtin.js b/node_modules/vm2/lib/builtin.js
-index 1fb7b9e..6b74087 100644
+index cbada76..1f7c8c1 100644
 --- a/node_modules/vm2/lib/builtin.js
 +++ b/node_modules/vm2/lib/builtin.js
 @@ -87,7 +87,8 @@ const DANGEROUS_BUILTINS = new Set([
@@ -19,10 +19,10 @@ index 1fb7b9e..6b74087 100644
 -	'os',
 +	// XXX(xatier): allow `os` explicitly
 +	//'os',
- 	'dns'
- ]);
-
-@@ -216,7 +218,7 @@ const SPECIAL_MODULES = {
+ 	'dns',
+ 	// SECURITY (GHSA-qhwx-74w5-xhxq): `node:test` is a host-process-SPAWNING
+ 	// primitive, the same class as `worker_threads` / `cluster` above.
+@@ -389,7 +391,7 @@ const SPECIAL_MODULES = {
  	events: {
  		init(vm) {
  			if (!cacheEventsScript) {
@@ -32,27 +32,27 @@ index 1fb7b9e..6b74087 100644
  	} return module.exports;})`, {filename: 'events.js'});
  			}
 diff --git a/node_modules/vm2/lib/nodevm.js b/node_modules/vm2/lib/nodevm.js
-index ae4eaae..d48232a 100644
+index 43ff19e..28ff752 100644
 --- a/node_modules/vm2/lib/nodevm.js
 +++ b/node_modules/vm2/lib/nodevm.js
-@@ -347,8 +347,8 @@ class NodeVM extends VM {
+@@ -357,8 +357,8 @@ class NodeVM extends VM {
  		objectDefineProperty(this, 'resolver', {__proto__: null, value: resolver, enumerable: true});
-
+ 
  		if (!cacheSandboxScript) {
 -			cacheSandboxScript = compileScript(`${__dirname}/setup-node-sandbox.js`,
 -				`(function (host, data) { ${fs.readFileSync(`${__dirname}/setup-node-sandbox.js`, 'utf8')}\n})`);
 +			cacheSandboxScript = compileScript(`${__dirname}/${VM2_LIB_PATH || ''}setup-node-sandbox.js`,
 +				`(function (host, data) { ${fs.readFileSync(`${__dirname}/${VM2_LIB_PATH || ''}setup-node-sandbox.js`, 'utf8')}\n})`);
  		}
-
+ 
  		const closure = this._runScript(cacheSandboxScript);
 diff --git a/node_modules/vm2/lib/vm.js b/node_modules/vm2/lib/vm.js
-index 8e985ca..1a02dae 100644
+index fd16753..d68ebeb 100644
 --- a/node_modules/vm2/lib/vm.js
 +++ b/node_modules/vm2/lib/vm.js
-@@ -124,8 +124,8 @@ function doWithTimeout(fn, timeout) {
+@@ -208,8 +208,8 @@ function doWithTimeout(fn, timeout) {
  }
-
+ 
  const bridgeScript = compileScript(
 -	`${__dirname}/bridge.js`,
 -	`(function(global) {"use strict"; const exports = {};${fs.readFileSync(`${__dirname}/bridge.js`, 'utf8')}\nreturn exports;})`,
@@ -61,7 +61,7 @@ index 8e985ca..1a02dae 100644
  );
  // SECURITY (GHSA-2cm2-m3w5-gp2f): the bootstrap script declares
  // INTERNAL_STATE_NAME at the script's top level so the binding lands in
-@@ -141,8 +141,8 @@ const bridgeScript = compileScript(
+@@ -225,8 +225,8 @@ const bridgeScript = compileScript(
  // source containing the canonical identifier (or any unicode-escaped
  // variant), so no user script can shadow or redeclare the binding.
  const setupSandboxScript = compileScript(
@@ -71,4 +71,4 @@ index 8e985ca..1a02dae 100644
 +	`let ${INTERNAL_STATE_NAME};(function(global, host, bridge, data, context) { ${fs.readFileSync(`${__dirname}/${VM2_LIB_PATH || ''}setup-sandbox.js`, 'utf8')}\n})`,
  );
  const getGlobalScript = compileScript('get_global.js', 'this');
-
+ 
