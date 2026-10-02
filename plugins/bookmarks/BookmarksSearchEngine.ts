@@ -4,7 +4,7 @@ import Fuse from 'fuse.js'
 import { Bookmark, Configs } from './types'
 
 export default abstract class BookmarksSearchEngine implements ISearchEngine {
-	private fuse: Fuse<Bookmark> = null
+	private fuse!: Fuse<Bookmark>
 
 	private isReady: Promise<void>
 

@@ -48,7 +48,7 @@ const isLaunchable = (groupName: string) => groupName === DESKTOP_ENTRY || group
 export default class LinuxDesktopApplicationSearchEngine implements ISearchEngine {
 	private desktopFiles: Record<string, LinuxDesktopFile> = {}
 
-	private fuse: Fuse<LinuxDesktopApplicationPreSearch> = null
+	private fuse!: Fuse<LinuxDesktopApplicationPreSearch>
 
 	private readonly homedir: string
 
@@ -131,7 +131,7 @@ export default class LinuxDesktopApplicationSearchEngine implements ISearchEngin
 		//
 		// Key=Value
 		desktopFiles.forEach((file: string) => {
-			this.desktopFiles[file] = { content: undefined }
+			this.desktopFiles[file] = { content: {} }
 
 			const content = fs.readFileSync(file, { encoding: 'utf8' })
 
@@ -177,7 +177,7 @@ export default class LinuxDesktopApplicationSearchEngine implements ISearchEngin
 
 	private initFuse() {
 		// flatten this.desktopFiles
-		const preSearch: LinuxDesktopApplicationPreSearch[] = Object.entries(this.desktopFiles).reduce(
+		const preSearch = Object.entries(this.desktopFiles).reduce<LinuxDesktopApplicationPreSearch[]>(
 			(acc, [ filename, file ]) => {
 				Object.entries(file).forEach(([ group, _ ]) => {
 					if (isLaunchable(group)) {
