@@ -16,7 +16,7 @@
 		"watch": "webpack --watch"
 	},
 	"devDependencies": {
-		"@antfu/eslint-config": "^9.0.0",
+		"@antfu/eslint-config": "^9.5.1",
 		"@babel/core": "^7.29.0",
 		"@eslint/compat": "^2.0.2",
 		"@eslint/eslintrc": "^3.3.3",
