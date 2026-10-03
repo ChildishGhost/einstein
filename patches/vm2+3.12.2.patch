@@ -1,0 +1,30 @@
+diff --git a/node_modules/vm2/lib/builtin.js b/node_modules/vm2/lib/builtin.js
+index d3aa631..10c50b9 100644
+--- a/node_modules/vm2/lib/builtin.js
++++ b/node_modules/vm2/lib/builtin.js
+@@ -97,11 +97,13 @@ const DANGEROUS_BUILTINS = new Set([
+ 	// wildcard expansion nor an explicit `builtin: ['child_process']` request.
+ 	// Embedders who genuinely need a controlled child-process facade can still
+ 	// register a sandbox-safe wrapper under the same name via `require.mock`.
+-	'child_process',
++	// XXX(xatier): allow `child_process` explicitly
++	//'child_process',
+ 	'vm',
+ 	'repl',
+ 	'inspector',
+-	'process',
++	// XXX(xatier): allow `process` explicitly
++	//'process',
+ 	// Host-process abort DoS: `trace_events.createTracing({categories: [...]})`
+ 	// asserts `args[0]->IsArray()` in C++; the array crosses the bridge as a
+ 	// Proxy, which fails the assertion and aborts the entire host process.
+@@ -175,7 +177,8 @@ const DANGEROUS_BUILTINS = new Set([
+ 	// Embedders who genuinely need a sandbox-local subset (typically
+ 	// `os.platform()`, `os.EOL`, `os.constants`) can register a controlled
+ 	// wrapper under the same name via `mock` / `override`.
+-	'os',
++	// XXX(xatier): allow `os` explicitly
++	//'os',
+ 	'dns',
+ 	// SECURITY (GHSA-qhwx-74w5-xhxq): `node:test` is a host-process-SPAWNING
+ 	// primitive, the same class as `worker_threads` / `cluster` above.
